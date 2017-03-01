@@ -475,9 +475,11 @@ struct ax25_cb *axp,
 int cmdrsp,
 int cmd
 ){
+	struct mbuf *mb = NULL;
+
 	if((ftype((char)cmd) & 0x3) == S)	/* Insert V(R) if S frame */
 		cmd |= (axp->vr << 5);
-	return sendframe(axp,cmdrsp,cmd,NULL);
+	return sendframe(axp,cmdrsp,cmd,&mb);
 }
 /* Start data transmission on link, if possible
  * Return number of frames sent
