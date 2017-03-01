@@ -403,8 +403,10 @@ proc_entry(void *pptr)
 	 * signal.
 	 */
 	pthread_mutex_lock(&g_curproc_mutex);
-	while (self->flags.run == 0)
+	while (self->flags.run == 0 && self->flags.exit == 0)
 		pthread_cond_wait(&self->cond, &g_curproc_mutex);
+	if (self->flags.exit)
+		goto ExitBeforeStart;
 
 	/* We're now the running process. Call the process function */
 	assert(Curproc == self);
@@ -414,5 +416,10 @@ proc_entry(void *pptr)
 	killself();
 
 	/* Not reached */
+	return NULL;
+
+ExitBeforeStart:
+	/* We were asked to exit before getting a chance to start. Oh well */
+	pthread_mutex_unlock(&g_curproc_mutex);
 	return NULL;
 }
