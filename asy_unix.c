@@ -618,7 +618,7 @@ asy_shutdown(int dev)
 	ap->iface = NULL;
 
 	i_state = disable();
-	close(ap->ttyfd);
+	pthread_cancel(ap->read_thread);
 	restore(i_state);
 
 	pthread_mutex_lock(&ap->write_lock);
@@ -628,6 +628,8 @@ asy_shutdown(int dev)
 
 	pthread_join(ap->read_thread, &dummy);
 	pthread_join(ap->write_thread, &dummy);
+
+	close(ap->ttyfd);
 
 	free(ap->fifo.buf);
 
