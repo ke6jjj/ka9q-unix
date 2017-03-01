@@ -66,6 +66,11 @@ int cts		/* Use CTS flow control */
 	struct asy *ap;
 	void *dummy;
 
+	if(dev >= ASY_MAX)
+		return -1;
+
+	ap = &Asy[dev];
+
 	if ((ttyfd = open(path, O_RDWR)) == -1) {
 		kprintf("Can't open '%s': %s\n",path,strerror(errno));
 		goto CantOpenDevice;
@@ -122,6 +127,7 @@ int cts		/* Use CTS flow control */
 		goto CantStartWriteThread;
 	}
 
+	ap->ttyfd = ttyfd;
 	ap->iface = ifp;
 	ap->trigchar = trigchar;
 	ap->cts = cts;
@@ -527,6 +533,7 @@ asy_io_read_proc(void *asyp)
 		fp->cnt += cnt;
 
 		/* Copy read data into FIFO */
+		ibp = buf;
 		for (tmp = cnt; tmp > 0; tmp--) {
 			*(fp->wp++) = *ibp++;
 			if (fp->wp >= &fp->buf[fp->bufsize])
