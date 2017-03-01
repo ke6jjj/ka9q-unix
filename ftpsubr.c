@@ -1,7 +1,9 @@
 /* Routines common to both the FTP client and server
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "socket.h"
@@ -12,14 +14,14 @@
 
 #define	MD5BLOCK	64	/* Preferred MD5 block size */
 
-/* Send a file (opened by caller) on a network socket.
+/* Send a file (opened by caller) on a network ksocket.
  * Normal return: count of bytes sent
  * Error return: -1
  */
 long
-sendfile(fp,network,mode,verb)
-FILE *fp;		/* File to be sent */
-FILE *network;		/* Network stream to be sent on */
+ksendfile(fp,network,mode,verb)
+kFILE *fp;		/* File to be sent */
+kFILE *network;		/* Network stream to be sent on */
 enum ftp_type mode;	/* Transfer mode */
 enum verb_level verb;	/* Verbosity level */
 {
@@ -30,37 +32,37 @@ enum verb_level verb;	/* Verbosity level */
 	char cmdbuf[50];
 
 	if(verb >= V_STAT){
-		sprintf(cmdbuf,"repeat socket %d",fileno(network));
+		sprintf(cmdbuf,"repeat ksocket %d",kfileno(network));
 		cmdparse(Cmds,cmdbuf,NULL);
 	}
 	switch(mode){
 	default:
 	case LOGICAL_TYPE:
 	case IMAGE_TYPE:
-		fmode(network,STREAM_BINARY);
+		kfmode(network,STREAM_BINARY);
 		break;
 	case ASCII_TYPE:
-		fmode(network,STREAM_ASCII);
+		kfmode(network,STREAM_ASCII);
 		break;
 	}
-	buf = mallocw(BUFSIZ);
+	buf = mallocw(kBUFSIZ);
 	for(;;){
-		if((cnt = fread(buf,1,BUFSIZ,fp)) == 0){
+		if((cnt = kfread(buf,1,kBUFSIZ,fp)) == 0){
 			break;
 		}
 		total += cnt;
-		if(fwrite(buf,1,cnt,network) != cnt){
+		if(kfwrite(buf,1,cnt,network) != cnt){
 			total = -1;
 			break;
 		}
 		while(verb == V_HASH && total >= hmark+1000){
-			putchar('#');
+			kputchar('#');
 			hmark += 1000;
 		}
 	}
 	free(buf);
 	if(verb == V_HASH)
-		putchar('\n');
+		kputchar('\n');
 	return total;
 }
 /* Receive a file (opened by caller) from a network stream
@@ -68,9 +70,9 @@ enum verb_level verb;	/* Verbosity level */
  * Error return: -1
  */
 long
-recvfile(fp,network,mode,verb)
-FILE *fp;
-FILE *network;
+krecvfile(fp,network,mode,verb)
+kFILE *fp;
+kFILE *network;
 enum ftp_type mode;
 enum verb_level verb;
 {
@@ -81,41 +83,41 @@ enum verb_level verb;
 	char cmdbuf[50];
 
 	if(verb >= V_STAT){
-		sprintf(cmdbuf,"repeat socket %d",fileno(network));
+		sprintf(cmdbuf,"repeat ksocket %d",kfileno(network));
 		cmdparse(Cmds,cmdbuf,NULL);
 	}
 	if(fp == NULL)
-		fp = stdout;	/* Default */
+		fp = kstdout;	/* Default */
 	switch(mode){
 	default:
 	case LOGICAL_TYPE:
 	case IMAGE_TYPE:
-		fmode(network,STREAM_BINARY);
+		kfmode(network,STREAM_BINARY);
 		break;
 	case ASCII_TYPE:
-		fmode(network,STREAM_ASCII);
+		kfmode(network,STREAM_ASCII);
 		break;
 	}
-	buf = mallocw(BUFSIZ);
-	while((cnt = fread(buf,1,BUFSIZ,network)) != 0){
+	buf = mallocw(kBUFSIZ);
+	while((cnt = kfread(buf,1,kBUFSIZ,network)) != 0){
 		total += cnt;
 		while(verb == V_HASH && total >= hmark+1000){
-			putchar('#');
+			kputchar('#');
 			hmark += 1000;
 		}
-		if(fwrite(buf,1,cnt,fp) != cnt){
+		if(kfwrite(buf,1,cnt,fp) != cnt){
 			total = -1;
 			break;
 		}
-		/* Detect an abnormal close */
-		if(socklen(fileno(network),0) == -1){
+		/* Detect an abnormal kclose */
+		if(socklen(kfileno(network),0) == -1){
 			total = -1;
 			break;
 		}
 	}
 	free(buf);
 	if(verb == V_HASH)
-		putchar('\n');
+		kputchar('\n');
 	return total;
 }
 /* Determine if a file appears to be binary (i.e., non-text).
@@ -125,14 +127,14 @@ enum verb_level verb;
  */
 int
 isbinary(fp)
-FILE *fp;
+kFILE *fp;
 {
 	int c,i;
 	int rval;
 
 	rval = 0;
 	for(i=0;i<512;i++){
-		if((c = getc(fp)) == EOF)
+		if((c = kgetc(fp)) == kEOF)
 			break;
 		if(c & 0x80){
 			/* High bit is set, probably not text */
@@ -141,13 +143,13 @@ FILE *fp;
 		}
 	}
 	/* Assume it was at beginning */
-	fseek(fp,0L,SEEK_SET);
+	kfseek(fp,0L,kSEEK_SET);
 	return rval;
 }
 /* Compute MD5 hash of local file */
 int
 md5hash(fp,hash,ascii)
-FILE *fp;
+kFILE *fp;
 uint8 hash[16];
 int ascii;
 {
@@ -164,7 +166,7 @@ int ascii;
 
 		cp = buf = malloc(MD5BLOCK);
 		len = 0;
-		while((c = fgetc(fp)) != EOF){
+		while((c = kfgetc(fp)) != kEOF){
 			if(c == '\n'){
 				*cp++ = '\r';
 				if(++len == MD5BLOCK){
@@ -186,8 +188,8 @@ int ascii;
 			MD5Update(&md,(unsigned char *)buf,len);
 		free(buf);
 	} else {
-		buf = malloc(BUFSIZ);
-		while((len = fread(buf,1,BUFSIZ,fp)) != 0){
+		buf = malloc(kBUFSIZ);
+		while((len = kfread(buf,1,kBUFSIZ,fp)) != 0){
 			MD5Update(&md,(unsigned char *)buf,len);
 			kwait(NULL);
 		}

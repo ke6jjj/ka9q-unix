@@ -1,8 +1,12 @@
 /* mbuf (message buffer) primitives
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
+#if defined(MSDOS)
 #include <dos.h>	/* TEMP */
+#endif
 #include "global.h"
 #include "mbuf.h"
 #include "proc.h"
@@ -534,10 +538,10 @@ pull8(struct mbuf **bpp)
 	return c;
 }
 int
-write_p(FILE *fp,struct mbuf *bp)
+write_p(kFILE *fp,struct mbuf *bp)
 {
 	while(bp != NULL){
-		if(fwrite(bp->data,1,bp->cnt,fp) != bp->cnt)
+		if(kfwrite(bp->data,1,bp->cnt,fp) != bp->cnt)
 			return -1;
 		bp = bp->next;
 	}
@@ -578,11 +582,11 @@ mbuf_crunch(struct mbuf **bpp)
 void
 mbufstat(void)
 {
-	printf("mbuf allocs %lu free cache hits %lu (%lu%%) mbuf frees %lu\n",
+	kprintf("mbuf allocs %lu free cache hits %lu (%lu%%) mbuf frees %lu\n",
 	 Allocmbufs,Cachehits,100*Cachehits/Allocmbufs,Freembufs);
-	printf("pushdown calls %lu pushdown calls to alloc_mbuf %lu\n",
+	kprintf("pushdown calls %lu pushdown calls to alloc_mbuf %lu\n",
 	 Pushdowns,Pushalloc);
-	printf("Free cache: small %u medium %u large %u\n",
+	kprintf("Free cache: small %u medium %u large %u\n",
 	 len_q(Mbufcache[0]),len_q(Mbufcache[1]),len_q(Mbufcache[2]));
 }
 void
@@ -590,9 +594,9 @@ mbufsizes(void)
 {
 	int i;
 
-	printf("Mbuf sizes:\n");
+	kprintf("Mbuf sizes:\n");
 	for(i=0;i<16;i += 4){
-		printf("N>=%5u:%7ld| N>=%5u:%7ld| N>=%5u:%7ld| N>=%5u:%7ld\n",
+		kprintf("N>=%5u:%7ld| N>=%5u:%7ld| N>=%5u:%7ld| N>=%5u:%7ld\n",
 		 1<<i,Msizes[i],2<<i,Msizes[i+1],
 		 4<<i,Msizes[i+2],8<<i,Msizes[i+3]);
 	}

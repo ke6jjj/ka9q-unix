@@ -1,8 +1,10 @@
-#include <errno.h>
+#include "top.h"
+
 #include "global.h"
 #include "tcp.h"
 #include "socket.h"
 #include "usock.h"
+#include "errno.h"
 
 static void s_trcall(struct tcb *tcb,int32 cnt);
 static void s_tscall(struct tcb *tcb,int old,int new);
@@ -21,13 +23,13 @@ so_tcp(struct usock *up,int protocol)
 int
 so_tcp_listen(struct usock *up,int backlog)
 {
-	struct sockaddr_in *local;
-	struct socket lsock;
+	struct ksockaddr_in *local;
+	struct ksocket lsock;
 
 	if(up->name == NULL)
 		autobind(up);
 
-	local = (struct sockaddr_in *)up->name;
+	local = (struct ksockaddr_in *)up->name;
 	lsock.address = local->sin_addr.s_addr;
 	lsock.port = local->sin_port;
 	up->cb.tcb = open_tcp(&lsock,NULL,
@@ -40,23 +42,23 @@ so_tcp_conn(struct usock *up)
 {
 	int s;
 	struct tcb *tcb;
-	struct socket lsock,fsock;
-	struct sockaddr_in *local,*remote;
+	struct ksocket lsock,fsock;
+	struct ksockaddr_in *local,*remote;
 
 	if(up->name == NULL){
 		autobind(up);
 	}
 	
 	if(checkipaddr(up->peername,up->peernamelen) == -1){
-		errno = EAFNOSUPPORT;
+		kerrno = kEAFNOSUPPORT;
 		return -1;
 	}
 	s = up->index;
-	/* Construct the TCP-style ports from the sockaddr structs */
-	local = (struct sockaddr_in *)up->name;
-	remote = (struct sockaddr_in *)up->peername;
+	/* Construct the TCP-style ports from the ksockaddr structs */
+	local = (struct ksockaddr_in *)up->name;
+	remote = (struct ksockaddr_in *)up->peername;
 
-	if(local->sin_addr.s_addr == INADDR_ANY)
+	if(local->sin_addr.s_addr == kINADDR_ANY)
 		/* Choose a local address */
 		local->sin_addr.s_addr = locaddr(remote->sin_addr.s_addr);
 
@@ -72,22 +74,22 @@ so_tcp_conn(struct usock *up)
 	/* Wait for the connection to complete */
 	while((tcb = up->cb.tcb) != NULL && tcb->state != TCP_ESTABLISHED){
 		if(up->noblock){
-			errno = EWOULDBLOCK;
+			kerrno = kEWOULDBLOCK;
 			return -1;
-		} else if((errno = kwait(up)) != 0){
+		} else if((kerrno = kwait(up)) != 0){
 			return -1;
 		}
 	}
 	if(tcb == NULL){
 		/* Probably got refused */
 		FREE(up->peername);
-		errno = ECONNREFUSED;
+		kerrno = kECONNREFUSED;
 		return -1;
 	}
 	return 0;
 }
 int
-so_tcp_recv(struct usock *up,struct mbuf **bpp,struct sockaddr *from,
+so_tcp_recv(struct usock *up,struct mbuf **bpp,struct ksockaddr *from,
  int *fromlen)
 {
 	long cnt;
@@ -96,32 +98,32 @@ so_tcp_recv(struct usock *up,struct mbuf **bpp,struct sockaddr *from,
 	while((tcb = up->cb.tcb) != NULL && tcb->r_upcall != trdiscard
 	 && (cnt = recv_tcp(tcb,bpp,0)) == -1){
 		if(up->noblock){
-			errno = EWOULDBLOCK;
+			kerrno = kEWOULDBLOCK;
 			return -1;
-		} else if((errno = kwait(up)) != 0){
+		} else if((kerrno = kwait(up)) != 0){
 			return -1;
 		}
 	}
 	if(tcb == NULL){
 		/* Connection went away */
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	} else if(tcb->r_upcall == trdiscard){
-		/* Receive shutdown has been done */
-		errno = ENOTCONN;	/* CHANGE */
+		/* Receive kshutdown has been done */
+		kerrno = kENOTCONN;	/* CHANGE */
 		return -1;
 	}
 	return cnt;
 }
 int
-so_tcp_send(struct usock *up,struct mbuf **bpp,struct sockaddr *to)
+so_tcp_send(struct usock *up,struct mbuf **bpp,struct ksockaddr *to)
 {
 	struct tcb *tcb;
 	long cnt;
 
 	if((tcb = up->cb.tcb) == NULL){
 		free_p(bpp);
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}		
 	cnt = send_tcp(tcb,bpp);
@@ -130,14 +132,14 @@ so_tcp_send(struct usock *up,struct mbuf **bpp,struct sockaddr *to)
 	 tcb->sndcnt > tcb->window){
 		/* Send queue is full */
 		if(up->noblock){
-			errno = EWOULDBLOCK;
+			kerrno = kEWOULDBLOCK;
 			return -1;
-		} else if((errno = kwait(up)) != 0){
+		} else if((kerrno = kwait(up)) != 0){
 			return -1;
 		}
 	}
 	if(tcb == NULL){
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}
 	return cnt;
@@ -170,7 +172,7 @@ so_tcp_shut(struct usock *up,int how)
 	case 0:	/* No more receives -- replace upcall */
 		up->cb.tcb->r_upcall = trdiscard;
 		break;
-	case 1:	/* Send EOF */
+	case 1:	/* Send kEOF */
 		close_tcp(up->cb.tcb);
 		break;
 	case 2:	/* Blow away TCB */
@@ -185,7 +187,7 @@ so_tcp_close(struct usock *up)
 {
 	if(up->cb.tcb != NULL){	/* In case it's been reset */
 		up->cb.tcb->r_upcall = trdiscard;
-		/* Tell the TCP_CLOSED upcall there's no more socket */
+		/* Tell the TCP_CLOSED upcall there's no more ksocket */
 		up->cb.tcb->user = -1;
 		close_tcp(up->cb.tcb);
 	}
@@ -220,10 +222,10 @@ s_tscall(struct tcb *tcb,int old,int new)
 
 	switch(new){
 	case TCP_CLOSED:
-		/* Clean up. If the user has already closed the socket,
-		 * then up will be null (s was set to -1 by the close routine).
-		 * If not, then this is an abnormal close (e.g., a reset)
-		 * and clearing out the pointer in the socket structure will
+		/* Clean up. If the user has already closed the ksocket,
+		 * then up will be null (s was set to -1 by the kclose routine).
+		 * If not, then this is an abnormal kclose (e.g., a reset)
+		 * and clearing out the pointer in the ksocket structure will
 		 * prevent any further operations on what will be a freed
 		 * control block. Also wake up anybody waiting on events
 		 * related to this tcb so they will notice it disappearing.
@@ -240,13 +242,13 @@ s_tscall(struct tcb *tcb,int old,int new)
 	case TCP_SYN_RECEIVED:
 		/* Handle an incoming connection. If this is a server TCB,
 		 * then we're being handed a "clone" TCB and we need to
-		 * create a new socket structure for it. In either case,
+		 * create a new ksocket structure for it. In either case,
 		 * find out who we're talking to and wake up the guy waiting
 		 * for the connection.
 		 */
 		if(tcb->flags.clone){
-			/* Clone the socket */
-			ns = socket(AF_INET,SOCK_STREAM,0);
+			/* Clone the ksocket */
+			ns = ksocket(kAF_INET,kSOCK_STREAM,0);
 			nup = itop(ns);
 			ASSIGN(*nup,*up);
 			tcb->user = ns;
@@ -255,27 +257,27 @@ s_tscall(struct tcb *tcb,int old,int new)
 			nup->name = mallocw(SOCKSIZE);
 			nup->peername = mallocw(SOCKSIZE);
 			nup->index = ns;
-			/* Store the new socket # in the old one */
+			/* Store the new ksocket # in the old one */
 			up->rdysock = ns;
 			up = nup;
 			s = ns;
 		} else {
 			/* Allocate space for the peer's name */
 			up->peername = mallocw(SOCKSIZE);
-			/* Store the old socket # in the old socket */
+			/* Store the old ksocket # in the old ksocket */
 			up->rdysock = s;
 		}
 		/* Load the addresses. Memory for the name has already
 		 * been allocated, either above or in the original bind.
 		 */
 		sp.sa = up->name;
-		sp.in->sin_family = AF_INET;
+		sp.in->sin_family = kAF_INET;
 		sp.in->sin_addr.s_addr = up->cb.tcb->conn.local.address;
 		sp.in->sin_port = up->cb.tcb->conn.local.port;
 		up->namelen = SOCKSIZE;
 
 		sp.sa = up->peername;
-		sp.in->sin_family = AF_INET;
+		sp.in->sin_family = kAF_INET;
 		sp.in->sin_addr.s_addr = up->cb.tcb->conn.remote.address;
 		sp.in->sin_port = up->cb.tcb->conn.remote.port;
 		up->peernamelen = SOCKSIZE;
@@ -289,7 +291,7 @@ s_tscall(struct tcb *tcb,int old,int new)
 	}
 	ksignal(up,0);	/* In case anybody's waiting */
 }
-/* Discard data received on a TCP connection. Used after a receive shutdown or
+/* Discard data received on a TCP connection. Used after a receive kshutdown or
  * close_s until the TCB disappears.
  */
 static void
@@ -305,12 +307,12 @@ trdiscard(struct tcb *tcb,int32 cnt)
 static void
 autobind(struct usock *up)
 {
-	struct sockaddr_in local;
+	struct ksockaddr_in local;
 
-	local.sin_family = AF_INET;
-	local.sin_addr.s_addr = INADDR_ANY;
+	local.sin_family = kAF_INET;
+	local.sin_addr.s_addr = kINADDR_ANY;
 	local.sin_port = Lport++;
-	bind(up->index,(struct sockaddr *)&local,sizeof(struct sockaddr_in));
+	kbind(up->index,(struct ksockaddr *)&local,sizeof(struct ksockaddr_in));
 }
 char *
 tcpstate(struct usock *up)
@@ -339,17 +341,17 @@ struct inet *Inet_list;
 static void i_upcall(struct tcb *tcb,int oldstate,int newstate);
 
 
-/* Start a TCP server. Create TCB in listen state and post upcall for
+/* Start a TCP server. Create TCB in klisten state and post upcall for
  * when a connection comes in
  */ 
 int
 start_tcp(uint port,char *name,void (*task)(int,void *,void *),int stack)
 {
 	struct inet *in;
-	struct socket lsocket;
+	struct ksocket lsocket;
 
 	in = (struct inet *)calloc(1,sizeof(struct inet));
-	lsocket.address = INADDR_ANY;
+	lsocket.address = kINADDR_ANY;
 	lsocket.port = port;
 	in->tcb = open_tcp(&lsocket,NULL,TCP_SERVER,0,NULL,NULL,i_upcall,0,-1);
 	if(in->tcb == NULL){
@@ -369,7 +371,7 @@ static void
 i_upcall(struct tcb *tcb,int oldstate,int newstate)
 {
 	struct inet *in;
-	struct sockaddr_in sock;
+	struct ksockaddr_in sock;
 	struct usock *up;
 	int s;
 
@@ -386,13 +388,13 @@ i_upcall(struct tcb *tcb,int oldstate,int newstate)
 	if(in == NULLINET)
 		return;	/* not in table - "can't happen" */
 
-	/* Create a socket, hook it up with the TCB */
-	s = socket(AF_INET,SOCK_STREAM,0);
+	/* Create a ksocket, hook it up with the TCB */
+	s = ksocket(kAF_INET,kSOCK_STREAM,0);
 	up = itop(s);
-	sock.sin_family = AF_INET;
+	sock.sin_family = kAF_INET;
 	sock.sin_addr.s_addr = tcb->conn.local.address;
 	sock.sin_port = tcb->conn.local.port;
-	bind(s,(struct sockaddr *)&sock,SOCKSIZE);
+	kbind(s,(struct ksockaddr *)&sock,SOCKSIZE);
 
 	sock.sin_addr.s_addr = tcb->conn.remote.address;
 	sock.sin_port = tcb->conn.remote.port;

@@ -55,7 +55,7 @@ struct ppp_hdr {
 /* In ppp.c: */
 int ppp_send(struct mbuf **data,struct iface *iface,int32 gateway,
 	uint8 tos);
-int ppp_output(struct iface *iface, char dest[], char source[],
+int ppp_output(struct iface *iface, uint8 *dest, uint8 *source,
 	uint type, struct mbuf **data);
 
 int ppp_init(struct iface *iface);

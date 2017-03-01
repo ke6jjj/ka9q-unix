@@ -1,7 +1,9 @@
 /* General purpose software timer facilities
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "timer.h"
 #include "proc.h"
@@ -10,6 +12,7 @@
 #include "daemon.h"
 #include "hardware.h"
 #include "socket.h"
+#include "errno.h"
 
 /* Head of running timer chain.
  * The list of running timers is sorted in increasing order of expiration;
@@ -31,7 +34,7 @@ timerproc(int i,void *v1,void *v2)
 	int32 clock;
 
 	for(;;){
-		/* Atomic read and decrement of Tick */
+		/* Atomic kread and decrement of Tick */
 		for(;;){
 			i_state = disable();
 			tmp = Tick;
@@ -45,7 +48,7 @@ timerproc(int i,void *v1,void *v2)
 		}
 		if(!istate()){
 			restore(1);
-			printf("timer: ints were off!\n");
+			kprintf("timer: ints were off!\n");
 		}
 
 		/* Call the functions listed in config.c */
@@ -68,7 +71,7 @@ timerproc(int i,void *v1,void *v2)
 		 */
 		while(Timers != NULL && (clock - Timers->expiration) >= 0){
 			if(Timers->next == Timers){
-				printf("PANIC: Timer loop at %lx\n",
+				kprintf("PANIC: Timer loop at %lx\n",
 				 (long)Timers);
 				iostop();
 				exit(1);
@@ -201,12 +204,12 @@ ppause(int32 ms)
 			break;
 	}
 	kalarm(0L); /* Make sure it's stopped, in case we were killed */	
-	return (val == EALARM) ? 0 : -1;
+	return (val == kEALARM) ? 0 : -1;
 }
 static void
 t_alarm(void *x)
 {
-	alert((struct proc *)x,EALARM);
+	alert((struct proc *)x,kEALARM);
 }
 /* Send signal to current process after specified number of milliseconds */
 void

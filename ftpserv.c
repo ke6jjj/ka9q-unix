@@ -1,14 +1,20 @@
 /* Internet FTP Server
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <ctype.h>
 #include <time.h>
 #ifdef	__TURBOC__
 #include <io.h>
 #include <dir.h>
 #endif
-#include <errno.h>
+#ifdef UNIX
+#include <sys/stat.h> /* mkdir */
+#include <unistd.h> /* access(), unlink() */
+#endif
+#include "errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "proc.h"
@@ -21,7 +27,7 @@
 #include "md5.h"
 
 static void ftpserv(int s,void *unused,void *p);
-static int pport(struct sockaddr_in *sock,char *arg);
+static int pport(struct ksockaddr_in *sock,char *arg);
 static void ftplogin(struct ftpserv *ftp,char *pass);
 static int sendit(struct ftpserv *ftp,char *command,char *file);
 static int recvit(struct ftpserv *ftp,char *command,char *file);
@@ -72,8 +78,8 @@ static char badtype[] = "501 Unknown type \"%s\"\n";
 static char badport[] = "501 Bad port syntax\n";
 static char unimp[] = "502 Command not yet implemented\n";
 static char bye[] = "221 Goodbye!\n";
-static char nodir[] = "553 Can't read directory \"%s\": %s\n";
-static char cantopen[] = "550 Can't read file \"%s\": %s\n";
+static char nodir[] = "553 Can't kread directory \"%s\": %s\n";
+static char cantopen[] = "550 Can't kread file \"%s\": %s\n";
 static char sending[] = "150 Opening data connection for %s %s\n";
 static char cantmake[] = "553 Can't create \"%s\": %s\n";
 static char writerr[] = "552 Write error: %s\n";
@@ -108,43 +114,43 @@ void *p
 	char **cmdp,buf[512],*arg,*cp,*cp1,*file,*mode;
 	time_t t;
 	int i;
-	struct sockaddr_in socket;
+	struct ksockaddr_in ksocket;
 
 	memset(&ftp,0,sizeof(ftp));	/* Start with clear slate */
-	ftp.control = fdopen(s,"r+t");
+	ftp.control = kfdopen(s,"r+t");
 	sockowner(s,Curproc);		/* We own it now */
-	setvbuf(ftp.control,NULL,_IOLBF,BUFSIZ);
+	ksetvbuf(ftp.control,NULL,_kIOLBF,kBUFSIZ);
 	if(availmem() != 0){
-		fprintf(ftp.control,lowmem);
-		fclose(ftp.control);
+		kfprintf(ftp.control,lowmem);
+		kfclose(ftp.control);
 		return;
 	}				
 
-	fclose(stdin);
-	stdin = fdup(ftp.control);
-	fclose(stdout);
-	stdout = fdup(ftp.control);
+	kfclose(kstdin);
+	kstdin = kfdup(ftp.control);
+	kfclose(kstdout);
+	kstdout = kfdup(ftp.control);
 
 	/* Set default data port */
 	i = SOCKSIZE;
-	getpeername(fileno(ftp.control),(struct sockaddr *)&socket,&i);
-	socket.sin_port = IPPORT_FTPD;
-	ASSIGN(ftp.port,socket);
+	kgetpeername(kfileno(ftp.control),(struct ksockaddr *)&ksocket,&i);
+	ksocket.sin_port = IPPORT_FTPD;
+	ASSIGN(ftp.port,ksocket);
 
-	logmsg(fileno(ftp.control),"open FTP");
+	logmsg(kfileno(ftp.control),"open FTP");
 	time(&t);
 	cp = ctime(&t);
 	if((cp1 = strchr(cp,'\n')) != NULL)
 		*cp1 = '\0';
-	fprintf(ftp.control,banner,Hostname,Version,cp);
-loop:	fflush(ftp.control);
-	if((fgets(buf,sizeof(buf),ftp.control)) == NULL){
+	kfprintf(ftp.control,banner,Hostname,Version,cp);
+loop:	kfflush(ftp.control);
+	if((kfgets(buf,sizeof(buf),ftp.control)) == NULL){
 		/* He closed on us */
 		goto finish;
 	}
 	if(strlen(buf) == 0){
 		/* Can't be a legal FTP command */
-		fprintf(ftp.control,badcmd,buf);
+		kfprintf(ftp.control,badcmd,buf);
 		goto loop;
 	}	
 	rip(buf);
@@ -156,7 +162,7 @@ loop:	fflush(ftp.control);
 		if(strncmp(*cmdp,buf,strlen(*cmdp)) == 0)
 			break;
 	if(*cmdp == NULL){
-		fprintf(ftp.control,badcmd,buf);
+		kfprintf(ftp.control,badcmd,buf);
 		goto loop;
 	}
 	/* Allow only USER, PASS and QUIT before logging in */
@@ -167,7 +173,7 @@ loop:	fflush(ftp.control);
 		case QUIT_CMD:
 			break;
 		default:
-			fprintf(ftp.control,notlog);
+			kfprintf(ftp.control,notlog);
 			goto loop;
 		}
 	}
@@ -180,41 +186,41 @@ loop:	fflush(ftp.control);
 	case USER_CMD:
 		free(ftp.username);
 		ftp.username = strdup(arg);
-		fprintf(ftp.control,givepass);
+		kfprintf(ftp.control,givepass);
 		break;
 	case TYPE_CMD:
 		switch(arg[0]){
 		case 'A':
 		case 'a':	/* Ascii */
 			ftp.type = ASCII_TYPE;
-			fprintf(ftp.control,typeok,arg);
+			kfprintf(ftp.control,typeok,arg);
 			break;
 		case 'l':
 		case 'L':
 			while(*arg != ' ' && *arg != '\0')
 				arg++;
 			if(*arg == '\0' || *++arg != '8'){
-				fprintf(ftp.control,only8);
+				kfprintf(ftp.control,only8);
 				break;
 			}
 			ftp.type = LOGICAL_TYPE;
 			ftp.logbsize = 8;
-			fprintf(ftp.control,typeok,arg);
+			kfprintf(ftp.control,typeok,arg);
 			break;
 		case 'B':
 		case 'b':	/* Binary */
 		case 'I':
 		case 'i':	/* Image */
 			ftp.type = IMAGE_TYPE;
-			fprintf(ftp.control,typeok,arg);
+			kfprintf(ftp.control,typeok,arg);
 			break;
 		default:	/* Invalid */
-			fprintf(ftp.control,badtype,arg);
+			kfprintf(ftp.control,badtype,arg);
 			break;
 		}
 		break;
 	case QUIT_CMD:
-		fprintf(ftp.control,bye);
+		kfprintf(ftp.control,bye);
 		goto finish;
 	case RETR_CMD:
 		file = pathname(ftp.cd,arg);
@@ -228,13 +234,13 @@ loop:	fflush(ftp.control);
 			break;
 		}
 		if(!permcheck(ftp.path,ftp.perms,RETR_CMD,file)){
-		 	fprintf(ftp.control,noperm);
-		} else if((ftp.fp = fopen(file,mode)) == NULL){
-			fprintf(ftp.control,cantopen,file,sys_errlist[errno]);
+		 	kfprintf(ftp.control,noperm);
+		} else if((ftp.fp = kfopen(file,mode)) == NULL){
+			kfprintf(ftp.control,cantopen,file,ksys_errlist[kerrno]);
 		} else {
-			logmsg(fileno(ftp.control),"RETR %s",file);
+			logmsg(kfileno(ftp.control),"RETR %s",file);
 			if(ftp.type == ASCII_TYPE && isbinary(ftp.fp)){
-				fprintf(ftp.control,binwarn,file);
+				kfprintf(ftp.control,binwarn,file);
 			}
 			sendit(&ftp,"RETR",file);
 		}
@@ -252,29 +258,29 @@ loop:	fflush(ftp.control);
 			break;
 		}
 		if(!permcheck(ftp.path,ftp.perms,STOR_CMD,file)){
-		 	fprintf(ftp.control,noperm);
-		} else if((ftp.fp = fopen(file,mode)) == NULL){
-			fprintf(ftp.control,cantmake,file,sys_errlist[errno]);
+		 	kfprintf(ftp.control,noperm);
+		} else if((ftp.fp = kfopen(file,mode)) == NULL){
+			kfprintf(ftp.control,cantmake,file,ksys_errlist[kerrno]);
 		} else {
-			logmsg(fileno(ftp.control),"STOR %s",file);
+			logmsg(kfileno(ftp.control),"STOR %s",file);
 			recvit(&ftp,"STOR",file);
 		}
 		FREE(file);
 		break;
 	case PORT_CMD:
 		if(pport(&ftp.port,arg) == -1){
-			fprintf(ftp.control,badport);
+			kfprintf(ftp.control,badport);
 		} else {
-			fprintf(ftp.control,portok);
+			kfprintf(ftp.control,portok);
 		}
 		break;
 #ifndef CPM
 	case LIST_CMD:
 		file = pathname(ftp.cd,arg);
 		if(!permcheck(ftp.path,ftp.perms,RETR_CMD,file)){
-		 	fprintf(ftp.control,noperm);
+		 	kfprintf(ftp.control,noperm);
 		} else if((ftp.fp = dir(file,1)) == NULL){
-			fprintf(ftp.control,nodir,file,sys_errlist[errno]);
+			kfprintf(ftp.control,nodir,file,ksys_errlist[kerrno]);
 		} else {
 			sendit(&ftp,"LIST",file);
 		}
@@ -283,9 +289,9 @@ loop:	fflush(ftp.control);
 	case NLST_CMD:
 		file = pathname(ftp.cd,arg);
 		if(!permcheck(ftp.path,ftp.perms,RETR_CMD,file)){
-		 	fprintf(ftp.control,noperm);
+		 	kfprintf(ftp.control,noperm);
 		} else if((ftp.fp = dir(file,0)) == NULL){
-			fprintf(ftp.control,nodir,file,sys_errlist[errno]);
+			kfprintf(ftp.control,nodir,file,ksys_errlist[kerrno]);
 		} else {
 			sendit(&ftp,"NLST",file);
 		}
@@ -295,7 +301,7 @@ loop:	fflush(ftp.control);
 	case CWD_CMD:
 		file = pathname(ftp.cd,arg);
 		if(!permcheck(ftp.path,ftp.perms,RETR_CMD,file)){
-		 	fprintf(ftp.control,noperm);
+		 	kfprintf(ftp.control,noperm);
 			FREE(file);
 #ifdef	MSDOS
 		/* Don'tcha just LOVE %%$#@!! MS-DOS? */
@@ -306,16 +312,16 @@ loop:	fflush(ftp.control);
 			/* Succeeded, record in control block */
 			free(ftp.cd);
 			ftp.cd = file;
-			fprintf(ftp.control,pwdmsg,file);
+			kfprintf(ftp.control,pwdmsg,file);
 		} else {
 			/* Failed, don't change anything */
-			fprintf(ftp.control,nodir,file,sys_errlist[errno]);
+			kfprintf(ftp.control,nodir,file,ksys_errlist[kerrno]);
 			FREE(file);
 		}
 		break;
 	case XPWD_CMD:
 	case PWD_CMD:
-		fprintf(ftp.control,pwdmsg,ftp.cd);
+		kfprintf(ftp.control,pwdmsg,ftp.cd);
 		break;
 #else
 	case LIST_CMD:
@@ -326,23 +332,23 @@ loop:	fflush(ftp.control);
 	case PWD_CMD:
 #endif
 	case ACCT_CMD:		
-		fprintf(ftp.control,unimp);
+		kfprintf(ftp.control,unimp);
 		break;
 	case DELE_CMD:
 		file = pathname(ftp.cd,arg);
 		if(!permcheck(ftp.path,ftp.perms,DELE_CMD,file)){
-		 	fprintf(ftp.control,noperm);
+		 	kfprintf(ftp.control,noperm);
 		} else if(unlink(file) == 0){
-			logmsg(fileno(ftp.control),"DELE %s",file);
-			fprintf(ftp.control,deleok);
+			logmsg(kfileno(ftp.control),"DELE %s",file);
+			kfprintf(ftp.control,deleok);
 		} else {
-			fprintf(ftp.control,delefail,sys_errlist[errno]);
+			kfprintf(ftp.control,delefail,ksys_errlist[kerrno]);
 		}
 		FREE(file);
 		break;
 	case PASS_CMD:
 		if(ftp.username == NULL)
-			fprintf(ftp.control,userfirst);
+			kfprintf(ftp.control,userfirst);
 		else
 			ftplogin(&ftp,arg);			
 		break;
@@ -351,16 +357,16 @@ loop:	fflush(ftp.control);
 	case MKD_CMD:
 		file = pathname(ftp.cd,arg);
 		if(!permcheck(ftp.path,ftp.perms,MKD_CMD,file)){
-			fprintf(ftp.control,noperm);
+			kfprintf(ftp.control,noperm);
 #ifdef	__TURBOC__
 		} else if(mkdir(file) == 0){
 #else
 		} else if(mkdir(file,0777) == 0){
 #endif
-			logmsg(fileno(ftp.control),"MKD %s",file);
-			fprintf(ftp.control,mkdok);
+			logmsg(kfileno(ftp.control),"MKD %s",file);
+			kfprintf(ftp.control,mkdok);
 		} else {
-			fprintf(ftp.control,cantmake,file,sys_errlist[errno]);
+			kfprintf(ftp.control,cantmake,file,ksys_errlist[kerrno]);
 		}
 		FREE(file);
 		break;
@@ -368,29 +374,29 @@ loop:	fflush(ftp.control);
 	case RMD_CMD:
 		file = pathname(ftp.cd,arg);
 		if(!permcheck(ftp.path,ftp.perms,RMD_CMD,file)){
-		 	fprintf(ftp.control,noperm);
+		 	kfprintf(ftp.control,noperm);
 		} else if(rmdir(file) == 0){
-			logmsg(fileno(ftp.control),"RMD %s",file);
-			fprintf(ftp.control,deleok);
+			logmsg(kfileno(ftp.control),"RMD %s",file);
+			kfprintf(ftp.control,deleok);
 		} else {
-			fprintf(ftp.control,delefail,sys_errlist[errno]);
+			kfprintf(ftp.control,delefail,ksys_errlist[kerrno]);
 		}
 		FREE(file);
 		break;
 	case STRU_CMD:
 		if(tolower(arg[0]) != 'f')
-			fprintf(ftp.control,unsupp);
+			kfprintf(ftp.control,unsupp);
 		else
-			fprintf(ftp.control,okay);
+			kfprintf(ftp.control,okay);
 		break;
 	case MODE_CMD:
 		if(tolower(arg[0]) != 's')
-			fprintf(ftp.control,unsupp);
+			kfprintf(ftp.control,unsupp);
 		else
-			fprintf(ftp.control,okay);
+			kfprintf(ftp.control,okay);
 		break;
 	case SYST_CMD:
-		fprintf(ftp.control,syst,System,NBBY,Version);
+		kfprintf(ftp.control,syst,System,NBBY,Version);
 		break;
 	case XMD5_CMD:
 		file = pathname(ftp.cd,arg);
@@ -404,23 +410,23 @@ loop:	fflush(ftp.control);
 			break;
 		}
 		if(!permcheck(ftp.path,ftp.perms,RETR_CMD,file)){
-		 	fprintf(ftp.control,noperm);
-		} else if((ftp.fp = fopen(file,mode)) == NULL){
-			fprintf(ftp.control,cantopen,file,sys_errlist[errno]);
+		 	kfprintf(ftp.control,noperm);
+		} else if((ftp.fp = kfopen(file,mode)) == NULL){
+			kfprintf(ftp.control,cantopen,file,ksys_errlist[kerrno]);
 		} else {
 			uint8 hash[16];
 
-			logmsg(fileno(ftp.control),"XMD5 %s",file);
+			logmsg(kfileno(ftp.control),"XMD5 %s",file);
 			if(ftp.type == ASCII_TYPE && isbinary(ftp.fp))
-				fprintf(ftp.control,binwarn,file);
+				kfprintf(ftp.control,binwarn,file);
 
 			md5hash(ftp.fp,hash,ftp.type == ASCII_TYPE);
-			fclose(ftp.fp);
+			kfclose(ftp.fp);
 			ftp.fp = NULL;
-			fprintf(ftp.control,"200 ");
+			kfprintf(ftp.control,"200 ");
 			for(i=0;i<16;i++)
-				fprintf(ftp.control,"%02x",hash[i]);
-			fprintf(ftp.control," %s\n",file);
+				kfprintf(ftp.control,"%02x",hash[i]);
+			kfprintf(ftp.control," %s\n",file);
 		}
 		FREE(file);
 		break;
@@ -428,13 +434,13 @@ loop:	fflush(ftp.control);
 #endif
 	goto loop;
 finish:
-	logmsg(fileno(ftp.control),"close FTP");
+	logmsg(kfileno(ftp.control),"close FTP");
 	/* Clean up */
-	fclose(ftp.control);
+	kfclose(ftp.control);
 	if(ftp.data != NULL)
-		fclose(ftp.data);
+		kfclose(ftp.data);
 	if(ftp.fp != NULL)
-		fclose(ftp.fp);
+		kfclose(ftp.fp);
 	free(ftp.username);
 	free(ftp.path);
 	free(ftp.cd);
@@ -452,10 +458,10 @@ void *p;
 	port = (argc < 2) ? IPPORT_FTP : atoi(argv[1]);
 	return stop_tcp(port);
 }
-static
-int
+
+static int
 pport(sock,arg)
-struct sockaddr_in *sock;
+struct ksockaddr_in *sock;
 char *arg;
 {
 	int32 n;
@@ -492,7 +498,7 @@ char *pass;
 	path = mallocw(200);
 	if((ftp->perms = userlogin(ftp->username,pass,&path,200,&anony))
 	   == -1){
-		fprintf(ftp->control,noperm);
+		kfprintf(ftp->control,noperm);
 		free(path);
 		return;
 	}
@@ -506,11 +512,11 @@ char *pass;
 	ftp->path = strdup(path);
 #endif
 
-	fprintf(ftp->control,logged);
+	kfprintf(ftp->control,logged);
 	if(!anony)
-		logmsg(fileno(ftp->control),"%s logged in",ftp->username);
+		logmsg(kfileno(ftp->control),"%s logged in",ftp->username);
 	else
-		logmsg(fileno(ftp->control),"%s logged in, ID %s",ftp->username,pass);
+		logmsg(kfileno(ftp->control),"%s logged in, ID %s",ftp->username,pass);
 }
 
 #ifdef	MSDOS
@@ -547,19 +553,19 @@ char *file;
 
 	switch(op){
 	case RETR_CMD:
-		/* User must have permission to read files */
+		/* User must have permission to kread files */
 		if(perms & FTP_READ)
 			return 1;
 		return 0;
 	case DELE_CMD:
 	case RMD_CMD:
-		/* User must have permission to (over)write files */
+		/* User must have permission to (over)kwrite files */
 		if(perms & FTP_WRITE)
 			return 1;
 		return 0;
 	case STOR_CMD:
 	case MKD_CMD:
-		/* User must have permission to (over)write files, or permission
+		/* User must have permission to (over)kwrite files, or permission
 		 * to create them if the file doesn't already exist
 		 */
 		if(perms & FTP_WRITE)
@@ -577,39 +583,39 @@ char *command;
 char *file;
 {
 	long total;
-	struct sockaddr_in dport;
+	struct ksockaddr_in dport;
 	int s;
 
-	s = socket(AF_INET,SOCK_STREAM,0);
-	dport.sin_family = AF_INET;
-	dport.sin_addr.s_addr = INADDR_ANY;
+	s = ksocket(kAF_INET,kSOCK_STREAM,0);
+	dport.sin_family = kAF_INET;
+	dport.sin_addr.s_addr = kINADDR_ANY;
 	dport.sin_port = IPPORT_FTPD;
-	bind(s,(struct sockaddr *)&dport,SOCKSIZE);
-	fprintf(ftp->control,sending,command,file);
-	fflush(ftp->control);
-	if(connect(s,(struct sockaddr *)&ftp->port,SOCKSIZE) == -1){
-		fclose(ftp->fp);
+	kbind(s,(struct ksockaddr *)&dport,SOCKSIZE);
+	kfprintf(ftp->control,sending,command,file);
+	kfflush(ftp->control);
+	if(kconnect(s,(struct ksockaddr *)&ftp->port,SOCKSIZE) == -1){
+		kfclose(ftp->fp);
 		ftp->fp = NULL;
 		close_s(s);
 		ftp->data = NULL;
-		fprintf(ftp->control,noconn);
+		kfprintf(ftp->control,noconn);
 		return -1;
 	}
-	ftp->data = fdopen(s,"r+");
+	ftp->data = kfdopen(s,"r+");
 	/* Do the actual transfer */
-	total = sendfile(ftp->fp,ftp->data,ftp->type,0);
+	total = ksendfile(ftp->fp,ftp->data,ftp->type,0);
 
 	if(total == -1){
 		/* An error occurred on the data connection */
-		fprintf(ftp->control,noconn);
-		shutdown(fileno(ftp->data),2);	/* Blow away data connection */
-		fclose(ftp->data);
+		kfprintf(ftp->control,noconn);
+		kshutdown(kfileno(ftp->data),2);	/* Blow away data connection */
+		kfclose(ftp->data);
 	} else {
-		fprintf(ftp->control,txok);
+		kfprintf(ftp->control,txok);
 	}
-	fclose(ftp->fp);
+	kfclose(ftp->fp);
 	ftp->fp = NULL;
-	fclose(ftp->data);
+	kfclose(ftp->data);
 	ftp->data = NULL;
 	if(total == -1)
 		return -1;
@@ -622,44 +628,44 @@ struct ftpserv *ftp;
 char *command;
 char *file;
 {
-	struct sockaddr_in dport;
+	struct ksockaddr_in dport;
 	long total;
 	int s;
 
-	s = socket(AF_INET,SOCK_STREAM,0);
-	dport.sin_family = AF_INET;
-	dport.sin_addr.s_addr = INADDR_ANY;
+	s = ksocket(kAF_INET,kSOCK_STREAM,0);
+	dport.sin_family = kAF_INET;
+	dport.sin_addr.s_addr = kINADDR_ANY;
 	dport.sin_port = IPPORT_FTPD;
-	bind(s,(struct sockaddr *)&dport,SOCKSIZE);
-	fprintf(ftp->control,sending,command,file);
-	fflush(ftp->control);
-	if(connect(s,(struct sockaddr *)&ftp->port,SOCKSIZE) == -1){
-		fclose(ftp->fp);
+	kbind(s,(struct ksockaddr *)&dport,SOCKSIZE);
+	kfprintf(ftp->control,sending,command,file);
+	kfflush(ftp->control);
+	if(kconnect(s,(struct ksockaddr *)&ftp->port,SOCKSIZE) == -1){
+		kfclose(ftp->fp);
 		ftp->fp = NULL;
 		close_s(s);
 		ftp->data = NULL;
-		fprintf(ftp->control,noconn);
+		kfprintf(ftp->control,noconn);
 		return -1;
 	}
-	ftp->data = fdopen(s,"r+");
+	ftp->data = kfdopen(s,"r+");
 	/* Do the actual transfer */
-	total = recvfile(ftp->fp,ftp->data,ftp->type,0);
+	total = krecvfile(ftp->fp,ftp->data,ftp->type,0);
 
 #ifdef	CPM
 	if(ftp->type == ASCII_TYPE)
-		putc(CTLZ,ftp->fp);
+		kputc(CTLZ,ftp->fp);
 #endif
 	if(total == -1) {
 		/* An error occurred while writing the file */
-		fprintf(ftp->control,writerr,sys_errlist[errno]);
-		shutdown(fileno(ftp->data),2);	/* Blow it away */
-		fclose(ftp->data);
+		kfprintf(ftp->control,writerr,ksys_errlist[kerrno]);
+		kshutdown(kfileno(ftp->data),2);	/* Blow it away */
+		kfclose(ftp->data);
 	} else {
-		fprintf(ftp->control,rxok);
-		fclose(ftp->data);
+		kfprintf(ftp->control,rxok);
+		kfclose(ftp->data);
 	}
 	ftp->data = NULL;
-	fclose(ftp->fp);
+	kfclose(ftp->fp);
 	ftp->fp = NULL;
 	if(total == -1)
 		return -1;

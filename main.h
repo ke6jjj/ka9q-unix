@@ -13,4 +13,4 @@ extern struct proc *Cmdpp;
 extern struct proc *Display;
 extern int main_exit;			/* from main program (flag) */
 
-#endif _MAIN_H
+#endif /* _MAIN_H */

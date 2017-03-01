@@ -1,7 +1,7 @@
 #ifndef	_PKTDRVR_H
 #define	_PKTDRVR_H
 
-#ifndef __dj_include_dpmi_h_
+#if defined(CPU386) && !defined(__dj_include_dpmi_h_)
 #include <dpmi.h>
 #endif
 
@@ -13,7 +13,9 @@
 #include "iface.h"
 #endif
 
+#ifdef PACKET
 #define	PK_MAX	3	/* Add extra interrupt hooks if you increase this */
+#endif
 
 /* Packet driver interface classes */
 #define	CL_NONE		0
@@ -37,6 +39,7 @@
 #define	CL_QTSO		18
 #define NCLASS		19
 
+#ifdef PACKET
 #ifdef	MSDOS
 
 /* Packet driver interface types (not a complete list) */
@@ -78,9 +81,9 @@
 #define	TYPE_INUSE	10	/* the type had previously been accessed, and not released */
 #define	BAD_COMMAND	11	/* the command was out of range, or not	implemented */
 #define	CANT_SEND	12	/* the packet couldn't be sent (usually	hardware error) */
-#define CANT_SET	13	/* hardware address couldn't be changed (> 1 handle open) */
+#define CANT_SET	13	/* hardware address couldn't be changed (> 1 handle kopen) */
 #define BAD_ADDRESS	14	/* hardware address has bad length or format */
-#define CANT_RESET	15	/* couldn't reset interface (> 1 handle open) */
+#define CANT_RESET	15	/* couldn't reset interface (> 1 handle kopen) */
 
 typedef union {
 	struct {
@@ -102,8 +105,8 @@ struct pktdrvr {
 	_go32_dpmi_registers rmcb_registers;
 	int32 dosbase;
 	int32 dossize;
-	int32 wptr;	/* write pointer into DOS buffer */
-	int32 rptr;	/* read pointer into DOS buffer */
+	int32 wptr;	/* kwrite pointer into DOS buffer */
+	int32 rptr;	/* kread pointer into DOS buffer */
 	int32 cnt;	/* Count of unread bytes in buffer */
 	int32 overflows;
 };
@@ -115,5 +118,6 @@ void pk_tx(int dev,void *arg1,void *unused);
 int pk_send(struct mbuf **bpp,struct iface *iface,int32 gateway,uint8 tos);
 
 #endif	/* MSDOS */
+#endif /* PACKET */
 
 #endif	/* _PKTDRVR_H */

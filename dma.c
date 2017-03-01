@@ -1,5 +1,7 @@
 /* PC DMA support functions for DJGPP. Copyright 1996 Phil Karn */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <dos.h>
 #include <dpmi.h>
 #include "global.h"
@@ -101,7 +103,7 @@ setup_dma(chan,physaddr,length,mode)
 int chan;
 int32 physaddr;
 uint length;
-int mode;	/* Read/write, etc */
+int mode;	/* Read/kwrite, etc */
 {
 	int dmaport;
 	int i_state;

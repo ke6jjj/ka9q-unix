@@ -1,23 +1,28 @@
 #
-#	Makefile for KA9Q TCP/IP package for PC clones with DJGPP
+#	Makefile for KA9Q TCP/IP package for UNIX
 #
-# parameters for typical IBM-PC installation
+# parameters for typical UNIX installation
 #
 CC= gcc
 RM= del
 LIB= ar
-CFLAGS= -I. -O -g
-LFLAGS=
+CFLAGS= -O2 -g -DHOST_BSD -Werror -Wno-int-to-void-pointer-cast
+LFLAGS= -lcurses
 
 
 # List of libraries
 
 LIBS = clients.a servers.a internet.a \
-	ppp.a netrom.a ax25.a dump.a net.a pc.a
+	ppp.a netrom.a ax25.a dump.a net.a unix.a
 
 # Library object file lists
+# UNIX: port dialer, needs to be less bound to the 8250 UART (dialer.o)
+# UNIX: more/view needs to be less conio.h bound NET(view.o)
+# UNIX: mbuf audit is very DOS/malloc specific NET(audit.o)
+# UNIX: alloc routines are not UNIX compatible NET(alloc.o)
+# UNIX: NET(format.o). Not for HAVE_FUNOPEN.
 CLIENTS= telnet.o ftpcli.o finger.o smtpcli.o hop.o tip.o \
-	dialer.o nntpcli.o bootp.o popcli.o lterm.o
+	nntpcli.o bootp.o popcli.o lterm.o
 
 SERVERS= ttylink.o ftpserv.o smisc.o smtpserv.o \
         fingerd.o mailbox.o rewrite.o bmutil.o forward.o tipmail.o \
@@ -42,42 +47,32 @@ AX25=	ax25cmd.o axsock.o ax25user.o ax25.o \
 NETROM=	nrcmd.o nrsock.o nr4user.o nr4timer.o nr4.o nr4subr.o \
 	nr4hdr.o nr3.o nrs.o nrhdr.o nr4mail.o
 
-PPP=	asy.o ppp.o pppcmd.o pppfsm.o ppplcp.o \
+PPP=	asy.o asy_unix.o ppp.o pppcmd.o pppfsm.o ppplcp.o \
 	ppppap.o pppipcp.o pppdump.o \
 	slhc.o slhcdump.o slip.o sppp.o
 
-NET=	view.o ftpsubr.o sockcmd.o sockuser.o locsock.o socket.o \
+NET=	ftpsubr.o sockcmd.o sockuser.o locsock.o socket.o \
 	sockutil.o iface.o timer.o ttydriv.o cmdparse.o \
-	mbuf.o misc.o pathname.o audit.o files.o \
-	kernel.o ksubr.o alloc.o getopt.o wildmat.o \
-	devparam.o stdio.o format.o ahdlc.o crc.o md5c.o
+	mbuf.o misc.o pathname.o files.o \
+	kernel.o ksubr_unix.o wildmat.o \
+	devparam.o stdio.o ahdlc.o crc.o md5c.o errno.o \
+	errlst.o getopt.o
 
 DUMP= 	trace.o enetdump.o arcdump.o \
 	kissdump.o ax25dump.o arpdump.o nrdump.o \
 	ipdump.o icmpdump.o udpdump.o tcpdump.o ripdump.o
 
-PC=	random.o display.o pc.o dirutil.o pktdrvr.o sim.o enet.o \
-	n8250.o arcnet.o kbraw.o sb.o dma.o gormcb.o gopint.o
+UNIX=	ksubr_unix.o timer_unix.o display_crs.o unix.o dirutil_unix.o
 
 DSP=	fsk.o mdb.o qpsk.o fft.o r4bf.o fano.o tab.o
 
-all:	net.exe
+all:	net
 
 debug:	net
 	gdb net
 
-disk:	net.exe
-	pklite net.exe
-	copy net.exe a:
-
-makelist.exe: makelist.o getopt.o
-	$(CC) $(MODEL) $**
-
-net.exe: net
-	coff2exe net
-
 net: main.o config.o version.o session.o $(LIBS)
-	$(CC) $(LFLAGS) -o net main.o config.o version.o session.o $(LIBS) -lpc
+	$(CC) $(LFLAGS) -o $@ main.o config.o version.o session.o $(LIBS)
 
 mkpass.exe: mkpass.o md5c.o
 	$(CC) $(MODEL) -emkpass $**
@@ -121,6 +116,8 @@ pc.a: $(PC)
 ppp.a: $(PPP)
 	$(LIB) rs $@ $?
 servers.a: $(SERVERS)
+	$(LIB) rs $@ $?
+unix.a: $(UNIX)
 	$(LIB) rs $@ $?
 
 srcrcs.zip:

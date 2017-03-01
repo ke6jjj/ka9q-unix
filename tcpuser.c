@@ -1,7 +1,9 @@
 /* User calls to TCP
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "timer.h"
 #include "mbuf.h"
@@ -17,8 +19,8 @@ uint Tcp_window = DEF_WND;
 
 struct tcb *
 open_tcp(
-struct socket *lsocket,	/* Local socket */
-struct socket *fsocket,	/* Remote socket */
+struct ksocket *lsocket,	/* Local socket */
+struct ksocket *fsocket,	/* Remote socket */
 int mode,		/* Active/passive/server */
 uint window,		/* Receive window (and send buffer) sizes */
 void (*r_upcall)(),	/* Function to call when data arrives */

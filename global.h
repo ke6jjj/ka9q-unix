@@ -12,7 +12,7 @@
  */
 
 #if	!defined(AMIGA) && (defined(MAC) || defined(MSDOS))
-/* These compilers require special open modes when reading binary files.
+/* These compilers require special kopen modes when reading binary files.
  *
  * "The single most brilliant design decision in all of UNIX was the
  * choice of a SINGLE character as the end-of-line indicator" -- M. O'Dell
@@ -40,6 +40,7 @@
 
 #include <sys/types.h>
 
+#ifndef HAVE_STDINT
 /* These two lines assume that your compiler's longs are 32 bits and
  * shorts are 16 bits. It is already assumed that chars are 8 bits,
  * but it doesn't matter if they're signed or unsigned.
@@ -54,6 +55,18 @@ typedef unsigned long long uint64;	/* 64-bit unsigned integer */
 #define	MAXINT16 0xffff		/* Largest 16-bit integer */
 #define	MAXINT32 0xffffffff	/* Largest 32-bit integer */
 #define	NBBY	8		/* 8 bits/byte */
+#else
+typedef int32_t int32;		/* 32-bit signed integer */
+typedef unsigned int uint;	/* 16 or 32-bit unsigned integer */
+typedef uint32_t uint32;	/* 32-bit unsigned integer */
+typedef uint16_t uint16;	/* 16-bit unsigned integer */
+typedef uint8_t byte_t;		/*  8-bit unsigned integer */
+typedef uint8_t uint8;		/* 8-bit unsigned integer */
+typedef uint64_t uint64;	/* 64-bit unsigned integer */
+#define	MAXINT16 UINT16_MAX	/* Largest 16-bit integer */
+#define	MAXINT32 UINT32_MAX 	/* Largest 32-bit integer */
+#endif
+
 
 #define	HASHMOD	7		/* Modulus used by hash_ip() function */
 
@@ -135,6 +148,15 @@ typedef unsigned long long uint64;	/* 64-bit unsigned integer */
 #define	ESC	0x1b
 #define	DEL	0x7f
 
+/* string comparison portability */
+#ifdef MODERN_UNIX
+#define STRNICMP(a,b,c)	strncasecmp((a),(b),(c))
+#define STRICMP(a,b)	strcasecmp((a),(b))
+#else
+#define STRNICMP(a,b,c)	strnicmp((a),(b),(c))
+#define STRICMP(a,b)	stricmp((a),(b))
+#endif
+
 /* string equality shorthand */
 #define STREQ(x,y) (strcmp(x,y) == 0)
 
@@ -152,11 +174,17 @@ typedef unsigned long long uint64;	/* 64-bit unsigned integer */
 
 /* Various low-level and miscellaneous functions */
 int availmem(void);
+#ifndef USE_SYSTEM_MALLOC
 void *callocw(unsigned nelem,unsigned size);
+#else
+#define callocw(nelem,size) calloc((nelem),(size))
+#endif
 int dirps(void);
+#ifndef USE_SYSTEM_MALLOC
 void free(void *);
+#endif
 #define FREE(p)		{free(p); p = NULL;}
-int getopt(int argc,char *argv[],char *opts);
+int kgetopt(int argc,char *argv[],char *opts);
 void getrand(unsigned char *buf,int len);
 int htob(char c);
 int htoi(char *);
@@ -165,11 +193,20 @@ long htol(char *);
 char *inbuf(uint port,char *buf,uint cnt);
 uint hash_ip(int32 addr);
 int istate(void);
+#ifdef UNIX
+int enable(void);
+int disable(void);
+void giveup(void);
+#endif
 void logmsg(int s,char *fmt, ...);
 int ilog2(uint x);
-void *ltop(long);
+void *htop(const char *);
+#ifndef USE_SYSTEM_MALLOC
 void *malloc(size_t nb);
 void *mallocw(size_t nb);
+#else
+#define mallocw(nb) malloc((nb))
+#endif
 int memcnt(const uint8 *buf,uint8 c,int size);
 void memxor(uint8 *,uint8 *,unsigned int);
 char *outbuf(uint port,char *buf,uint cnt);
@@ -178,14 +215,14 @@ void restore(int);
 void rip(char *);
 char *smsg(char *msgs[],unsigned nmsgs,unsigned n);
 void stktrace(void);
-#if	!defined __TURBOC__
+#if	!defined __TURBOC__ && !defined(HAVE_STRDUP)
 char *strdup(const char *);
 #endif
 int urandom(unsigned int n);
 int wildmat(char *s,char *p,char **argv);
 
 #ifdef	AZTEC
-#define	rewind(fp)	fseek(fp,0L,0);
+#define	krewind(fp)	kfseek(fp,0L,0);
 #endif
 
 #if	defined(__TURBOC__) && defined(MSDOS)
@@ -211,23 +248,25 @@ int wildmat(char *s,char *p,char **argv);
 #ifndef	fileno
 #include <stdio.h>
 #endif
-#define fclose(fp)	amiga_fclose(fp)
-extern int amiga_fclose(FILE *);
-extern FILE *tmpfile(void);
+#define kfclose(fp)	amiga_fclose(fp)
+extern int amiga_fclose(kFILE *);
+extern kFILE *ktmpfile(void);
 
-extern char *sys_errlist[];
-extern int errno;
+extern char *ksys_errlist[];
+extern int kerrno;
 #endif
 
 /* Externals used by getopt */
-extern int optind;
-extern char *optarg;
+extern int koptind;
+extern char *koptarg;
 
 /* Threshold setting on available memory */
 extern int32 Memthresh;
 
+#ifndef HAVE_UNIX_TIMEOFDAY
 /* System clock - count of ticks since startup */
 extern int32 Clock;
+#endif
 
 /* Various useful strings */
 extern char Badhost[];
@@ -246,8 +285,8 @@ extern char System[];
 /* Your system's temp directory */
 extern char *Tmpdir;
 
-extern unsigned Nfiles;	/* Maximum number of open files */
-extern unsigned Nsock;	/* Maximum number of open sockets */
+extern unsigned Nfiles;	/* Maximum number of kopen files */
+extern unsigned Nsock;	/* Maximum number of kopen sockets */
 
 extern void (*Gcollect[])();
 

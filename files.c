@@ -1,5 +1,7 @@
 /* System-dependent definitions of various files, spool directories, etc */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <ctype.h>
 #include "global.h"
 #include "netuser.h"
@@ -52,7 +54,7 @@ char *Popusers = "./popusers";		/* POP user and passwd file */
 char *Signature = "./signatur"; /* Mail signature file directory */
 char *Forwardfile = "./forward.bbs"; /* Mail forwarding file */
 char *Historyfile = "./history"; /* Message ID history file */
-Char *Tmpdir = "/tmp";
+char *Tmpdir = "/tmp";
 #define	SEPARATOR	"/"
 char Eol[] = "\n";
 #endif
@@ -78,7 +80,7 @@ char *Popusers = "TCPIP:/popusers";	/* POP user and passwd file */
 char *Signature = "TCPIP:spool/signatur"; /* Mail signature file directory */
 char *Forwardfile = "TCPIP:spool/forward.bbs"; /* Mail forwarding file */
 char *Historyfile = "TCPIP:spool/history"; /* Message ID history file */
-Char *Tmpdir = "TCPIP:tmp";
+char *Tmpdir = "TCPIP:tmp";
 #define	SEPARATOR	"/"
 char Eol[] = "\r\n";
 #endif
@@ -104,7 +106,7 @@ char *Popusers = "Mikes Hard Disk:/popusers";	/* POP user and passwd file */
 char *Signature = "Mikes Hard Disk:spool/signatur"; /* Mail signature file directory */
 char *Forwardfile = "Mikes Hard Disk:spool/forward.bbs"; /* Mail forwarding file */
 char *Historyfile = "Mikes Hard Disk:spool/history"; /* Message ID history file */
-Char *Tmpdir = "Mikes Hard Disk:tmp";
+char *Tmpdir = "Mikes Hard Disk:tmp";
 #define	SEPARATOR	"/"
 char Eol[] = "\r";
 #endif
@@ -186,16 +188,16 @@ char **directory;
 int   *permission;
 int32 *ip_address;
 {
-	FILE *fp;
+	kFILE *fp;
 	char *buf;
 	char *cp;
 
-	if((fp = fopen(Userfile,READ_TEXT)) == NULL)
+	if((fp = kfopen(Userfile,READ_TEXT)) == NULL)
 		/* Userfile doesn't exist */
 		return NULL;
 
-	buf = mallocw(BUFSIZ);
-	while ( fgets(buf,BUFSIZ,fp) != NULL ){
+	buf = mallocw(kBUFSIZ);
+	while ( kfgets(buf,kBUFSIZ,fp) != NULL ){
 		if(*buf == '#')
 			continue;	/* Comment */
 
@@ -204,16 +206,16 @@ int32 *ip_address;
 			continue;
 		*cp++ = '\0';		/* Now points to password */
 
-		if( stricmp(username,buf) == 0 )
+		if( STRICMP(username,buf) == 0 )
 			break;		/* Found user */
 	}
-	if(feof(fp)){
+	if(kfeof(fp)){
 		/* username not found in file */
-		fclose(fp);
+		kfclose(fp);
 		free(buf);
 		return NULL;
 	}
-	fclose(fp);
+	kfclose(fp);
 
 	if ( password != NULL )
 		*password = cp;
@@ -309,7 +311,7 @@ int *pwdignore;
 	/*
 	 * Well, on the Amiga, a file can be referenced by many names:
 	 * device names (DF0:) or volume names (My_Disk:).  This hunk of code
-	 * passed the pathname specified in the ftpusers file, and gets the
+	 * passed the pathname specified in the ftpusers file, and kgets the
 	 * absolute path copied into the user's buffer.  We really should just
 	 * allocate the buffer and return a pointer to it, since the caller
 	 * really doesn't have a good idea how long the path string is..
@@ -337,7 +339,7 @@ int *pwdignore;
 void
 usercvt()
 {
-	FILE *fp,*fptmp;
+	kFILE *fp,*fptmp;
 	char *buf;
 	uint8 hexbuf[16],digest[16];
 	int needsit = 0;
@@ -345,11 +347,11 @@ usercvt()
 	char *pass;
 	MD5_CTX md;
 
-	if((fp = fopen(Userfile,READ_TEXT)) == NULL)
+	if((fp = kfopen(Userfile,READ_TEXT)) == NULL)
 		return;		/* Userfile doesn't exist */
 
-	buf = mallocw(BUFSIZ);
-	while(fgets(buf,BUFSIZ,fp) != NULL){
+	buf = mallocw(kBUFSIZ);
+	while(kfgets(buf,kBUFSIZ,fp) != NULL){
 		rip(buf);
 		len = strlen(buf);
 		if(len == 0 || *buf == '#')
@@ -369,22 +371,22 @@ usercvt()
 	}
 	if(!needsit){
 		/* Everything is in order */
-		fclose(fp);
+		kfclose(fp);
 		free(buf);
 		return;
 	}
 	/* At least one entry needs its password hashed */
-	rewind(fp);
-	fptmp = tmpfile();
-	while(fgets(buf,BUFSIZ,fp) != NULL){
+	krewind(fp);
+	fptmp = ktmpfile();
+	while(kfgets(buf,kBUFSIZ,fp) != NULL){
 		rip(buf);
 		if((len = strlen(buf)) == 0 || *buf == '#'
 		 || (nlen = strcspn(buf,Whitespace)) == len){
 			/* Line is blank, a comment or unparseable;
 			 * copy unchanged
 			 */
-			fputs(buf,fptmp);
-			fputc('\n',fptmp);
+			kfputs(buf,fptmp);
+			kfputc('\n',fptmp);
 			continue;
 		}
 		/* Skip whitespace between name and pass */
@@ -397,32 +399,32 @@ usercvt()
 			/* Other fields are missing, no password is required,
 			 * or password is already hashed; copy unchanged
 			 */
-			fputs(buf,fptmp);
-			fputc('\n',fptmp);
+			kfputs(buf,fptmp);
+			kfputc('\n',fptmp);
 			continue;
 		}
 		MD5Init(&md);
 		MD5Update(&md,(unsigned char *)buf,nlen);	/* Hash name */
 		MD5Update(&md,(unsigned char *)pass,plen);	/* Hash password */
 		MD5Final(digest,&md);
-		fwrite(buf,1,nlen,fptmp);	/* Write name */
-		fputc(' ',fptmp);		/* and space */
+		kfwrite(buf,1,nlen,fptmp);	/* Write name */
+		kfputc(' ',fptmp);		/* and space */
 		for(i=0;i<16;i++)	/* Write hashed password */
-			fprintf(fptmp,"%02x",digest[i]);
-		fputs(&pass[plen],fptmp);	/* Write remainder of line */
-		fputc('\n',fptmp);
+			kfprintf(fptmp,"%02x",digest[i]);
+		kfputs(&pass[plen],fptmp);	/* Write remainder of line */
+		kfputc('\n',fptmp);
 	}
 	/* Now copy the temp file back into the userfile */
-	fclose(fp);
-	rewind(fptmp);
-	if((fp = fopen(Userfile,WRITE_TEXT)) == NULL){
-		printf("Can't rewrite %s\n",Userfile);
+	kfclose(fp);
+	krewind(fptmp);
+	if((fp = kfopen(Userfile,WRITE_TEXT)) == NULL){
+		kprintf("Can't rewrite %s\n",Userfile);
 		free(buf);
 		return;
 	}
-	while(fgets(buf,BUFSIZ,fptmp) != NULL)
-		fputs(buf,fp);
-	fclose(fp);
-	fclose(fptmp);
+	while(kfgets(buf,kBUFSIZ,fptmp) != NULL)
+		kfputs(buf,fp);
+	kfclose(fp);
+	kfclose(fptmp);
 	free(buf);
 }

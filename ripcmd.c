@@ -2,7 +2,9 @@
  *   Al Broscious, N3FCT
  *   Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "netuser.h"
@@ -16,7 +18,7 @@
 
 struct cmds Ripcmds[] = {
 	"accept",	dodroprefuse,	0,	2,
-		"rip accept <gateway> ",
+		"rip kaccept <gateway> ",
 	"add",		doripadd,	0,	3,
 		"rip add <dest> <interval> [<flags>]",
 	"drop",		doripdrop,	0,	2,
@@ -126,21 +128,21 @@ void *p;
 	struct rip_list *rl;
 	struct rip_refuse *rfl;
 
-	printf("RIP: sent %lu rcvd %lu reqst %lu resp %lu unk %lu refused %lu\n",
+	kprintf("RIP: sent %lu rcvd %lu reqst %lu resp %lu unk %lu refused %lu\n",
 	 Rip_stat.output, Rip_stat.rcvd, Rip_stat.request, Rip_stat.response,
 	 Rip_stat.unknown,Rip_stat.refusals);
 	if(Rip_list != NULL){
-		printf("Active RIP output interfaces:\n");
-		printf("Dest Addr       Interval Split\n");
+		kprintf("Active RIP output interfaces:\n");
+		kprintf("Dest Addr       Interval Split\n");
 		for(rl=Rip_list; rl != NULL; rl = rl->next){
-			printf("%-16s%-9lu%-6u\n",inet_ntoa(rl->dest),
+			kprintf("%-16s%-9lu%-6u\n",inet_ntoa(rl->dest),
 			 rl->interval,rl->flags.rip_split);
 		}
 	}
 	if(Rip_refuse != NULL){
-		printf("Refusing announcements from gateways:\n");
+		kprintf("Refusing announcements from gateways:\n");
 		for(rfl=Rip_refuse; rfl != NULL;rfl = rfl->next){
-			printf("%s\n",inet_ntoa(rfl->target));
+			kprintf("%s\n",inet_ntoa(rfl->target));
 		}
 	}
 	return 0;
@@ -152,7 +154,7 @@ int argc;
 char *argv[];
 void *p;
 {
-	return setint(&Rip_trace,"RIP tracing",argc,argv);
+	return setuns(&Rip_trace,"RIP tracing",argc,argv);
 }
 int
 doripmerge(argc,argv,p)

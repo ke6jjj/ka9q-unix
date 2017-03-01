@@ -1,7 +1,9 @@
 /* Internet Control Message Protocol (ICMP)
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "iface.h"
@@ -94,23 +96,23 @@ int32 said
 		}
 		ntohip(&oip,bpp);	/* Extract offending IP header */
 		if(Icmp_trace){
-			printf("ICMP from %s:",inet_ntoa(ip->source));
-			printf(" dest %s %s",inet_ntoa(oip.dest),
+			kprintf("ICMP from %s:",inet_ntoa(ip->source));
+			kprintf(" dest %s %s",inet_ntoa(oip.dest),
 			 smsg(Icmptypes,ICMP_TYPES,type));
 			switch(type){
 			case ICMP_TIME_EXCEED:
-				printf(" %s\n",
+				kprintf(" %s\n",
 				 smsg(Exceed,NEXCEED,icmp.code));
 				break;
 			case ICMP_DEST_UNREACH:
-				printf(" %s\n",
+				kprintf(" %s\n",
 				 smsg(Unreach,NUNREACH,icmp.code));
 				break;
 			case ICMP_IPSP:
-				printf(" %s\n",smsg(Said_icmp,NIPSP,icmp.code));
+				kprintf(" %s\n",smsg(Said_icmp,NIPSP,icmp.code));
 				break;
 			default:
-				printf(" %u\n",icmp.code);
+				kprintf(" %u\n",icmp.code);
 				break;
 			}
 		}
@@ -136,10 +138,10 @@ int32 said
 		icmpInRedirects++;
 		ntohip(&oip,bpp);	/* Extract offending IP header */
 		if(Icmp_trace){
-			printf("ICMP from %s:",inet_ntoa(ip->source));
-			printf(" dest %s %s",inet_ntoa(oip.dest),
+			kprintf("ICMP from %s:",inet_ntoa(ip->source));
+			kprintf(" dest %s %s",inet_ntoa(oip.dest),
 			 smsg(Icmptypes,ICMP_TYPES,type));
-			printf(" new gateway %s\n",inet_ntoa(icmp.args.address));
+			kprintf(" new gateway %s\n",inet_ntoa(icmp.args.address));
 		}
 		break;
 	case ICMP_PARAM_PROB:	/* Parameter Problem */
@@ -261,5 +263,5 @@ union icmp_args *args
 	icmpOutMsgs++;
 	/* Now stick on the ICMP header */
 	htonicmp(&icmp,&bp);
-	return ip_send(INADDR_ANY,ip->source,ICMP_PTCL,ip->tos,0,&bp,length,0,0);
+	return ip_send(kINADDR_ANY,ip->source,ICMP_PTCL,ip->tos,0,&bp,length,0,0);
 }

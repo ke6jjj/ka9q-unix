@@ -2,8 +2,9 @@
  * Copyright 1989 by Daniel M. Frank, W9NK.  Permission granted for
  * non-commercial distribution only.
  */
+#include "top.h"
 
-#include <stdio.h>
+#include "stdio.h"
 #include <ctype.h>
 #include "global.h"
 #include "mbuf.h"
@@ -44,11 +45,26 @@ struct nrnbr_tab *Nrnbr_tab[NRNUMCHAINS];
 struct nrroute_tab *Nrroute_tab[NRNUMCHAINS];
 struct nrnf_tab *Nrnf_tab[NRNUMCHAINS];
 unsigned Nr_nfmode = NRNF_NOFILTER;
+
+/* The time-to-live for net/rom network layer packets */
 unsigned short Nr_ttl = 64;
+
+/* The obsolescence count initializer */
 static unsigned Obso_init = 6;
-static unsigned Obso_minbc = 5;
+
+/* The threshhold at which routes becoming obsolete are not broadcast */
+static unsigned Obso_minbc = 5; 
+
+/* The maximum number of routes maintained for a destination. */
+/* If the list fills up, only the highest quality routes are  */
+/* kept.  This limiting is done to avoid possible over-use of */
+/* memory for routing tables in closely spaced net/rom networks. */
 static unsigned Nr_maxroutes = 5;
+
+/* The quality threshhold below which routes in a broadcast will */
+/* be ignored */
 static unsigned Nr_autofloor = 1;
+
 int Nr_verbose = 0;
 struct iface *Nr_iface;
 
@@ -121,8 +137,9 @@ struct mbuf **data
 
 /* Arrange for receipt of raw NET/ROM datagrams */
 struct raw_nr *
-raw_nr(protocol)
-uint8 protocol;
+raw_nr(
+  uint8 protocol
+)
 {
 	struct raw_nr *rp;
 
@@ -231,7 +248,7 @@ struct ax25_cb *iaxp;			/* incoming ax25 control block */
 	 * obscure errors as we find them.
 	 */
 	if(ismycall(n3hdr.dest)){
-		/* Toss if from me, or if we can't read the header */
+		/* Toss if from me, or if we can't kread the header */
 		if(iaxp == NULL || ntohnr4(&n4hdr,bpp) == -1){
 			free_p(bpp);
 		} else if((n4hdr.opcode & NR4OPCODE) == NR4OPPID){
@@ -252,7 +269,7 @@ struct ax25_cb *iaxp;			/* incoming ax25 control block */
 					free_p(&hbp);
 				}
 			}
-			/* IP does not use a NET/ROM level 3 socket */
+			/* IP does not use a NET/ROM level 3 ksocket */
 			if(n4hdr.u.pid.family == NRPROTO_IP
 			 && n4hdr.u.pid.proto == NRPROTO_IP)
 				ip_route(iaxp->iface,bpp,0);
@@ -465,7 +482,7 @@ char *argv[];
 void *p;
 {
 	if(Nr_iface != (struct iface *)0){
-		printf("netrom interface already attached\n");
+		kprintf("netrom interface already attached\n");
 		return -1;
 	}
 	Nr_iface = (struct iface *)callocw(1,sizeof(struct iface));
@@ -690,8 +707,7 @@ struct nrnbr_tab *neighbor;
 }
 
 /* Find the worst quality non-permanent binding in a list */
-static
-struct nr_bind *
+static struct nr_bind *
 find_worst(list)
 struct nr_bind *list;
 {
@@ -714,8 +730,7 @@ struct nr_bind *list;
  * If it is 0, routes below the threshhold are treated as
  * though they don't exist.
  */
-static
-struct nr_bind *
+static struct nr_bind *
 find_best(list,obso)
 struct nr_bind *list;
 unsigned obso;

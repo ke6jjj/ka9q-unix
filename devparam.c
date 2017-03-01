@@ -1,3 +1,5 @@
+#include "top.h"
+
 #include <string.h>
 #include <ctype.h>
 #include "global.h"
@@ -48,7 +50,7 @@ char *s;
 
 	sp = &Parms[0];
 	while(sp->number != -1){
-		if(strnicmp(s,sp->name,len) == 0)
+		if(STRNICMP(s,sp->name,len) == 0)
 			return sp->number;
 		sp++;
 	}		

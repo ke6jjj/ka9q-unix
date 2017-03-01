@@ -1,7 +1,9 @@
 /* IP-related user commands
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "internet.h"
@@ -80,9 +82,9 @@ void *p;
 	int32 n;
 
 	if(argc < 2) {
-		printf("%s\n",inet_ntoa(Ip_addr));
+		kprintf("%s\n",inet_ntoa(Ip_addr));
 	} else if((n = resolve(argv[1])) == 0){
-		printf(Badhost,argv[1]);
+		kprintf(Badhost,argv[1]);
 		return 1;
 	} else
 		Ip_addr = n;
@@ -123,13 +125,13 @@ void *p;
 	 * Dest            Len Interface    Gateway          Use
 	 * 192.001.002.003 32  sl0          192.002.003.004  0
 	 */
-	printf(
+	kprintf(
 "Dest            Len Interface    Gateway          Metric  P Timer  Use\n");
 
 	for(bits=31;bits>=0;bits--){
 		for(i=0;i<HASHMOD;i++){
 			for(rp = Routes[bits][i];rp != NULL;rp = rp->next){
-				if(dumproute(rp) == EOF)
+				if(dumproute(rp) == kEOF)
 					return 0;
 			}
 		}
@@ -175,17 +177,17 @@ void *p;
 			bits = 32;
 
 		if((dest = resolve(argv[1])) == 0){
-			printf(Badhost,argv[1]);
+			kprintf(Badhost,argv[1]);
 			return 1;
 		}
 	}
 	if((ifp = if_lookup(argv[2])) == NULL){
-		printf("Interface \"%s\" unknown\n",argv[2]);
+		kprintf("Interface \"%s\" unknown\n",argv[2]);
 		return 1;
 	}
 	if(argc > 3){
 		if((gateway = resolve(argv[3])) == 0){
-			printf(Badhost,argv[3]);
+			kprintf(Badhost,argv[3]);
 			return 1;
 		}
 	} else {
@@ -197,7 +199,7 @@ void *p;
 		metric = 1;
 
 	if(rt_add(dest,bits,gateway,ifp,metric,0,private) == NULL)
-		printf("Can't add route\n");
+		kprintf("Can't add route\n");
 	return 0;
 }
 /* Drop an entry from the routing table
@@ -228,7 +230,7 @@ void *p;
 			bits = 32;
 
 		if((n = resolve(argv[1])) == 0){
-			printf(Badhost,argv[1]);
+			kprintf(Badhost,argv[1]);
 			return 1;
 		}
 	}
@@ -270,19 +272,19 @@ dumproute(struct route *rp)
 		cp = inet_ntoa(rp->target);
 	else
 		cp = "default";
-	printf("%-16s",cp);
-	printf("%-4u",rp->bits);
-	printf("%-13s",rp->iface->name);
+	kprintf("%-16s",cp);
+	kprintf("%-4u",rp->bits);
+	kprintf("%-13s",rp->iface->name);
 	if(rp->gateway != 0)
 		cp = inet_ntoa(rp->gateway);
 	else
 		cp = "";
-	printf("%-17s",cp);
-	printf("%-8lu",rp->metric);
-	printf("%c ",rp->flags.rtprivate ? 'P' : ' ');
-	printf("%-7lu",
+	kprintf("%-17s",cp);
+	kprintf("%-8lu",rp->metric);
+	kprintf("%c ",rp->flags.rtprivate ? 'P' : ' ');
+	kprintf("%-7lu",
 	 read_timer(&rp->timer) / 1000L);
-	return printf("%lu\n",rp->uses);
+	return kprintf("%lu\n",rp->uses);
 }
 
 static int
@@ -296,11 +298,11 @@ void *p;
 
 	addr = resolve(argv[1]);
 	if(addr == 0){
-		printf("Host %s unknown\n",argv[1]);
+		kprintf("Host %s unknown\n",argv[1]);
 		return 1;
 	}
 	if((rp = rt_lookup(addr)) == NULL){
-		printf("Host %s (%s) unreachable\n",argv[1],inet_ntoa(addr));
+		kprintf("Host %s (%s) unreachable\n",argv[1],inet_ntoa(addr));
 		return 1;
 	}
 	dumproute(rp);
@@ -318,29 +320,29 @@ void *p;
 	int i;
 
 	for(i=1;i<=NUMIPMIB;i++){
-		printf("(%2u)%-20s%10lu",i,
+		kprintf("(%2u)%-20s%10lu",i,
 		 Ip_mib[i].name,Ip_mib[i].value.integer);
 		if(i % 2)
-			printf("     ");
+			kprintf("     ");
 		else
-			printf("\n");
+			kprintf("\n");
 	}
 	if((i % 2) == 0)
-		printf("\n");
-	printf("Routing lookups: %lu, cache hits %lu (%lu%%)\n",
+		kprintf("\n");
+	kprintf("Routing lookups: %lu, cache hits %lu (%lu%%)\n",
 	 Rtlookups,Rtchits,
 	 Rtlookups != 0 ? (Rtchits*100 + Rtlookups/2)/Rtlookups: 0);
 
 	if(Reasmq != NULL)
-		printf("Reassembly fragments:\n");
+		kprintf("Reassembly fragments:\n");
 	for(rp = Reasmq;rp != NULL;rp = rp->next){
-		printf("src %s",inet_ntoa(rp->source));
-		printf(" dest %s",inet_ntoa(rp->dest));
-		printf(" id %u pctl %u time %lu len %u\n",
+		kprintf("src %s",inet_ntoa(rp->source));
+		kprintf(" dest %s",inet_ntoa(rp->dest));
+		kprintf(" id %u pctl %u time %lu len %u\n",
 		 rp->id,rp->protocol,read_timer(&rp->timer),
 		 rp->length);
 		for(fp = rp->fraglist;fp != NULL;fp = fp->next){
-			printf(" offset %u last %u\n",fp->offset,
+			kprintf(" offset %u last %u\n",fp->offset,
 			fp->last);
 		}
 	}

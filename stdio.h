@@ -1,5 +1,14 @@
-#ifndef	_STDIO_H
-#define	_STDIO_H
+#ifndef	_KA9Q_STDIO_H
+#define	_KA9Q_STDIO_H
+
+#ifndef __TURBOC__
+/* Include system stdio for sprintf and sscanf variants */
+#include <stdio.h>
+#endif
+
+#ifdef MODERN_UNIX
+#include <stdarg.h>
+#endif
 
 #ifndef	_GLOBAL_H
 #include "global.h"
@@ -26,14 +35,16 @@ struct _file{
 		_FL_SOCK,	/* Associated with network socket */
 		_FL_ASY,	/* Asynch port */
 		_FL_DISPLAY,	/* Associated with display driver */
-		_FL_PIPE,	/* Pipe mode */
-		_FL_SOUND	/* Sound mode */
+		_FL_PIPE	/* Pipe mode */
+#ifdef SOUND
+,		_FL_SOUND	/* Sound mode */
+#endif
 	} type;
 
 	enum {
-		_IOFBF=1,	/* Full buffering */
-		_IOLBF,		/* Line buffering */
-		_IONBF		/* No buffering */
+		_kIOFBF=1,	/* Full buffering */
+		_kIOLBF,	/* Line buffering */
+		_kIONBF		/* No buffering */
 	} bufmode;		/* Output buffering mode */
 
 	struct {
@@ -49,27 +60,30 @@ struct _file{
 	char eol[EOL_LEN];	/* Text mode end-of-line sequence, if any */
 	int bufsize;		/* Size of buffer to use */
 	void *ptr;		/* File name or display pointer */
+#ifdef HAVE_FUNOPEN
+	FILE *osfp;
+#endif
 };
 
-typedef struct _file FILE;
+typedef struct _file kFILE;
 
-#undef	NULL
+#ifndef NULL
 #define	NULL	0
-#define	BUFSIZ	2048
-#define	EOF	(-1)
-#define	L_tmpnam	13
+#endif
+#define	kBUFSIZ	2048
+#define	kEOF	(-1)
 
-#define	SEEK_SET	0
-#define	SEEK_CUR	1
-#define	SEEK_END	2
+#define	kSEEK_SET	0
+#define	kSEEK_CUR	1
+#define	kSEEK_END	2
 
 #ifndef _PROC_H
 #include "proc.h"
 #endif
 
-#define	stdout	Curproc->output
-#define	stdin	Curproc->input
-#define	stderr	Curproc->output
+#define	kstdout	Curproc->output
+#define	kstdin	Curproc->input
+#define	kstderr	Curproc->output
 
 #define	STREAM_BINARY	0
 #define	STREAM_ASCII	1
@@ -77,64 +91,74 @@ typedef struct _file FILE;
 #define	FULL_READ	0
 #define	PART_READ	1
 
-FILE *asyopen(char *name,char *mode);
-int close(int fd);
-FILE *displayopen(char *mode,int noscrol,int sfsize);
-int fblock(FILE *fp,int mode);
-int fclose(FILE *fp);
-void fcloseall(void);
-FILE *fdopen(int handle,char *mode);
-FILE *fdup(FILE *fp);
-int fflush(FILE *fp);
-int fgetc(FILE *fp);
-int _fgetc(FILE *fp);
-char *fgets(char *buf,int len,FILE *fp);
-void flushall(void);
-int fmode (FILE *fp,int mode);
-char *fpname(FILE *fp);
-int fprintf(FILE *fp,const char *fmt,...);
-int fputc(int c,FILE *fp);
-int fputs(char *buf,FILE *fp);
-size_t fread(void *ptr,size_t size,size_t n,FILE *fp);
-int frrdy(FILE *fp);
-FILE *freopen(char *name,char *mode,FILE *fp);
-int fseek(FILE *fp,long offset,int whence);
-long ftell(FILE *fp);
-size_t fwrite(void *ptr,size_t size,size_t n,FILE *fp);
-char *gets(char *s);
-int getshort(FILE *fp);
-void perror(const char *s);
-FILE *pipeopen(void);
-int printf(const char *fmt,...);
-int puts(char *s);
-int putshort(short c,FILE *fp);
-int rename(const char *,const char *);
-void setbuf(FILE *fp,char *buf);
-int seteol(FILE *fp,char *seq);
-int setvbuf(FILE *fp,char *buf,int type,int size);
+kFILE *asyopen(char *name,char *mode);
+int kclose(int fd);
+kFILE *displayopen(char *mode,int noscrol,int sfsize);
+int kfblock(kFILE *fp,int mode);
+int kfclose(kFILE *fp);
+void kfcloseall(void);
+kFILE *kfdopen(int handle,char *mode);
+kFILE *kfdup(kFILE *fp);
+int kfflush(kFILE *fp);
+int kfgetc(kFILE *fp);
+int _kfgetc(kFILE *fp);
+char *kfgets(char *buf,int len,kFILE *fp);
+void kflushall(void);
+int kfmode (kFILE *fp,int mode);
+char *kfpname(kFILE *fp);
+int kfprintf(kFILE *fp,const char *fmt,...);
+int kfputc(int c,kFILE *fp);
+int kfputs(char *buf,kFILE *fp);
+size_t kfread(void *ptr,size_t size,size_t n,kFILE *fp);
+int kfrrdy(kFILE *fp);
+kFILE *kfreopen(char *name,char *mode,kFILE *fp);
+int kfseek(kFILE *fp,long offset,int whence);
+long kftell(kFILE *fp);
+size_t kfwrite(const void *ptr,size_t size,size_t n,kFILE *fp);
+char *kgets(char *s);
+void kperror(const char *s);
+kFILE *pipeopen(void);
+int kprintf(const char *fmt,...);
+int kputs(char *s);
+#ifndef NO_STD_DUPLICATION
+int rename(const char *,const char *); /* From regular library */
+#endif
+void ksetbuf(kFILE *fp,char *buf);
+int kseteol(kFILE *fp,char *seq);
+int ksetvbuf(kFILE *fp,char *buf,int type,int size);
+#ifndef USE_SYSTEM_SPRINTF
 int sprintf(char *,const char *, ...);
+#endif
+#ifndef NO_STD_DUPLICATION
 int sscanf(char *,char *,...);	/* From regular library */
-FILE *soundopen(void);
-FILE *tmpfile(void);
+#endif
+kFILE *soundopen(void);
+kFILE *ktmpfile(void);
+#ifndef NO_STD_DUPLICATION
 char *tmpnam(char *);	/* From regular library */
-int ungetc(int c,FILE *fp);
+#endif
+int kungetc(int c,kFILE *fp);
+#ifndef NO_STD_DUPLICATION
 int unlink(const char *);	/* From regular library */
-int vfprintf(FILE *fp,const char *fmt, void *args);
-int vprintf(const char *fmt, void *args);
-int vsprintf(char *,const char *,void *);
+#endif
+int kvfprintf(kFILE *fp,const char *fmt, va_list args);
+int kvprintf(const char *fmt, va_list args);
+#ifndef USE_SYSTEM_SPRINTF
+int vsprintf(char *,const char *,va_list);
+#endif
 
 extern int _clrtmp;	/* Flag controlling wipe of temporary files on close */
 
 /* Macros */
-#define	feof(fp)	((fp)->flags.eof)
-#define ferror(fp)	((fp)->flags.err)
-#define	fileno(fp)	((fp) != NULL ? (fp)->fd : -1)
-#define fopen(s,m)	(freopen((s),(m),NULL))
-#define	putc(c,fp)	(fputc((c),(fp)))
-#define	getc(fp)	(fgetc((fp)))
-#define	getchar()	(getc(stdin))
-#define	clearerr(fp)	((fp)->flags.eof = (fp)->flags.err = 0)
-#define rewind(fp)	((void)fseek((fp),0L,SEEK_SET),clearerr((fp)))
-#define	putchar(c)	(putc((c),stdout))
+#define	kfeof(fp)	((fp)->flags.eof)
+#define kferror(fp)	((fp)->flags.err)
+#define	kfileno(fp)	((fp) != NULL ? (fp)->fd : -1)
+#define kfopen(s,m)	(kfreopen((s),(m),NULL))
+#define	kputc(c,fp)	(kfputc((c),(fp)))
+#define	kgetc(fp)	(kfgetc((fp)))
+#define	kgetchar()	(kgetc(kstdin))
+#define	kclearerr(fp)	((fp)->flags.eof = (fp)->flags.err = 0)
+#define krewind(fp)	((void)kfseek((fp),0L,kSEEK_SET),kclearerr((fp)))
+#define	kputchar(c)	(kputc((c),kstdout))
 
-#endif /* _STDIO_H */
+#endif /* _KA9Q_STDIO_H */

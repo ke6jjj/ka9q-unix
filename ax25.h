@@ -44,10 +44,10 @@ extern int Ax25mbox;
 /* Number of chars in interface field. The involved definition takes possible
  * alignment requirements into account, since ax25_addr is of an odd size.
  */
-#define	ILEN	(sizeof(struct sockaddr) - sizeof(short) - AXALEN)
+#define	ILEN	(sizeof(struct ksockaddr) - sizeof(short) - AXALEN)
 
 /* Socket address, AX.25 style */
-struct sockaddr_ax {
+struct ksockaddr_ax {
 	short sax_family;		/* 2 bytes */
 	uint8 ax25_addr[AXALEN];
 	char iface[ILEN];		/* Interface name */
@@ -74,7 +74,7 @@ struct ax_route {
 	uint8 digis[MAXDIGIS][AXALEN];
 	int ndigis;
 	enum {
-		AX_LOCAL,		/* Set by local ax25 route command */
+		kAX_LOCAL,		/* Set by local ax25 route command */
 		AX_AUTO			/* Set by incoming packet */
 	} type;
 };

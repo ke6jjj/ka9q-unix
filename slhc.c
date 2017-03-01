@@ -37,6 +37,7 @@
  *			separate routines
  *			status display
  */
+#include "top.h"
 
 #include "global.h"
 #include "mbuf.h"
@@ -404,7 +405,7 @@ struct mbuf **bpp;
 		comp->sls_i_error++;
 		return 0;
 	}
-	/* We've got a compressed packet; read the change byte */
+	/* We've got a compressed packet; kread the change byte */
 	comp->sls_i_compressed++;
 	if(len_p(*bpp) < 3){
 		comp->sls_i_error++;
@@ -585,7 +586,7 @@ slhc_i_status(comp)
 struct slcompress *comp;
 {
 	if (comp != NULL) {
-		printf("\t%10ld Cmp,"
+		kprintf("\t%10ld Cmp,"
 			" %10ld Uncmp,"
 			" %10ld Bad, "
 			" %10ld Tossed\n",
@@ -602,7 +603,7 @@ slhc_o_status(comp)
 struct slcompress *comp;
 {
 	if (comp != NULL) {
-		printf("\t%10ld Cmp,"
+		kprintf("\t%10ld Cmp,"
 			" %10ld Uncmp,"
 			" %10ld AsIs,"
 			" %10ld NotTCP\n",
@@ -610,7 +611,7 @@ struct slcompress *comp;
 			comp->sls_o_uncompressed,
 			comp->sls_o_tcp,
 			comp->sls_o_nontcp);
-		printf("\t%10ld Searches,"
+		kprintf("\t%10ld Searches,"
 			" %10ld Misses\n",
 			comp->sls_o_searches,
 			comp->sls_o_misses);

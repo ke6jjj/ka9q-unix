@@ -1,7 +1,9 @@
 /* Internet Finger server
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <string.h>
 #include "global.h"
 #include "files.h"
@@ -34,22 +36,22 @@ void *n;
 void *p;
 {
 	char user[80];
-	FILE *fp;
+	kFILE *fp;
 	char *file,*cp;
-	FILE *network;
+	kFILE *network;
 
-	network = fdopen(s,"r+t");
+	network = kfdopen(s,"r+t");
 
 	sockowner(s,Curproc);
 	logmsg(s,"open Finger");
-	fgets(user,sizeof(user),network);
+	kfgets(user,sizeof(user),network);
 	rip(user);
 	if(strlen(user) == 0){
 		fp = dir(Fdir,0);
 		if(fp == NULL)
-			fprintf(network,"No finger information available\n");
+			kfprintf(network,"No finger information available\n");
 		else
-			fprintf(network,"Known users on this system:\n");
+			kfprintf(network,"Known users on this system:\n");
 	} else {
 		file = pathname(Fdir,user);
 		cp = pathname(Fdir,"");
@@ -58,19 +60,19 @@ void *p;
 		 */
 		if(strncmp(file,cp,strlen(cp)) != 0){
 			fp = NULL;
-			fprintf(network,"Invalid user name %s\n",user);
-		} else if((fp = fopen(file,READ_TEXT)) == NULL)
-			fprintf(network,"User %s not known\n",user);
+			kfprintf(network,"Invalid user name %s\n",user);
+		} else if((fp = kfopen(file,READ_TEXT)) == NULL)
+			kfprintf(network,"User %s not known\n",user);
 		free(cp);
 		free(file);
 	}
 	if(fp != NULL){
-		sendfile(fp,network,ASCII_TYPE,0);
-		fclose(fp);
+		ksendfile(fp,network,ASCII_TYPE,0);
+		kfclose(fp);
 	}
 	if(strlen(user) == 0 && Listusers != NULL)
 		(*Listusers)(network);
-	fclose(network);
+	kfclose(network);
 	logmsg(s,"close Finger");
 }
 int

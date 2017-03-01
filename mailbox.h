@@ -32,7 +32,7 @@ struct mbx {
 	char *origto ;			/* Original To-address, if rewritten */
 	char *tofrom ;			/* Optional <from in to-address */
 	char *tomsgid ;			/* Optional $msgid in to-address */
-	FILE *tfile ;			/* Temporary file for message, or */
+	kFILE *tfile ;			/* Temporary file for message, or */
 					/* forwarding file. */
 	char line[MBXLINE+1] ;	/* Room for null at end */
 	int mbnum ;		/* which mailbox session is this? */
@@ -50,7 +50,7 @@ struct mbx {
 				/* interest to us. */
 	char stype ;		/* BBS send command type (B,P,T, etc.) */
 	int type ;		/* Type of session when invoking "chat" */
-	FILE *user;		/* User linkage area */
+	kFILE *user;		/* User linkage area */
 	char escape;		/* Escape character */
 	int privs;		/* Privileges (taken from Ftpusers file) */
 #define AX25_CMD	8	/* AX.25 gateway operation allowed */
@@ -59,14 +59,14 @@ struct mbx {
 #define SYSOP_CMD	64	/* Remote sysop access allowed */
 #define EXCLUDED_CMD	128	/* This user is banned from the BBS */
 	char *path;		/* Directory path */
-	char *startmsg;		/* Message to be sent at connect through any
+	char *startmsg;		/* Message to be sent at kconnect through any */
 				/* of the gateways */
 	int current;		/* the current message number */
 	int nmsgs;		/* number of messages in this mail box */
 	int newmsgs;		/* number of new messages in mail box */
 	int change;		/* mail file changed */
-	int anyread;		/* true if any message has been read */
-	FILE *mfile;		/* mail data file pointer */
+	int anyread;		/* true if any message has been kread */
+	kFILE *mfile;		/* mail data file pointer */
 	char area[64];		/* name of current mail area */
 	long mboxsize;		/* size of mailbox when opened */
 	long mysize;		/* size of my private mailbox */
@@ -77,8 +77,8 @@ struct mbx {
 
 /* Structure used for automatic flushing of gateway sockets */
 struct gwalarm {
-	FILE *s1;
-	FILE *s2;
+	kFILE *s1;
+	kFILE *s2;
 	struct timer t;
 };
 
@@ -86,11 +86,11 @@ struct gwalarm {
 extern struct mbx *Mbox[NUMMBX] ;
 extern char Noperm[];
 extern char Nosock[];
-extern void (*Listusers)(FILE *network);
+extern void (*Listusers)(kFILE *network);
 
 int dombescape(int argc,char *argv[],void *p);
-int mbxrecvline(FILE *network,char *buf,int len,int escape);
-int gw_connect(struct mbx *m,int s,struct sockaddr *fsocket,int len);
+int mbxrecvline(kFILE *network,char *buf,int len,int escape);
+int gw_connect(struct mbx *m,int s,struct ksockaddr *fsocket,int len);
 
 void mbx_incom(int s,void *t,void *p);
 int domboxdisplay(int argc,char *argv[],void *p);
@@ -100,7 +100,7 @@ int domboxbye(int argc,char *argv[],void *p);
 int mbx_parse(struct mbx *m);
 void changearea(struct mbx *m,char *area);
 char *rewrite_address(char *addr);
-void listusers(FILE *network);
+void listusers(kFILE *network);
 
 /* In forward.c: */
 int dorevfwd(int argc,char *argv[],void *p);

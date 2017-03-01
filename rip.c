@@ -10,6 +10,8 @@
  *
  * Code gutted and substantially rewritten. KA9Q 9/89
  */
+#include "top.h"
+
 #include "global.h"
 #include "mbuf.h"
 #include "netuser.h"
@@ -66,7 +68,7 @@ int us;			/* Include our address in update */
 	uint pktsize;
 	struct mbuf *bp;
 	struct route *rp;
-	struct socket lsock,fsock;
+	struct ksocket lsock,fsock;
 	struct iface *iface;
 
 	if((rp = rt_lookup(dest)) == NULL)
@@ -78,7 +80,7 @@ int us;			/* Include our address in update */
 	pktsize = min(pktsize,MAXRIPPACKET);
 	maxroutes = (pktsize - RIPHEADER) / RIPROUTE;
 
-	lsock.address = INADDR_ANY;
+	lsock.address = kINADDR_ANY;
 	lsock.port = RIP_PORT;
 	fsock.address = dest;
 	fsock.port = port;
@@ -151,7 +153,7 @@ int split,us;
 	struct route *rp;
 
 	if((rp = rt_lookup(dest)) == NULL){
-		printf("%s is unreachable\n",inet_ntoa(dest));
+		kprintf("%s is unreachable\n",inet_ntoa(dest));
 		return 1;
 	}
 	for(rl = Rip_list; rl != NULL; rl = rl->next)
@@ -296,9 +298,9 @@ rip_trigger()
 int
 rip_init()
 {
-	struct socket lsock;
+	struct ksocket lsock;
 
-	lsock.address = INADDR_ANY;
+	lsock.address = kINADDR_ANY;
 	lsock.port = RIP_PORT;
 
 	if(Rip_cb == NULL)
@@ -315,7 +317,7 @@ struct udp_cb *sock;
 int cnt;
 {
 	struct mbuf *bp;
-	struct socket fsock;
+	struct ksocket fsock;
 	enum ripcmd cmd;
 	struct rip_refuse *rfl;
 	struct rip_route entry;
@@ -336,7 +338,7 @@ int cnt;
 		if(fsock.address == rfl->target){
 			Rip_stat.refusals++;
 			if(Rip_trace > 1)
-				printf("RIP refused from %s\n",
+				kprintf("RIP refused from %s\n",
 				 inet_ntoa(fsock.address));
 			free_p(&bp);
 			return;
@@ -352,7 +354,7 @@ int cnt;
 	switch(cmd){
 	case RIPCMD_RESPONSE:
 		if(Rip_trace > 1)
-			printf("RIPCMD_RESPONSE from %s \n",inet_ntoa(fsock.address));
+			kprintf("RIPCMD_RESPONSE from %s \n",inet_ntoa(fsock.address));
 
 		Rip_stat.response++;
 		/* See if this interface is on our broadcast list; if so,
@@ -391,7 +393,7 @@ int cnt;
 		break;
 	case RIPCMD_REQUEST:
 		if(Rip_trace > 1)
-			printf("RIPCMD_REQUEST\n");
+			kprintf("RIPCMD_REQUEST\n");
 
 		Rip_stat.request++;
 		/* For now, just send the whole table with split horizon
@@ -407,7 +409,7 @@ int cnt;
 		break;
 	default:
 		if(Rip_trace > 1)
-			printf("RIPCMD: Unknown Type\n");
+			kprintf("RIPCMD: Unknown Type\n");
 
 		Rip_stat.unknown++;
 		break;
@@ -482,7 +484,7 @@ int32 ttl;
 	if(ep->addr_fam != RIP_IPFAM) {
 		/* Skip non-IP addresses */
 		if(Rip_trace > 1)
-			printf("RIP_rx: Not an IP RIP packet !\n");
+			kprintf("RIP_rx: Not an IP RIP packet !\n");
 		Rip_stat.addr_family++;
 		return;
 	}
@@ -492,7 +494,7 @@ int32 ttl;
 	/* Don't ever add a route to myself through somebody! */
 	if(bits == 32 && ismyaddr(ep->target) != NULL){
 		if(Rip_trace > 1){
-			printf("route to self: %s %ld\n",
+			kprintf("route to self: %s %ld\n",
 			 inet_ntoa(ep->target),ep->metric);
 		}
 		return;
@@ -513,7 +515,7 @@ int32 ttl;
 	} else if(rp->metric == RIP_INFINITY){
 		/* Route is in hold-down; ignore this guy */
 		if(Rip_trace > 0){
-			printf("ignored (hold-down): %s %lu\n",
+			kprintf("ignored (hold-down): %s %lu\n",
 			 inet_ntoa(ep->target),ep->metric);
 		}
 	} else if(rp->gateway == gateway && rp->iface == iface){
@@ -528,7 +530,7 @@ int32 ttl;
 			 * the hold-down timeout.
 			 */
 			if(Rip_trace){
-				printf("metric change: %s %lu -> %lu\n",
+				kprintf("metric change: %s %lu -> %lu\n",
 				 inet_ntoa(ep->target),rp->metric,ep->metric);
 			}
 			if(ep->metric == RIP_INFINITY)
@@ -542,7 +544,7 @@ int32 ttl;
 		if(ep->metric < rp->metric){
 			/* Switch to a new gateway */
 			if(Rip_trace > 0){
-				printf("metric better: %s %lu\n",
+				kprintf("metric better: %s %lu\n",
 				 inet_ntoa(ep->target),ep->metric);
 			}
 			drop++;
@@ -551,7 +553,7 @@ int32 ttl;
 		} else {
 			/* Metric is no better, stay with current route */
 			if(Rip_trace > 1){
-				printf("metric not better: %s %lu\n",
+				kprintf("metric not better: %s %lu\n",
 				 inet_ntoa(ep->target),ep->metric);
 			}
 		}
@@ -559,21 +561,21 @@ int32 ttl;
 	if(drop){
 		/* Switching to a better gateway; delete old entry */
 		if(Rip_trace){
-			printf("route drop [%s]/%u",
+			kprintf("route drop [%s]/%u",
 			 inet_ntoa(ep->target),bits);
 			if(rp != NULL)
-				printf(" %s %s %lu",rp->iface->name,
+				kprintf(" %s %s %lu",rp->iface->name,
 				 inet_ntoa(rp->gateway),rp->metric);
-			printf("\n");
+			kprintf("\n");
 		}
 		rt_drop(ep->target,bits);
 	}
 	if(add){
 		/* Add a new entry */
 		if(Rip_trace > 0){
-			printf("route add [%s]/%u %s",inet_ntoa(ep->target),
+			kprintf("route add [%s]/%u %s",inet_ntoa(ep->target),
 			 bits,iface->name);
-			printf(" [%s] %u\n",inet_ntoa(gateway),
+			kprintf(" [%s] %u\n",inet_ntoa(gateway),
 			 (int)ep->metric);
 		}
 		rp = rt_add(ep->target,(unsigned) bits,gateway,iface,
@@ -591,10 +593,10 @@ int32 dest;
 uint replyport;
 {
 	struct mbuf *bp;
-	struct socket lsock,fsock;
+	struct ksocket lsock,fsock;
 	uint8 *cp;
 
-	lsock.address = INADDR_ANY;
+	lsock.address = kINADDR_ANY;
 	lsock.port = replyport;
 
 	/* if we were given a valid dest addr, ask it (the routers on that net)
@@ -632,10 +634,7 @@ struct mbuf **bpp;
 
 /* Write the header of a RIP packet */
 static uint8 *
-putheader(cp,command,version)
-uint8 *cp;
-enum ripcmd command;
-uint8 version;
+putheader(uint8 *cp,enum ripcmd command,uint8 version)
 {
 	*cp++ = command;
 	*cp++ = version;

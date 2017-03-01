@@ -6,13 +6,17 @@
  *	Sep '91 Bill Simpson
  *		minor changes for DTR & RLSD
  */
-#include <errno.h>
+#include "top.h"
+
+#include "errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "timer.h"
 #include "proc.h"
 #include "iface.h"
-#ifndef	UNIX
+#ifdef UNIX
+#include "asy_unix.h"
+#else
 #include "n8250.h"
 #endif
 #include "asy.h"
@@ -29,7 +33,7 @@ static struct tipcb {
 	struct proc *in;
 	struct iface *iface;
 	int (*rawsave)(struct iface *,struct mbuf **);
-	FILE *network;
+	kFILE *network;
 	int echo;
 	struct timer timer;
 } *Tiplist;
@@ -93,12 +97,12 @@ void *n1,*n2;
 		  || c == '\n'){
 			line[pos] = '\0';
 			pos = 0;
-			fputs(line,tip->network);
-			fflush(tip->network);
+			kfputs(line,tip->network);
+			kfflush(tip->network);
 		}
 	}
 	/* get_asy() failed, terminate */
-	fclose(tip->network);
+	kfclose(tip->network);
 	tip->in = tip->proc;
 	tip->proc = Curproc;
 	buf[1] = Asy[dev].iface->name;
@@ -119,18 +123,18 @@ void *p;
 	int dev, c, cmd, s[2], type = TIP;
 
 	if((ifp = if_lookup(argv[1])) == NULL){
-		printf("Interface %s unknown\n",argv[1]);
+		kprintf("Interface %s unknown\n",argv[1]);
 		return 1;
 	}
 	for(dev=0,ap = Asy;dev < ASY_MAX;dev++,ap++)
 		if(ap->iface == ifp)
 			break;
 	if(dev == ASY_MAX){
-		printf("Interface %s not asy port\n",argv[1]);
+		kprintf("Interface %s not asy port\n",argv[1]);
 		return 1;
 	}
 	if(ifp->raw == bitbucket){
-		printf("Tip session already active on %s\n",argv[1]);
+		kprintf("Tip session already active on %s\n",argv[1]);
 		return 1;
 	}
 	ksignal(Curproc,0);	/* Don't keep the parser waiting */
@@ -152,16 +156,18 @@ void *p;
 	suspend(ifp->rxproc);
 
 	for(;;) {
+#ifndef UNIX
 		/* Wait for DCD to be asserted */
 		get_rlsd_asy(dev,1);
+#endif
 
-		if(socketpair(AF_LOCAL,SOCK_STREAM,0,s) == -1){
-			printf("Could not create socket pair, errno %d\n",errno);
+		if(socketpair(kAF_LOCAL,kSOCK_STREAM,0,s) == -1){
+			kprintf("Could not create ksocket pair, kerrno %d\n",kerrno);
 			tip0(2,buf,p);
 			return 1;
 		}
 		tip->echo = WONT;
-		tip->network = fdopen(s[0],"r+t");
+		tip->network = kfdopen(s[0],"r+t");
 		newproc("mbx_incom",2048,mbx_incom,s[1],(void *)type,NULL,0);
 		set_timer(&tip->timer,Tiptimeout*1000);
 		start_timer(&tip->timer);
@@ -169,12 +175,12 @@ void *p;
 		/* Now fork into two paths, one rx, one tx */
 		tip->in = newproc("Mbox tip in",
 				256,tip_in,dev,(void *)tip,NULL,0);
-		while((c = getc(tip->network)) != -1) {
+		while((c = kgetc(tip->network)) != -1) {
 			if(c == IAC){	/* ignore most telnet options */
-				if((cmd = getc(tip->network)) == -1)
+				if((cmd = kgetc(tip->network)) == -1)
 					break;
 				if(cmd > 250 && cmd < 255) {
-					if((c = getc(tip->network)) == -1)
+					if((c = kgetc(tip->network)) == -1)
 						break;
 					switch(cmd){
 					case WILL:
@@ -195,8 +201,8 @@ void *p;
 						cmd = WONT;
 						break;
 					}
-					fprintf(tip->network,"%c%c%c",IAC,cmd,c);
-					fflush(tip->network);
+					kfprintf(tip->network,"%c%c%c",IAC,cmd,c);
+					kfflush(tip->network);
 				}
 				continue;
 			}
@@ -210,7 +216,7 @@ void *p;
 			asy_send(dev,&bp);
 			ifp->lastsent = secclock();
 		}
-		fclose(tip->network);
+		kfclose(tip->network);
 		killproc(&tip->in);
 		kwait(itop(s[1])); /* let mailbox terminate, if necessary */
 		stop_timer(&tip->timer);
@@ -218,8 +224,10 @@ void *p;
 		/* Tell line to go down */
 		ifp->ioctl(ifp,PARAM_DOWN,TRUE,0L);
 
+#ifndef UNIX
 		/* Wait for DCD to be dropped */
 		get_rlsd_asy(dev,0);
+#endif
 	}
 }
 int
@@ -233,7 +241,7 @@ void *p;
 	struct proc *proc;
 
 	if((ifp = if_lookup(argv[1])) == NULL){
-		printf("Interface %s unknown\n",argv[1]);
+		kprintf("Interface %s unknown\n",argv[1]);
 		return 1;
 	}
 	for(tip = Tiplist; tip != NULLTIP; prev = tip, tip = tip->next)
@@ -243,7 +251,7 @@ void *p;
 			else
 				Tiplist = tip->next;
 			proc = tip->proc;
-			fclose(tip->network);
+			kfclose(tip->network);
 			ifp->raw = tip->rawsave;
 			resume(ifp->rxproc);
 			stop_timer(&tip->timer);
@@ -271,7 +279,7 @@ void *t;
 	bp = qdata(msg,strlen(msg));
 	asy_send(tip->iface->dev,&bp);
 	tip->iface->lastsent = secclock();
-	fclose(tip->network);
+	kfclose(tip->network);
 }
 
 static int Stelnet = -1;
@@ -283,7 +291,7 @@ int argc;
 char *argv[];
 void *p;
 {
-	struct sockaddr_in lsocket;
+	struct ksockaddr_in lsocket;
 	int s;
 	int type;
 
@@ -293,21 +301,21 @@ void *p;
 	ksignal(Curproc,0); 	/* Don't keep the parser waiting */
 	chname(Curproc,"Telnet listener");
 
-	lsocket.sin_family = AF_INET;
-	lsocket.sin_addr.s_addr = INADDR_ANY;
+	lsocket.sin_family = kAF_INET;
+	lsocket.sin_addr.s_addr = kINADDR_ANY;
 	if(argc < 2)
 		lsocket.sin_port = IPPORT_TELNET;
 	else
 		lsocket.sin_port = atoi(argv[1]);
-	Stelnet = socket(AF_INET,SOCK_STREAM,0);
-	bind(Stelnet,(struct sockaddr *)&lsocket,sizeof(lsocket));
-	listen(Stelnet,1);
+	Stelnet = ksocket(kAF_INET,kSOCK_STREAM,0);
+	kbind(Stelnet,(struct ksockaddr *)&lsocket,sizeof(lsocket));
+	klisten(Stelnet,1);
 	for(;;){
-		if((s = accept(Stelnet,NULL,(int *)NULL)) == -1)
+		if((s = kaccept(Stelnet,NULL,(int *)NULL)) == -1)
 			break;	/* Service is shutting down */
 
 		if(availmem() != 0){
-			shutdown(s,1);
+			kshutdown(s,1);
 		} else {
 			/* Spawn a server */
 			type = TELNET;

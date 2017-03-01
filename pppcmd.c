@@ -8,8 +8,9 @@
  *
  *	Acknowledgements and correction history may be found in PPP.C
  */
+#include "top.h"
 
-#include <stdio.h>
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "iface.h"
@@ -86,11 +87,11 @@ char *ifname;
 	struct iface *ifp;
 
 	if ((ifp = if_lookup(ifname)) == NULL) {
-		printf("%s: Interface unknown\n",ifname);
+		kprintf("%s: Interface unknown\n",ifname);
 		return(NULL);
 	}
 	if (ifp->iftype->type != CL_PPP) {
-		printf("%s: not a PPP interface\n",ifp->name);
+		kprintf("%s: not a PPP interface\n",ifp->name);
 		return(NULL);
 	}
 	return(ifp);
@@ -107,7 +108,7 @@ void *p;
 	struct iface *ifp;
 
 	if (argc < 2) {
-		printf( "ppp <iface> required\n" );
+		kprintf( "ppp <iface> required\n" );
 		return -1;
 	}
 	if ((ifp = ppp_lookup(argv[1])) == NULL)
@@ -223,32 +224,32 @@ genstat(ppp_p)
 struct ppp_s *ppp_p;
 {
 
-	printf("%s", PPPStatus[ppp_p->phase]);
+	kprintf("%s", PPPStatus[ppp_p->phase]);
 
 	if (ppp_p->phase == pppREADY) {
-		printf("\t(open for %s)",
+		kprintf("\t(kopen for %s)",
 			tformat(secclock() - ppp_p->upsince));
 	}
-	printf("\n");
+	kprintf("\n");
 
-	printf("%10lu In,  %10lu Flags,%6u ME, %6u FE, %6u CSE, %6u other\n",
+	kprintf("%10lu In,  %10lu Flags,%6u ME, %6u FE, %6u CSE, %6u other\n",
 		ppp_p->InRxOctetCount,
 		ppp_p->InOpenFlag,
 		ppp_p->InMemory,
 		ppp_p->InFrame,
 		ppp_p->InChecksum,
 		ppp_p->InError);
-	printf("\t\t%6u Lcp,%6u Pap,%6u IPcp,%6u Unknown\n",
+	kprintf("\t\t%6u Lcp,%6u Pap,%6u IPcp,%6u Unknown\n",
 		ppp_p->InNCP[Lcp],
 		ppp_p->InNCP[Pap],
 		ppp_p->InNCP[IPcp],
 		ppp_p->InUnknown);
-	printf("%10lu Out, %10lu Flags,%6u ME, %6u Fail\n",
+	kprintf("%10lu Out, %10lu Flags,%6u ME, %6u Fail\n",
 		ppp_p->OutTxOctetCount,
 		ppp_p->OutOpenFlag,
 		ppp_p->OutMemory,
 		ppp_p->OutError);
-	printf("\t\t%6u Lcp,%6u Pap,%6u IPcp\n",
+	kprintf("\t\t%6u Lcp,%6u Pap,%6u IPcp\n",
 		ppp_p->OutNCP[Lcp],
 		ppp_p->OutNCP[Pap],
 		ppp_p->OutNCP[IPcp]);
@@ -270,7 +271,7 @@ uint mask;
 	} else if ( (want ^ work) & mask ) {
 		blot = (result ? '+' : '-');
 	}
-	printf( "%c", blot );
+	kprintf( "%c", blot );
 	return result;
 }
 
@@ -288,75 +289,75 @@ struct fsm_s *fsm_p;
 	uint  remotewant = lcp_p->remote.want.negotiate;
 	uint  remotewill = lcp_p->remote.will_negotiate;
 
-	printf("LCP %s\n",
+	kprintf("LCP %s\n",
 		NCPStatus[fsm_p->state]);
 
-	printf("\t\t MRU\t ACCM\t\t AP\t PFC  ACFC Magic\n");
+	kprintf("\t\t MRU\t ACCM\t\t AP\t PFC  ACFC Magic\n");
 
-	printf("\tLocal:\t");
+	kprintf("\tLocal:\t");
 
 	spot( localwork, localwant, localwill, LCP_N_MRU );
-	printf( "%4d\t", localp->mru );
+	kprintf( "%4d\t", localp->mru );
 
 	spot( localwork, localwant, localwill, LCP_N_ACCM );
-	printf( "0x%08lx\t", localp->accm );
+	kprintf( "0x%08lx\t", localp->accm );
 
 	if ( spot( localwork, localwant, localwill, LCP_N_AUTHENT ) ) {
 		switch ( localp->authentication ) {
 		case PPP_PAP_PROTOCOL:
-			printf( "Pap\t" );
+			kprintf( "Pap\t" );
 			break;
 		default:
-			printf( "0x%04x\t", localp->authentication);
+			kprintf( "0x%04x\t", localp->authentication);
 			break;
 		};
 	} else {
-		printf( "None\t" );
+		kprintf( "None\t" );
 	}
 
-	printf( spot( localwork, localwant, localwill, LCP_N_PFC )
+	kprintf( spot( localwork, localwant, localwill, LCP_N_PFC )
 		 ? "Yes " : "No  " );
-	printf( spot( localwork, localwant, localwill, LCP_N_ACFC )
+	kprintf( spot( localwork, localwant, localwill, LCP_N_ACFC )
 		 ? "Yes " : "No  " );
 
 	spot( localwork, localwant, localwill, LCP_N_MAGIC );
 	if ( localp->magic_number != 0L ) {
-		printf( "0x%08lx\n", localp->magic_number );
+		kprintf( "0x%08lx\n", localp->magic_number );
 	} else {
-		printf( "unused\n" );
+		kprintf( "unused\n" );
 	}
 
-	printf("\tRemote:\t");
+	kprintf("\tRemote:\t");
 
 	spot( remotework, remotewant, remotewill, LCP_N_MRU );
-	printf( "%4d\t", remotep->mru );
+	kprintf( "%4d\t", remotep->mru );
 
 	spot( remotework, remotewant, remotewill, LCP_N_ACCM );
-	printf( "0x%08lx\t", remotep->accm );
+	kprintf( "0x%08lx\t", remotep->accm );
 
 	if ( spot( remotework, remotewant, remotewill, LCP_N_AUTHENT ) ) {
 		switch ( remotep->authentication ) {
 		case PPP_PAP_PROTOCOL:
-			printf( "Pap\t" );
+			kprintf( "Pap\t" );
 			break;
 		default:
-			printf( "0x%04x\t", remotep->authentication);
+			kprintf( "0x%04x\t", remotep->authentication);
 			break;
 		};
 	} else {
-		printf( "None\t" );
+		kprintf( "None\t" );
 	}
 
-	printf( spot( remotework, remotewant, remotewill, LCP_N_PFC )
+	kprintf( spot( remotework, remotewant, remotewill, LCP_N_PFC )
 		 ? "Yes " : "No  " );
-	printf( spot( remotework, remotewant, remotewill, LCP_N_ACFC )
+	kprintf( spot( remotework, remotewant, remotewill, LCP_N_ACFC )
 		 ? "Yes " : "No  " );
 
 	spot( remotework, remotewant, remotewill, LCP_N_MAGIC );
 	if ( remotep->magic_number != 0L ) {
-		printf( "0x%08lx\n", remotep->magic_number );
+		kprintf( "0x%08lx\n", remotep->magic_number );
 	} else {
-		printf( "unused\n" );
+		kprintf( "unused\n" );
 	}
 }
 
@@ -367,10 +368,10 @@ struct fsm_s *fsm_p;
 {
 	struct pap_s *pap_p = fsm_p->pdv;
 
-	printf("PAP %s\n",
+	kprintf("PAP %s\n",
 		NCPStatus[fsm_p->state]);
 
-	printf( "\tMessage: '%s'\n", (pap_p->message == NULL) ?
+	kprintf( "\tMessage: '%s'\n", (pap_p->message == NULL) ?
 		"none" : pap_p->message );
 }
 
@@ -385,15 +386,15 @@ struct fsm_s *fsm_p;
 	struct ipcp_value_s *remotep = &(ipcp_p->remote.work);
 	uint  remotework = ipcp_p->remote.work.negotiate;
 
-	printf("IPCP %s\n",
+	kprintf("IPCP %s\n",
 		NCPStatus[fsm_p->state]);
-	printf("\tlocal IP address: %s",
+	kprintf("\tlocal IP address: %s",
 		inet_ntoa(localp->address));
-	printf("  remote IP address: %s\n",
+	kprintf("  remote IP address: %s\n",
 		inet_ntoa(localp->other));
 
 	if (localwork & IPCP_N_COMPRESS) {
-		printf("    In\tTCP header compression enabled:"
+		kprintf("    In\tTCP header compression enabled:"
 			" slots = %d, flag = 0x%02x\n",
 			localp->slots,
 			localp->slot_compress);
@@ -401,7 +402,7 @@ struct fsm_s *fsm_p;
 	}
 
 	if (remotework & IPCP_N_COMPRESS) {
-		printf("    Out\tTCP header compression enabled:"
+		kprintf("    Out\tTCP header compression enabled:"
 			" slots = %d, flag = 0x%02x\n",
 			remotep->slots,
 			remotep->slot_compress);
@@ -422,12 +423,12 @@ void *p;
 	struct timer *t = &(fsm_p->timer);
 
 	if (argc < 2) {
-		printf("%d\n",dur_timer(t)/1000L);
+		kprintf("%d\n",dur_timer(t)/1000L);
 	} else {
 		int x = (int)strtol( argv[1], NULL, 0 );
 
 		if (x <= 0) {
-			printf("Timeout value %s (%d) must be > 0\n",
+			kprintf("Timeout value %s (%d) must be > 0\n",
 				argv[1], x);
 			return -1;
 		} else {
@@ -457,12 +458,12 @@ void *p;
 	struct fsm_s *fsm_p = p;
 
 	if (argc < 2) {
-		printf("%d\n",fsm_p->try_nak);
+		kprintf("%d\n",fsm_p->try_nak);
 	} else {
 		int x = (int)strtol( argv[1], NULL, 0 );
 
 		if (x <= 0) {
-			printf("Value %s (%d) must be > 0\n",
+			kprintf("Value %s (%d) must be > 0\n",
 				argv[1], x);
 			return -1;
 		} else {
@@ -482,12 +483,12 @@ void *p;
 	struct fsm_s *fsm_p = p;
 
 	if (argc < 2) {
-		printf("%d\n",fsm_p->try_req);
+		kprintf("%d\n",fsm_p->try_req);
 	} else {
 		int x = (int)strtol( argv[1], NULL, 0 );
 
 		if (x <= 0) {
-			printf("Value %s (%d) must be > 0\n",
+			kprintf("Value %s (%d) must be > 0\n",
 				argv[1], x);
 			return -1;
 		} else {
@@ -507,12 +508,12 @@ void *p;
 	struct fsm_s *fsm_p = p;
 
 	if (argc < 2) {
-		printf("%d\n",fsm_p->try_terminate);
+		kprintf("%d\n",fsm_p->try_terminate);
 	} else {
 		int x = (int)strtol( argv[1], NULL, 0 );
 
 		if (x <= 0) {
-			printf("Value %s (%d) must be > 0\n",
+			kprintf("Value %s (%d) must be > 0\n",
 				argv[1], x);
 			return -1;
 		} else {

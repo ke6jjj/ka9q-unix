@@ -16,7 +16,7 @@
 
 /* compile-time limitations */
 
-#define	NR4MAXCIRC	20		/* maximum number of open circuits */
+#define	NR4MAXCIRC	20		/* maximum number of kopen circuits */
 #define NR4MAXWIN	127		/* maximum window size, send and receive */
 
 /* protocol limitation: */
@@ -41,8 +41,8 @@
 /* opcodes */
 
 #define NR4OPPID	0		/* protocol ID extension to network layer */
-#define	NR4OPCONRQ	1		/* connect request */
-#define	NR4OPCONAK	2		/* connect acknowledge */
+#define	NR4OPCONRQ	1		/* kconnect request */
+#define	NR4OPCONAK	2		/* kconnect acknowledge */
 #define	NR4OPDISRQ	3		/* disconnect request */
 #define	NR4OPDISAK	4		/* disconnect acknowledge */
 #define	NR4OPINFO	5		/* information packet */
@@ -67,7 +67,7 @@ struct nr4hdr {
 			uint8 proto ;	/* protocol within family */
 		} pid ;
 
-		struct {				/* connect request */
+		struct {				/* kconnect request */
 			uint8 myindex ;	/* sender's circuit index */
 			uint8 myid ;	/* sender's circuit ID */
 			uint8 window ;	/* sender's proposed window size */
@@ -75,7 +75,7 @@ struct nr4hdr {
 			uint8 node[AXALEN] ;	/* callsign of originating node */
 		} conreq ;
 
-		struct {				/* connect acknowledge */
+		struct {				/* kconnect acknowledge */
 			uint8 myindex ;	/* sender's circuit index */
 			uint8 myid ;	/* sender's circuit ID */
 			uint8 window ; 	/* accepted window size */
@@ -115,7 +115,7 @@ struct nr4_addr {
 	uint8 node[AXALEN];
 };
 
-struct sockaddr_nr {
+struct ksockaddr_nr {
 	short nr_family;
 	struct nr4_addr nr_addr;
 };
@@ -134,8 +134,8 @@ struct nr4cb {
 
 	/* Data for round trip timer calculation and setting */
 
-	long srtt ;					/* Smoothed round trip time */
-	long mdev ;					/* Mean deviation in round trip time */
+	int32 srtt ;					/* Smoothed round trip time */
+	int32 mdev ;					/* Mean deviation in round trip time */
 	unsigned blevel ;			/* Backoff level */
 	unsigned txmax ;			/* The maximum number of retries among */
 								/* the frames in the window.  This is 0 */
@@ -145,7 +145,7 @@ struct nr4cb {
 
 	/* flags */
 
-	char clone ;				/* clone this cb upon connect */
+	char clone ;				/* clone this cb upon kconnect */
 	char choked ;				/* choke received from remote */
 	char qfull ;				/* receive queue is full, and we have */
 								/* choked the other end */
@@ -187,8 +187,8 @@ struct nr4cb {
 	struct timer tchoke ;		/* choke timeout */
 	struct timer tack ;		/* ack delay timer */
 
-	struct timer tcd ;		/* connect/disconnect timer */
-	unsigned cdtries ;		/* Number of connect/disconnect tries */
+	struct timer tcd ;		/* kconnect/disconnect timer */
+	unsigned cdtries ;		/* Number of kconnect/disconnect tries */
 
 	void (*r_upcall)(struct nr4cb *,uint);
 					/* receive upcall */
@@ -215,13 +215,13 @@ extern struct nr4circp Nr4circuits[NR4MAXCIRC] ;
 /* Some globals */
 
 extern unsigned short Nr4window ;	/* The advertised window size, in frames */
-extern long Nr4irtt ;			/* The initial round trip time */
+extern int32 Nr4irtt ;			/* The initial round trip time */
 extern unsigned short Nr4retries ;	/* The number of times to retry */
-extern long Nr4acktime ;		/* How long to wait until ACK'ing */
+extern int32 Nr4acktime ;		/* How long to wait until ACK'ing */
 extern char *Nr4states[] ;		/* NET/ROM state names */
 extern char *Nr4reasons[] ;		/* Disconnect reason names */
 extern unsigned short Nr4qlimit ;		/* max receive queue length before CHOKE */
-extern long Nr4choketime ;		/* CHOKEd state timeout */
+extern int32 Nr4choketime ;		/* CHOKEd state timeout */
 extern uint8 Nr4user[AXALEN];	/* User callsign in outgoing connects */
 
 /* function definitions */

@@ -8,8 +8,9 @@
  *
  *	Acknowledgements and correction history may be found in PPP.C
  */
+#include "top.h"
 
-#include <stdio.h>
+#include "stdio.h"
 #include <ctype.h>
 #include <time.h>
 #include "global.h"
@@ -36,7 +37,7 @@ static struct ipcp_value_s ipcp_default = {
 	0			/* no slot compression */
 };
 
-/* for test purposes, accept anything we understand */
+/* for test purposes, kaccept anything we understand */
 static uint ipcp_negotiate = IPCP_N_ADDRESS | IPCP_N_COMPRESS;
 
 static byte_t option_length[] = {
@@ -206,16 +207,16 @@ void *p;
 
 	if (argc < 2) {
 		if ( ipcp_p->peer_min == 0L ) {
-			printf("None");
+			kprintf("None");
 		} else {
-			printf("%s thru ", inet_ntoa(ipcp_p->peer_min));
-			printf("%s\n", inet_ntoa(ipcp_p->peer_max));
+			kprintf("%s thru ", inet_ntoa(ipcp_p->peer_min));
+			kprintf("%s\n", inet_ntoa(ipcp_p->peer_max));
 		}
 		return 0;
 	}
 
 	if ((pool_addr = resolve(argv[1])) == 0L) {
-		printf(Badhost,argv[1]);
+		kprintf(Badhost,argv[1]);
 	}
 
 	/* May specify a consecutive range of addresses; otherwise assume 1 */
@@ -225,7 +226,7 @@ void *p;
 		pool_cnt = (int)strtol( argv[2], NULL, 0 );
 
 	if (pool_cnt <= 0) {
-		printf("Pool count %s (%d) must be > 0\n");
+		kprintf("Pool count %s (%d) must be > 0\n");
 		return -1;
 	}
 
@@ -259,14 +260,14 @@ void *p;
 	int32 x32;
 
 	if (argc < 2) {
-		printf("%s\n", inet_ntoa(side_p->want.address));
+		kprintf("%s\n", inet_ntoa(side_p->want.address));
 		return 0;
-	} else if ( stricmp(argv[1],"allow") == 0 ) {
-		return bit16cmd( &(side_p->will_negotiate), IPCP_N_ADDRESS,
+	} else if ( STRICMP(argv[1],"allow") == 0 ) {
+		return bitcmd( &(side_p->will_negotiate), IPCP_N_ADDRESS,
 			"Allow Address", --argc, &argv[1] );
 	}
 	if ((x32 = resolve(argv[1])) == 0L) {
-		printf(Badhost,argv[1]);
+		kprintf(Badhost,argv[1]);
 	}
 	side_p->want.address = x32;
 	side_p->want.negotiate |= IPCP_N_ADDRESS;
@@ -287,28 +288,28 @@ void *p;
 		if ( side_p->want.negotiate & IPCP_N_COMPRESS ) {
 			switch ( side_p->want.compression ) {
 			case PPP_COMPR_PROTOCOL:
-				printf("TCP header compression enabled; "
+				kprintf("TCP header compression enabled; "
 					"Slots = %d, slot compress = %x\n",
 					side_p->want.slots,
 					side_p->want.slot_compress);
 				break;
 			default:
-				printf("0x%04x\n", side_p->want.compression);
+				kprintf("0x%04x\n", side_p->want.compression);
 				break;
 			};
 		} else {
-			printf("None\n");
+			kprintf("None\n");
 		}
-	} else if ( stricmp(argv[1],"allow") == 0 ) {
-		return bit16cmd( &(side_p->will_negotiate), IPCP_N_COMPRESS,
+	} else if ( STRICMP(argv[1],"allow") == 0 ) {
+		return bitcmd( &(side_p->will_negotiate), IPCP_N_COMPRESS,
 			"Allow Compression", --argc, &argv[1] );
-	} else if ( stricmp(argv[1],"tcp") == 0
-		 || stricmp(argv[1],"vj") == 0 ) {
+	} else if ( STRICMP(argv[1],"tcp") == 0
+		 || STRICMP(argv[1],"vj") == 0 ) {
 		side_p->want.compression = PPP_COMPR_PROTOCOL;
 		if ( argc >= 3 ) {
 			side_p->want.slots = strtol(argv[2],NULL,0);
 			if ( side_p->want.slots < 1 || side_p->want.slots > 255 ) {
-				printf( "slots must be in range 1 to 255" );
+				kprintf( "slots must be in range 1 to 255" );
 				return 1;
 			}
 		} else {
@@ -320,10 +321,10 @@ void *p;
 			side_p->want.slot_compress = IPCP_SLOT_COMPRESS;
 		}
 		side_p->want.negotiate |= IPCP_N_COMPRESS;
-	} else if (stricmp(argv[1],"none") == 0) {
+	} else if (STRICMP(argv[1],"none") == 0) {
 		side_p->want.negotiate &= ~IPCP_N_COMPRESS;
 	} else {
-		printf("allow tcp none\n");
+		kprintf("allow tcp none\n");
 		return 1;
 	}
 	return 0;
@@ -348,12 +349,13 @@ void *p;
 /************************************************************************/
 
 static void
-ipcp_option( bpp, value_p, o_type, o_length, copy_bpp )
-struct mbuf **bpp;
-struct ipcp_value_s *value_p;
-byte_t o_type;
-byte_t o_length;
-struct mbuf **copy_bpp;
+ipcp_option(
+  struct mbuf **bpp,
+  struct ipcp_value_s *value_p,
+  byte_t o_type,
+  byte_t o_length,
+  struct mbuf **copy_bpp
+)
 {
 	struct mbuf *bp;
 	uint8 *cp;

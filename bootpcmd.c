@@ -8,12 +8,11 @@
 /*                                               */
 /* BOOTP is documented in RFC 951 and RFC 1048   */
 /*************************************************/
+#include "top.h"
 
-
-
-#include <stdio.h>
-#include <sys\types.h>
-#include <sys\stat.h>
+#include "stdio.h"
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <time.h>
 #include <ctype.h>
 #include <stdarg.h>
@@ -32,7 +31,7 @@
 #define BP_DEFAULT_FILE "boot"
 
 static char    *bootptab = BP_DEFAULT_TAB;
-static FILE    *bootfp;                 /* bootptab fp */
+static kFILE    *bootfp;                 /* bootptab fp */
 static long     modtime;          	/* last modification time of bootptab */
 
 static char    bootplog[64] = BP_DEFAULT_LOG;
@@ -105,19 +104,19 @@ char *argv[];
 void *p;
 {
 
-        struct socket lsock;
+        struct ksocket lsock;
         time_t tloc;
 	char *usage = "bootpd start\n";
 
 	if (argc != 1) {
-		printf (usage);
+		kprintf (usage);
 		return (-1);
 	}
 
 	time(&tloc);
         bp_log ("\n\n####BOOTP server starting at %s\n", ctime(&tloc));
 
-        lsock.address = INADDR_ANY;
+        lsock.address = kINADDR_ANY;
         lsock.port = IPPORT_BOOTPS;
 
         /* This way is better than recvfrom because it passes the iface in bootpd call */
@@ -125,7 +124,7 @@ void *p;
 
         if (Bootpd_cb == NULL) {
                 if ((Bootpd_cb = open_udp(&lsock, bootpd)) == NULL) {
-			printf ("bootpd: can't open_udp\n");	
+			kprintf ("bootpd: can't open_udp\n");	
 			return (-1);
 		}
         }
@@ -154,7 +153,7 @@ void *p;
 	char *usage = "bootpd stop\n";
 
 	if (argc != 1) {
-		printf (usage);
+		kprintf (usage);
 		return -1;
 	}
 
@@ -166,7 +165,7 @@ void *p;
         del_udp (&Bootpd_cb);
         Bootpd_cb = NULL;
 
-	bp_log ("Bootpd shutdown %s", ctime (&now));
+	bp_log ("Bootpd kshutdown %s", ctime (&now));
         return (0);
 };
 
@@ -186,15 +185,15 @@ void *p;
 
 	if (argc == 1) {
 		if (LogInFile)
-                	printf ("Bootpd logging to file '%s' turned on.\n", bootplog);
+                	kprintf ("Bootpd logging to file '%s' turned on.\n", bootplog);
 		else 
-                	printf ("Bootpd logging to file '%s' turned off.\n", bootplog);
+                	kprintf ("Bootpd logging to file '%s' turned off.\n", bootplog);
 	}
 	else {
 		for (i = 1; i < argc; i++) {
 
 			if (strcmp ("?", argv[i]) == 0) 
-				printf (usage);
+				kprintf (usage);
 
 			else if (strcmp ("off", argv[i]) == 0) {
 				bp_log ("Stopping file logging at %s", ctime(&now));
@@ -228,18 +227,18 @@ void *p;
 
         if (argc == 1)
 		if (LogOnScreen)	
-                	printf ("Bootpd logging on screen turned on.\n");
+                	kprintf ("Bootpd logging on screen turned on.\n");
 		else 
-                	printf ("Bootpd logging on screen turned off.\n");
+                	kprintf ("Bootpd logging on screen turned off.\n");
 
         else if (argc == 2)  {
                 if  (strcmp ("on", argv[1]) == 0)
                         LogOnScreen = 1;
                 else if  (strcmp ("off", argv[1]) == 0)
                         LogOnScreen = 0;
-		else printf (usage);
+		else kprintf (usage);
 	}
-	else printf (usage);
+	else kprintf (usage);
 	return 0;
 }
 
@@ -257,16 +256,16 @@ void *p;
 	char *usage = "bootpd dns [<IP addr of domain name server>...]\n";
 
 	if (argc == 1) {
-		printf ("Bootp domain name servers: ");
+		kprintf ("Bootp domain name servers: ");
 		for (i=0; (i < BP_MAXDNS) && (bp_DefaultDomainNS[i] != 0); i++) 
-			printf (" %s", inet_ntoa (bp_DefaultDomainNS[i]));
-		printf ("\n");
+			kprintf (" %s", inet_ntoa (bp_DefaultDomainNS[i]));
+		kprintf ("\n");
 		return (0);
 	}
 
 	if (argc > 1) {
 		if ((argc == 2) && (strcmp ("?", argv[1]) == 0)) {
-			printf (usage);
+			kprintf (usage);
 			return 0;
 		}
 			
@@ -278,7 +277,7 @@ void *p;
 		/* get ip address */
 		for (i = 1; (i < argc) && (i < BP_MAXDNS); i++) {
                 	if (4 != sscanf (argv[i], "%d.%d.%d.%d", &a0, &a1, &a2, &a3)) {
-                       	 	printf("bad internet address: %s\n", argv[1], linenum);
+                       	 	kprintf("bad internet address: %s\n", argv[1], linenum);
 				return  -1;
                 	}
 	        	bp_DefaultDomainNS[i-1] = aton(argv[i]);
@@ -317,7 +316,7 @@ void *p;
 		}	
 		/* Return if not found */
 		if (hp == NULL) {
-			printf ("Host %s not in host tables.\n", argv[1]);
+			kprintf ("Host %s not in host tables.\n", argv[1]);
 			return -1;
 		}
 		bp_log ("Host %s removed from host table\n", hp->name);
@@ -327,7 +326,7 @@ void *p;
 		Nhosts--;
 		return 0;
 	}
-	else printf (usage);
+	else kprintf (usage);
 	return 0;
 }
 
@@ -342,17 +341,17 @@ dumphosts()
         struct host *hp;
 	struct arp_type *at;
 
-        printf ("\n\nStatus of host table\n");
+        kprintf ("\n\nStatus of host table\n");
 
         if (Nhosts == 0) {
-                printf ("     No hosts in host table\n");
+                kprintf ("     No hosts in host table\n");
                 return;
         }
         for (i = 0; i <= Nhosts-1; i++) {
                 hp = &hosts[i];
 		at = &Arp_type[hp->htype];
 		
-                printf ("%s  %s  %s  %s  '%s'\n",
+                kprintf ("%s  %s  %s  %s  '%s'\n",
                         hp->name, ArpNames[hp->htype], (*at->format)(bp_ascii, hp->haddr),
                         inet_ntoa ((int32)hp->iaddr.s_addr),
                         hp->bootfile);
@@ -401,7 +400,7 @@ void *p;
 				hp->htype = ARP_APPLETALK;
 				break;
 			default:
-				printf("unknown hardware type \"%s\"\n",argv[2]);
+				kprintf("unknown hardware type \"%s\"\n",argv[2]);
 				return -1;
 		}
 
@@ -416,7 +415,7 @@ void *p;
 		/* get ip address */
                 if (4 != sscanf (argv[4], "%d.%d.%d.%d", &a0, &a1, &a2, &a3))
                 {
-                        printf("bad internet address: %s\n", argv[1], linenum);
+                        kprintf("bad internet address: %s\n", argv[1], linenum);
                         return (0);
                 }
 	        hp->iaddr.s_addr = aton(argv[4]);
@@ -435,7 +434,7 @@ void *p;
 		break;
 	
 	default:
-		printf (usage);
+		kprintf (usage);
 		break;
 	}
 	return 0;
@@ -452,10 +451,10 @@ void *p;
 	char *usage = "bootpd homedir [<name of home directory> | default]\n";
 
 	if (argc == 1) 	
-		printf ("Bootp home directory: '%s'\n", homedir);
+		kprintf ("Bootp home directory: '%s'\n", homedir);
 	else if (argc == 2) {
 		if (strcmp (argv[1], "?") == 0)
-			printf (usage);
+			kprintf (usage);
 		else if (strcmp (argv[1], "default") == 0) {
 			strcpy (homedir, BP_DEFAULT_DIR);
 			bp_log ("Bootp home directory set to: '%s'\n", homedir);
@@ -465,7 +464,7 @@ void *p;
 			bp_log ("Bootp home directory set to: '%s'\n", homedir);
 		}
 	}
-	else printf (usage);
+	else kprintf (usage);
 	return (0);
 };
 
@@ -480,10 +479,10 @@ void *p;
 	char *usage = "bootpd defaultfile [<name of default boot file> | default]\n";
 
         if (argc == 1)
-                printf ("Bootp default boot file:  '%s'\n", defaultboot);
+                kprintf ("Bootp default boot file:  '%s'\n", defaultboot);
         else if (argc == 2) {
 		if (strcmp (argv[1], "?") == 0)
-                        printf (usage);
+                        kprintf (usage);
                 else if (strcmp (argv[1], "default") == 0)
                         strcpy (defaultboot, BP_DEFAULT_FILE);
                 else {
@@ -492,7 +491,7 @@ void *p;
 		}
         }
 	else
-                printf (usage);
+                kprintf (usage);
 
 	return  (0);
 };
@@ -514,14 +513,14 @@ void *p;
 		return 0;
 	}
 	if ((argc == 2) && (strcmp ("?", argv[1]) == 0)) {
-			printf (usage);
+			kprintf (usage);
 			return 0;
 	}
 
 	/* get the interface */
 	iface = if_lookup (argv[1]);
 	if (iface == NULL) {
-		printf ("network '%s' not found\n", argv[1]);
+		kprintf ("network '%s' not found\n", argv[1]);
 		return  (-1);
 	}
 	if (argc == 2) {
@@ -531,7 +530,7 @@ void *p;
 	if (argc == 3) {
 		if (strcmp ("off", argv[2]) == 0) 
 			da_done_net (iface);
-		else printf (usage);
+		else kprintf (usage);
 	}
 	else if (argc == 4) {
 		
@@ -541,7 +540,7 @@ void *p;
 			(i0 > 255) || (i1 > 255) || (i2 > 255) || (i3 > 255)
 		)
                 {
-                	printf("bad internet address: %s\n", argv[2], linenum);
+                	kprintf("bad internet address: %s\n", argv[2], linenum);
                         return (-1);
                 }
 
@@ -549,7 +548,7 @@ void *p;
 			(i0 > 255) || (i1 > 255) || (i2 > 255) || (i3 > 255)
 		)
                 {
-                	printf("bad internet address: %s\n", argv[3], linenum);
+                	kprintf("bad internet address: %s\n", argv[3], linenum);
                         return (-1);
                 }
 
@@ -560,7 +559,7 @@ void *p;
 
 	}
 	else {
-		printf (usage);
+		kprintf (usage);
 		return (0);
 	}
 
@@ -580,17 +579,17 @@ void *p;
 
 /*
  * Read bootptab database file.  Avoid rereading the file if the
- * write date hasn't changed since the last time we read it.
+ * kwrite date hasn't changed since the last time we kread it.
  */
 int
 readtab()
 {
         struct stat st;
 
-        /* If the file hasn't been opened, open it. */
+        /* If the file hasn't been opened, kopen it. */
         if (bootfp == 0) {
-                if ((bootfp = fopen(bootptab, "r")) == NULL) {
-                        bp_log("Can't open bootptab file: %s\n", bootptab);
+                if ((bootfp = kfopen(bootptab, "r")) == NULL) {
+                        bp_log("Can't kopen bootptab file: %s\n", bootptab);
                         return (-1);
                 }
         }
@@ -602,21 +601,21 @@ readtab()
         }
         /* It's been changed, reread. */
 
-        if ((bootfp = fopen(bootptab, "r")) == NULL) {
-                bp_log("Can't open %s\n", bootptab);
+        if ((bootfp = kfopen(bootptab, "r")) == NULL) {
+                bp_log("Can't kopen %s\n", bootptab);
                 return (-1);
         }
-        fstat(fileno(bootfp), &st);
+        fstat(kfileno(bootfp), &st);
         bp_log("(re)reading %s\n", bootptab);
         modtime = st.st_mtime;
 
         /*
-         * read and parse each line in the file.
+         * kread and parse each line in the file.
          */
 
-	line = mallocw(BUFSIZ);	
+	line = mallocw(kBUFSIZ);	
 	
-	while (fgets(line, BUFSIZ, bootfp) != NULL) {
+	while (kfgets(line, kBUFSIZ, bootfp) != NULL) {
 		linenum++;
 
 
@@ -627,7 +626,7 @@ readtab()
                          continue;
 
         }
-        fclose(bootfp);
+        kfclose(bootfp);
 	free (line);
 	return (0);
 }
@@ -645,24 +644,24 @@ readtab_shut()
 void
 bp_log(char *fmt,...)
 {
-        FILE *fp;
+        kFILE *fp;
 	va_list ap;
 
         if (LogOnScreen) {
 		va_start(ap,fmt);
-		vprintf(fmt, ap);
+		kvprintf(fmt, ap);
 		va_end(ap);
-		fflush (stdout);
+		kfflush (kstdout);
 	}
         if (LogInFile) {
-                if ((fp = fopen(bootplog, "a+")) == NULL) {
-                        printf ("Cannot open bootplog.\n");
+                if ((fp = kfopen(bootplog, "a+")) == NULL) {
+                        kprintf ("Cannot kopen bootplog.\n");
                         return;
                 }
 		va_start(ap,fmt);
-		vfprintf(fp, fmt, ap);
+		kvfprintf(fp, fmt, ap);
 		va_end(ap);
-                fflush(fp);
-                fclose(fp);
+                kfflush(fp);
+                kfclose(fp);
         }
 }

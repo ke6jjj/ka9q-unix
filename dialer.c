@@ -17,17 +17,21 @@
  *		autosense modem control stuff removed
  *		Largely rewritten to do demand dialing
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <ctype.h>
 #include <stdlib.h>
-#include <errno.h>
+#include "errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "timer.h"
 #include "proc.h"
 #include "iface.h"
 #include "netuser.h"
+#ifndef UNIX
 #include "n8250.h"
+#endif
 #include "asy.h"
 #include "tty.h"
 #include "socket.h"
@@ -78,17 +82,17 @@ char *argv[];
 
 	if(ifp->dev >= ASY_MAX || Asy[ifp->dev].iface != ifp){
 		/* "Can't happen" */
-		printf("Interface %s not asy port\n",argv[1]);
+		kprintf("Interface %s not asy port\n",argv[1]);
 		return 1;
 	}
 	ap = &Asy[ifp->dev];
 	if(timeout != 0 && argc < 3){
-		printf("Usage: dial <iface> <timeout> <raisefile> <dropfile> <ringfile>\n");
-		printf("       dial <iface> 0\n");
+		kprintf("Usage: dial <iface> <timeout> <raisefile> <dropfile> <ringfile>\n");
+		kprintf("       dial <iface> 0\n");
 		return 1;
 	}
 	if(!ap->rlsd){
-		printf("Must set 'r' flag at attach time\n");
+		kprintf("Must set 'r' flag at attach time\n");
 		return 1;
 	}
 	if(ifp->dstate != NULL){
@@ -139,22 +143,22 @@ struct iface *ifp;
 	struct asy *ap;
 
 	if(dialer == NULL){
-		printf("No dialer active on %s\n",ifp->name);
+		kprintf("No dialer active on %s\n",ifp->name);
 		return 1;
 	}
 	ap = &Asy[ifp->dev];
-	printf("%s: %s,",ifp->name,(ap->msr & MSR_RLSD) ? "UP":"DOWN");
-	printf(" idle timer %lu/%lu sec\n",read_timer(&dialer->idle)/1000L,
+	kprintf("%s: %s,",ifp->name,(ap->msr & MSR_RLSD) ? "UP":"DOWN");
+	kprintf(" idle timer %lu/%lu sec\n",read_timer(&dialer->idle)/1000L,
 	  dur_timer(&dialer->idle)/1000L);
 	if(dialer->actfile != NULL)
-		printf("up script: %s\n",dialer->actfile);
+		kprintf("up script: %s\n",dialer->actfile);
 	if(dialer->dropfile != NULL)
-		printf("down script: %s\n",dialer->dropfile);
+		kprintf("down script: %s\n",dialer->dropfile);
 	if(dialer->ansfile != NULL)
-		printf("answer script: %s\n",dialer->ansfile);
-	printf("Calls originated %lu, Calls answered %lu\n",
+		kprintf("answer script: %s\n",dialer->ansfile);
+	kprintf("Calls originated %lu, Calls answered %lu\n",
 		dialer->originates,dialer->answers);
-	printf("Calls timed out %lu, carrier transitions %lu\n",
+	kprintf("Calls timed out %lu, carrier transitions %lu\n",
 		dialer->localdrops,ap->cdchanges);
 	return 0;
 }
@@ -244,13 +248,13 @@ struct iface *ifp;
 char *file;
 {
 	char *inbuf;
-	FILE *fp;
+	kFILE *fp;
 	int (*rawsave)(struct iface *,struct mbuf **);
 	int result = 0;
 
-	if((fp = fopen(file,READ_TEXT)) == NULL){
+	if((fp = kfopen(file,READ_TEXT)) == NULL){
 		if(ifp->trace & (IF_TRACE_IN|IF_TRACE_OUT))
-			tprintf(ifp,"redial: can't read %s\n",file);
+			tprintf(ifp,"redial: can't kread %s\n",file);
 		return -1;
 	}
 	/* Save output handler and temporarily redirect output to null */
@@ -273,8 +277,8 @@ char *file;
 	 */
 	suspend(ifp->rxproc);
 
-	inbuf = mallocw(BUFSIZ);
-	while(fgets(inbuf,BUFSIZ,fp) != NULL){
+	inbuf = mallocw(kBUFSIZ);
+	while(kfgets(inbuf,kBUFSIZ,fp) != NULL){
 		rip(inbuf);
 		logmsg(-1,"%s dialer: %s",ifp->name,inbuf);
 		if(ifp->trace & (IF_TRACE_IN|IF_TRACE_OUT))
@@ -284,7 +288,7 @@ char *file;
 		}
 	}
 	free(inbuf);
-	fclose(fp);
+	kfclose(fp);
 
 	if(result == 0){
 		ifp->lastsent = ifp->lastrecv = secclock();
@@ -402,10 +406,10 @@ void *p;
 	kalarm(atol(argv[1]));
 
 	if(argc == 2){
-		while((c = get_asy(ifp->dev)) != -1 && errno != EALARM){
+		while((c = get_asy(ifp->dev)) != -1 && kerrno != kEALARM){
 			if(ifp->trace & IF_TRACE_IN){
-				fputc(c,ifp->trfp);
-				fflush(ifp->trfp);
+				kfputc(c,ifp->trfp);
+				kfflush(ifp->trfp);
 			}
 		}
 		kalarm(0L);
@@ -416,8 +420,8 @@ void *p;
 
 	while(*cp != '\0' && (c = get_asy(ifp->dev)) != -1){
 		if(ifp->trace & IF_TRACE_IN){
-			fputc(c,ifp->trfp);
-			fflush(ifp->trfp);
+			kfputc(c,ifp->trfp);
+			kfflush(ifp->trfp);
 		}
 		if(*cp++ != c){
 			cp = argv[2];
@@ -426,13 +430,13 @@ void *p;
 	if(argc > 3){
 		uint speed = 0;
 
-		if(stricmp(argv[3], "speed") != 0)
+		if(STRICMP(argv[3], "speed") != 0)
 			return -1;
 
 		while((c = get_asy(ifp->dev)) != -1){
 			if(ifp->trace & IF_TRACE_IN){
-				fputc(c,ifp->trfp);
-				fflush(ifp->trfp);
+				kfputc(c,ifp->trfp);
+				kfflush(ifp->trfp);
 			}
 			if(isdigit(c)){
 				speed *= 10;

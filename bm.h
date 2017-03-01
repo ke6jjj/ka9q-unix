@@ -47,11 +47,11 @@
 #define LINELEN		256
 
 extern unsigned Maxlet;		/* max messages */
-extern char *fgets();
+extern char *kfgets();
 extern char *Hdrs[];
 
 void scanmail(struct mbx *m);
-int msgtofile(struct mbx *m,int msg,FILE *tfile,int noheader);
+int msgtofile(struct mbx *m,int msg,kFILE *tfile,int noheader);
 int dolistnotes(int argc,char *argv[],void *p);
 int isarea(char *name);
 int dodelmsg(int argc,char *argv[],void *p);

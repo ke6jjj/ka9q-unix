@@ -8,8 +8,9 @@
  *
  *	Acknowledgements and correction history may be found in PPP.C
  */
+#include "top.h"
 
-#include <stdio.h>
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "iface.h"
@@ -21,6 +22,7 @@
 #include "cmdparse.h"
 #include "devparam.h"
 #include "trace.h"
+#include "errno.h"
 
 
 /* These defaults are defined in the PPP RFCs, and must not be changed */
@@ -35,7 +37,7 @@ static struct lcp_value_s lcp_default = {
 	0L,		/* no reporting period */
 };
 
-/* for test purposes, accept anything we understand in the NAK */
+/* for test purposes, kaccept anything we understand in the NAK */
 static uint lcp_negotiate = LCP_N_MRU | LCP_N_ACCM | LCP_N_AUTHENT
 		| LCP_N_PFC | LCP_N_ACFC | LCP_N_MAGIC;
 
@@ -221,9 +223,9 @@ void *p;
 	struct lcp_side_s *side_p = p;
 
 	if (argc < 2) {
-		printf("0x%08lx\n",side_p->want.accm);
-	} else if (stricmp(argv[1],"allow") == 0) {
-		return bit16cmd(&(side_p->will_negotiate),LCP_N_ACCM,
+		kprintf("0x%08lx\n",side_p->want.accm);
+	} else if (STRICMP(argv[1],"allow") == 0) {
+		return bitcmd(&(side_p->will_negotiate),LCP_N_ACCM,
 			"Allow ACCM", --argc, &argv[1] );
 	} else {
 		side_p->want.accm = strtoul(argv[1], NULL, 0);
@@ -244,11 +246,11 @@ void *p;
 {
 	struct lcp_side_s *side_p = p;
 
-	if (stricmp(argv[1],"allow") == 0) {
-		return bit16cmd(&(side_p->will_negotiate),LCP_N_ACFC,
+	if (STRICMP(argv[1],"allow") == 0) {
+		return bitcmd(&(side_p->will_negotiate),LCP_N_ACFC,
 			"Allow Address/Control Field Compression", --argc, &argv[1] );
 	}
-	return bit16cmd( &(side_p->want.negotiate), LCP_N_ACFC,
+	return bitcmd( &(side_p->want.negotiate), LCP_N_ACFC,
 		"Address/Control Field Compression", argc, argv );
 }
 
@@ -265,25 +267,25 @@ void *p;
 		if ( side_p->want.negotiate & LCP_N_AUTHENT ) {
 			switch ( side_p->want.authentication ) {
 			case PPP_PAP_PROTOCOL:
-				printf("Pap\n");
+				kprintf("Pap\n");
 				break;
 			default:
-				printf("0x%04x\n", side_p->want.authentication);
+				kprintf("0x%04x\n", side_p->want.authentication);
 				break;
 			};
 		} else {
-			printf("None\n");
+			kprintf("None\n");
 		}
-	} else if (stricmp(argv[1],"allow") == 0) {
-		return bit16cmd(&(side_p->will_negotiate),LCP_N_AUTHENT,
+	} else if (STRICMP(argv[1],"allow") == 0) {
+		return bitcmd(&(side_p->will_negotiate),LCP_N_AUTHENT,
 			"Allow Authentication", --argc, &argv[1] );
-	} else if (stricmp(argv[1],"pap") == 0) {
+	} else if (STRICMP(argv[1],"pap") == 0) {
 		side_p->want.negotiate |= LCP_N_AUTHENT;
 		side_p->want.authentication = PPP_PAP_PROTOCOL;
-	} else if (stricmp(argv[1],"none") == 0) {
+	} else if (STRICMP(argv[1],"none") == 0) {
 		side_p->want.negotiate &= ~LCP_N_AUTHENT;
 	} else {
-		printf("allow pap none\n");
+		kprintf("allow pap none\n");
 		return 1;
 	}
 	return 0;
@@ -300,9 +302,9 @@ void *p;
 	int result = 0;
 
 	if (argc < 2) {
-		printf("%d\n",side_p->want.magic_number);
-	} else if (stricmp(argv[1],"allow") == 0) {
-		return bit16cmd(&(side_p->will_negotiate),LCP_N_MAGIC,
+		kprintf("%d\n",side_p->want.magic_number);
+	} else if (STRICMP(argv[1],"allow") == 0) {
+		return bitcmd(&(side_p->will_negotiate),LCP_N_MAGIC,
 			"Allow Magic Number", --argc, &argv[1] );
 	} else {
 		int32 x = strtoul(argv[1], NULL, 0);
@@ -338,15 +340,15 @@ void *p;
 	struct lcp_side_s *side_p = p;
 
 	if (argc < 2) {
-		printf("%d\n",side_p->want.mru);
-	} else if (stricmp(argv[1],"allow") == 0) {
-		return bit16cmd(&(side_p->will_negotiate),LCP_N_MRU,
+		kprintf("%d\n",side_p->want.mru);
+	} else if (STRICMP(argv[1],"allow") == 0) {
+		return bitcmd(&(side_p->will_negotiate),LCP_N_MRU,
 			"Allow MRU", --argc, &argv[1] );
 	} else {
 		int x = (int)strtol( argv[1], NULL, 0 );
 
 		if (x < LCP_MRU_LO || x > LCP_MRU_HI) {
-			printf("MRU %s (%d) out of range %d thru %d\n",
+			kprintf("MRU %s (%d) out of range %d thru %d\n",
 				argv[1], x, LCP_MRU_LO, LCP_MRU_HI);
 			return -1;
 		} else if ( x != LCP_MRU_DEFAULT ) {
@@ -368,11 +370,11 @@ void *p;
 {
 	struct lcp_side_s *side_p = p;
 
-	if (stricmp(argv[1],"allow") == 0) {
-		return bit16cmd(&(side_p->will_negotiate),LCP_N_PFC,
+	if (STRICMP(argv[1],"allow") == 0) {
+		return bitcmd(&(side_p->will_negotiate),LCP_N_PFC,
 			"Allow Protocol Field Compression", --argc, &argv[1] );
 	}
-	return bit16cmd( &(side_p->want.negotiate), LCP_N_PFC,
+	return bitcmd( &(side_p->want.negotiate), LCP_N_PFC,
 		"Protocol Field Compression", argc, argv );
 }
 
@@ -395,12 +397,8 @@ void *p;
 /************************************************************************/
 
 static void
-lcp_option( bpp, value_p, o_type, o_length, copy_bpp )
-struct mbuf **bpp;
-struct lcp_value_s *value_p;
-byte_t o_type;
-byte_t o_length;
-struct mbuf **copy_bpp;
+lcp_option(struct mbuf **bpp, struct lcp_value_s *value_p, byte_t o_type,
+	byte_t o_length, struct mbuf **copy_bpp )
 {
 	struct mbuf *bp;
 	uint8 *cp;
@@ -995,7 +993,7 @@ struct fsm_s *fsm_p;
 
 	/* Tell the dialer to shut down */
 	if ( ifp->supv != NULL )
-		alert( ifp->supv, EABORT );
+		alert( ifp->supv, kEABORT );
 
 	/* Now, tell the device to go down.
 	 * In turn, it should tell our IO status
@@ -1006,7 +1004,7 @@ struct fsm_s *fsm_p;
 
 
 /************************************************************************/
-/* Close higher levels in preparation for link shutdown */
+/* Close higher levels in preparation for link kshutdown */
 static void
 lcp_closing(fsm_p)
 struct fsm_s *fsm_p;

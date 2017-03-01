@@ -1,8 +1,10 @@
 /* Driver for FTP Software's packet driver interface. (PC specific code)
  * Rewritten Feb 1996 for DPMI with DJGPP Phil Karn
  */
+#include "top.h"
+
 #include <sys/types.h>
-#include <stdio.h>
+#include "stdio.h"
 #include <go32.h>
 #include <dos.h>
 #include <dpmi.h>
@@ -167,7 +169,7 @@ pkint(_go32_dpmi_registers *reg)
 		}
 		if(pp->wptr + len + sizeof(len) > pp->dossize){
 			/* Not enough room at end of DOS buffer for length
-			 * plus data, so write zero length and wrap around
+			 * plus data, so kwrite zero length and wrap around
 			 */
 			uint zero = 0;
 			pp->cnt += pp->dossize - pp->wptr;
@@ -212,7 +214,7 @@ struct iface *iface
 	pp = &Pktdrvr[iface->dev];
 	/* Call driver's release_type() entry */
 	if(release_type(pp->intno,pp->handle) == -1)
-		printf("%s: release_type error code %u\n",iface->name,Derr);
+		kprintf("%s: release_type error code %u\n",iface->name,Derr);
 
 	pp->iface = NULL;
 	dosmem.size = pp->dossize/16;
@@ -257,11 +259,11 @@ void *p
 			break;
 	}
 	if(i >= PK_MAX){
-		printf("Too many packet drivers\n");
+		kprintf("Too many packet drivers\n");
 		return -1;
 	}
 	if(if_lookup(argv[2]) != NULL){
-		printf("Interface %s already exists\n",argv[2]);
+		kprintf("Interface %s already exists\n",argv[2]);
 		return -1;
 	}
 	intno = htoi(argv[1]);
@@ -271,23 +273,23 @@ void *p
 	dosmemget(intno*4,4,vec);
 	pkt_addr = vec[1] * 16 + vec[0];
 	if(pkt_addr == 0){
-		printf("No packet driver loaded at int 0x%x\n",intno);
+		kprintf("No packet driver loaded at int 0x%x\n",intno);
 		return -1;
 	}
 	dosmemget(pkt_addr+3,9,sig);
 	if(strcmp(sig,"PKT DRVR") != 0){
-		printf("No packet driver loaded at int 0x%x\n",intno);
+		kprintf("No packet driver loaded at int 0x%x\n",intno);
 		return -1;
 	}
 	/* Find out what we've got */
  	if(driver_info(intno,-1,NULL,&class,&type,NULL,NULL) < 0){
-		printf("driver_info call failed\n");
+		kprintf("driver_info call failed\n");
 		return -1;
 	}
 	pp = &Pktdrvr[i];
 	dosmem.size = 64*atoi(argv[3]); /* KB -> paragraphs */
 	if(_go32_dpmi_allocate_dos_memory(&dosmem)){
-		printf("DOS memory allocate failed, max size = %d\n",dosmem.size*16);
+		kprintf("DOS memory allocate failed, max size = %d\n",dosmem.size*16);
 		return -1;
 	}
 	pp->dossize = dosmem.size * 16;
@@ -311,7 +313,7 @@ void *p
 	pp->rmcb_seginfo.pm_offset = (int)pkint;
 	if((i = _go32_dpmi_allocate_real_mode_callback_retf(&pp->rmcb_seginfo,
 	 &pp->rmcb_registers)) != 0){
-		printf("real mode callback alloc failed: %d\n",i);
+		kprintf("real mode callback alloc failed: %d\n",i);
 		return -1;
 	}
 	pp->handle = access_type(intno,class,ANYTYPE,0,pp->rmcb_seginfo.rm_segment,
@@ -323,15 +325,15 @@ void *p
 
 		/**** temp set multicast flag ****/
 /*		i = set_rcv_mode(intno,pp->handle,5);
-		printf("set_rcv_mode returns %d, Derr = %d\n",i,Derr); */
+		kprintf("set_rcv_mode returns %d, Derr = %d\n",i,Derr); */
 
 		/* Get hardware Ethernet address from driver */
 		if_pk->hwaddr = mallocw(EADDR_LEN);
 		get_address(intno,pp->handle,if_pk->hwaddr,EADDR_LEN);
 		if(if_pk->hwaddr[0] & 1){
-			printf("Warning! Interface '%s' has a multicast address:",
+			kprintf("Warning! Interface '%s' has a multicast address:",
 			 if_pk->name);
-			printf(" (%s)\n",
+			kprintf(" (%s)\n",
 			 (*if_pk->iftype->format)(tmp,if_pk->hwaddr));
 		}
 		break;
@@ -347,7 +349,7 @@ void *p
 		setencap(if_pk,"SLIP");
 		break;
 #ifdef	AX25
-	case CL_KISS:	/* Note that the raw routine puts on the command */
+	case CL_KISS:	/* Note that the raw routine kputs on the command */
 	case CL_AX25:
 		setencap(if_pk,"AX25");
 		if_pk->hwaddr = mallocw(AXALEN);
@@ -359,7 +361,7 @@ void *p
 		get_address(intno,pp->handle,(uint8 *)&if_pk->addr,4);
 		break;
 	default:
-		printf("Packet driver has unsupported class %u\n",class);
+		kprintf("Packet driver has unsupported class %u\n",class);
 		free(if_pk->name);
 		free(if_pk);
 		return -1;
@@ -522,7 +524,7 @@ loop:	while(disable(),i=(volatile)pp->cnt,enable(),i == 0)
 	bp = ambufw(len+sizeof(struct iface *));
 	bp->data += sizeof(struct iface *);
 #ifdef	debug
-	printf("overf %d cnt %d start %d len %d\n",pp->overflows,
+	kprintf("overf %d cnt %d start %d len %d\n",pp->overflows,
 		pp->cnt,pp->rptr+sizeof(len),len);
 #endif
 	dosmemget(pp->dosbase+pp->rptr+sizeof(len),len,bp->data);

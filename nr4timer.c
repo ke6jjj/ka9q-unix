@@ -2,8 +2,9 @@
  * Copyright 1989 by Daniel M. Frank, W9NK.  Permission granted for
  * non-commercial distribution only.
  */
+#include "top.h"
 
-#include <stdio.h>
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "timer.h"
@@ -27,7 +28,7 @@ void *p ;
 	struct nr4hdr rhdr ;
 
 #ifdef NR4DEBUG
-	printf("ACKIT called.\n") ;
+	kprintf("ACKIT called.\n") ;
 #endif
 	if (cb->qfull)				/* Are we choked? */
 		rhdr.opcode = NR4OPACK | NR4CHOKE ;
@@ -74,7 +75,7 @@ void *p ;
 			t->retries++ ;
 			
 			/* We keep track of the highest retry count in the window. */
-			/* If packet times out and its new retry count exceeds the *
+			/* If packet times out and its new retry count exceeds the */
 			/* max, we update the max and bump the backoff level.  This */
 			/* expedient is to avoid bumping the backoff level for every */
 			/* expiration, since with more than one timer we would back */
@@ -124,7 +125,7 @@ void *p ;
 			set_timer(&cb->tcd,dur_timer(&cb->tcd)*2);
 			start_timer(&cb->tcd) ;
 
-			/* Send connect request packet */
+			/* Send kconnect request packet */
 
 			nr4sframe(cb->remote.node,&hdr, NULL) ;
 		}

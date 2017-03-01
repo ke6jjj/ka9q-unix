@@ -75,7 +75,7 @@ struct ax25_cb {
 	} flags;
 
 	uint8 reason;			/* Reason for connection closing */
-#define	LB_NORMAL	0		/* Normal close */
+#define	LB_NORMAL	0		/* Normal kclose */
 #define	LB_DM		1		/* Received DM from other end */
 #define	LB_TIMEOUT	2		/* Excessive retries */
 

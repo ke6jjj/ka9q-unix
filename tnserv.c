@@ -1,4 +1,6 @@
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "socket.h"
 #include "telnet.h"
@@ -24,44 +26,44 @@ void
 tnserv(int s,void *p1,void *p2)
 {
 	char cmdbuf[256];
-	FILE *fp;
+	kFILE *fp;
 	char *name,*pass,*path;
 	int pwdignore,perm;
 
-	fp = fdopen(s,"r+t");
-	setvbuf(fp,NULL,_IOLBF,BUFSIZ);
+	fp = kfdopen(s,"r+t");
+	ksetvbuf(fp,NULL,_kIOLBF,kBUFSIZ);
 	sockowner(s,Curproc);		/* We own it now */
-	fclose(stdin);
-	stdin = fdup(fp);
-	fclose(stdout);
-	stdout = fdup(fp);
+	kfclose(kstdin);
+	kstdin = kfdup(fp);
+	kfclose(kstdout);
+	kstdout = kfdup(fp);
 
-	name = malloc(BUFSIZ);
-	pass = malloc(BUFSIZ);
-	path = malloc(BUFSIZ);
+	name = malloc(kBUFSIZ);
+	pass = malloc(kBUFSIZ);
+	path = malloc(kBUFSIZ);
 	do {
-		printf("login: ");
-		fflush(stdout);
-		if(fgets(name,BUFSIZ,stdin) == NULL)
+		kprintf("login: ");
+		kfflush(kstdout);
+		if(kfgets(name,kBUFSIZ,kstdin) == NULL)
 			goto cleanup;
 		rip(name);
-		printf("Password: ");
-		if(fgets(pass,BUFSIZ,stdin) == NULL)
+		kprintf("Password: ");
+		if(kfgets(pass,kBUFSIZ,kstdin) == NULL)
 			goto cleanup;
 		rip(pass);
-	} while((perm = userlogin(name,pass,&path,BUFSIZ,&pwdignore)) == -1);
+	} while((perm = userlogin(name,pass,&path,kBUFSIZ,&pwdignore)) == -1);
 	logmsg(s,"Telnet login: %s", name);
 	if(!(perm & SYSOP_CMD)){
-		printf("Access not authorized\n");
+		kprintf("Access not authorized\n");
 		goto cleanup;
 	}
-	printf("%s> ",Hostname); fflush(stdout);
-	while(fgets(cmdbuf,sizeof(cmdbuf),fp) != NULL){
+	kprintf("%s> ",Hostname); kfflush(kstdout);
+	while(kfgets(cmdbuf,sizeof(cmdbuf),fp) != NULL){
 		cmdparse(Remcmds,cmdbuf,NULL);
-		printf("%s> ",Hostname);fflush(stdout);
+		kprintf("%s> ",Hostname);kfflush(kstdout);
 	}
 cleanup:
-	fclose(fp);
+	kfclose(fp);
 	logmsg(s,"Telnet logout: %s", name);
 
 	free(name);

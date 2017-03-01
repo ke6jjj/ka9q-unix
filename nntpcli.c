@@ -29,7 +29,9 @@
  *     July 19, 1990 pa0gri Delinted and cleaned up. (calls and includes)
  *
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <sys/types.h>
 #include <time.h>
 #include <sys/timeb.h>
@@ -37,6 +39,10 @@
 #include <string.h>  /* for strchr() */
 #ifdef	__TURBOC__
 #include <dir.h>
+#endif
+#ifdef MODERN_UNIX
+#include <sys/stat.h> /* for mkdir() */
+#include <unistd.h>  /* for unlink() */
 #endif
 #include "global.h"
 #include "timer.h"
@@ -55,7 +61,7 @@ struct nntpservers {
 	struct timer nntpcli_t;
 	char *name;
 	char *groups;
-	int lowtime, hightime;  /* for connect window */
+	int lowtime, hightime;  /* for kconnect window */
 	struct nntpservers *next;
 };
 
@@ -74,9 +80,9 @@ static char *validchars = "abcdefghijklmnopqrstuvwxyz0123456789-_";
 
 static void nntptick(void *tp);
 static void nntp_job(int i1,void *tp,void *v1);
-static int gettxt(FILE *network,FILE *fp);
-static int getreply(FILE *network);
-static int getarticle(FILE *network,char *msgid);
+static int gettxt(kFILE *network,kFILE *fp);
+static int getreply(kFILE *network);
+static int getarticle(kFILE *network,char *msgid);
 static int dogroups(int argc,char *argv[],void *p);
 static int doadds(int argc,char *argv[],void *p);
 static int dodrops(int argc,char *argv[],void *p);
@@ -124,7 +130,7 @@ void *p;
 {
 	struct nntpservers *np;
 	for(np = Nntpservers; np != NULL; np = np->next)
-		if(stricmp(np->name,argv[1]) == 0)
+		if(STRICMP(np->name,argv[1]) == 0)
 			break;
 	if (np == NULL) {
 		np = (struct nntpservers *) callocw(1,sizeof(struct nntpservers));
@@ -149,7 +155,7 @@ void *p;
 				np->lowtime = lh * 100 + ll;
 				np->hightime = hh * 100 + hl;
 			} else if ((strlen(np->groups)+strlen(argv[i])+2) >= NNTPMAXLEN)
-				printf("Group list too long!  Group '%s' ignored!\n", argv[i]);
+				kprintf("Group list too long!  Group '%s' ignored!\n", argv[i]);
 			else {  /* it's a group, and it fits... add it to list */
 				if (*np->groups != '\0')
 					strcat(np->groups, ",");
@@ -175,7 +181,7 @@ void *p;
 {
 	struct nntpservers *np, *npprev = NULL;
 	for(np = Nntpservers; np != NULL; npprev = np, np = np->next)
-		if(stricmp(np->name,argv[1]) == 0) {
+		if(STRICMP(np->name,argv[1]) == 0) {
 			stop_timer(&np->nntpcli_t);
 			free(np->name);
 			if (np->groups)
@@ -187,7 +193,7 @@ void *p;
 			free(np);
 			return 0;
 	}
-	printf("No such server enabled.\n");
+	kprintf("No such server enabled.\n");
 	return 0;
 }
 
@@ -204,7 +210,7 @@ void *p;
 			sprintf(tbuf, " -- %02d:%02d-%02d:%02d", np->lowtime/100, np->lowtime%100, np->hightime/100, np->hightime%100);
 		else
 			tbuf[0] = '\0';
-		printf("%-32s (%lu/%lu%s) %s\n", np->name,
+		kprintf("%-32s (%lu/%lu%s) %s\n", np->name,
 			read_timer(&np->nntpcli_t) /1000L,
 			dur_timer(&np->nntpcli_t) /1000L,
 			tbuf, np->groups ? np->groups : "");
@@ -230,11 +236,11 @@ void *p;
 {
 	if (argc < 2) {
 		int i;
-		printf("spool: %s\n", News_spool ? News_spool : Mailspool);
-		printf("control: %s\n", Newsdir);
+		kprintf("spool: %s\n", News_spool ? News_spool : Mailspool);
+		kprintf("control: %s\n", Newsdir);
 		for (i = 0; i < MAXGROUPDIRS; ++i)
 			if (groupdirs[i].prefix)
-				printf("%-10.10s %s\n", groupdirs[i].prefix, groupdirs[i].directory);
+				kprintf("%-10.10s %s\n", groupdirs[i].prefix, groupdirs[i].directory);
 	} else {
 		char *p;
 		if ((p = strchr(argv[1], '=')) != NULL) {  /* set a groupdir */
@@ -242,7 +248,7 @@ void *p;
 			*p++ = '\0';
 			for (i = 0; i < MAXGROUPDIRS; ++i)
 				if (groupdirs[i].prefix)
-					if (!strnicmp(groupdirs[i].prefix, argv[1], strlen(argv[1]))) {
+					if (!STRNICMP(groupdirs[i].prefix, argv[1], strlen(argv[1]))) {
 						if (groupdirs[i].directory) {
 							free(groupdirs[i].directory);
 							groupdirs[i].directory = NULL;
@@ -267,7 +273,7 @@ void *p;
 					return 0;
 				}
 			}
-			printf("Directory table full\n");
+			kprintf("Directory table full\n");
 		}
 		else {  /* no '=', so just set default */
 			if (News_spool)
@@ -292,7 +298,7 @@ void *p;
 {
 	struct nntpservers *np;
 	for(np = Nntpservers; np != NULL; np = np->next)
-		if(stricmp(np->name,argv[1]) == 0) {
+		if(STRICMP(np->name,argv[1]) == 0) {
 			/* If the timer is not running, the timeout function has
 			* already been called and we don't want to call it again.
 			*/
@@ -302,7 +308,7 @@ void *p;
 			}
 			return 0;
 	}
-	printf("No such server enabled.\n");
+	kprintf("No such server enabled.\n");
 	return 0;
 }
 
@@ -315,9 +321,9 @@ void *p;
 	int i;
 	if(argc < 2) {
 		if(Nntpgroups == NULL || (Nntpgroups != NULL && strcmp(Nntpgroups,"*") == 0))
-			printf("All groups are currently enabled.\n");
+			kprintf("All groups are currently enabled.\n");
 		else
-			printf("Currently enabled newsgroups:\n%s\n",Nntpgroups);
+			kprintf("Currently enabled newsgroups:\n%s\n",Nntpgroups);
 		return 0;
 	}
 	if(Nntpgroups == NULL)
@@ -331,7 +337,7 @@ void *p;
 	return 0;
 }
 
-/* This is the routine that gets called every so often to connect to
+/* This is the routine that kgets called every so often to kconnect to
  * NNTP servers.
  */
 static void
@@ -346,21 +352,21 @@ nntp_job(i1,tp,v1)
 int i1;
 void *tp, *v1;
 {
-	FILE *fp, *tmpf;
+	kFILE *fp, *tmpf;
 	int s = -1, i;
-	FILE *network;
+	kFILE *network;
 /*	long pos; */
 	struct tm *ltm;
 	time_t t;
 	int now;
 	struct nntpservers *np = (struct nntpservers *) tp;
-	struct sockaddr_in fsocket;
+	struct ksockaddr_in fsocket;
 	char tbuf[NNTPMAXLEN], buf[NNTPMAXLEN], *cp, *lastdate = NULL;
 	if (nntptrace >= 3)
-		printf("NNTP daemon entered, target = %s\n",np->name);
+		kprintf("NNTP daemon entered, target = %s\n",np->name);
 	if(availmem() != 0){
 		if (nntptrace >= 2)
-			printf("NNTP daemon quit -- low memory\n");
+			kprintf("NNTP daemon quit -- low memory\n");
 		/* Memory is tight, don't do anything */
 		start_timer(&np->nntpcli_t);
 		return;
@@ -372,14 +378,14 @@ void *tp, *v1;
 	if (np->lowtime < np->hightime) {  /* doesn't cross midnight */
 		if (now < np->lowtime || now >= np->hightime) {
 			if (nntptrace >= 3)
-				printf("NNTP window to '%s' not open\n", np->name);
+				kprintf("NNTP window to '%s' not kopen\n", np->name);
 			start_timer(&np->nntpcli_t);
 			return;
 		}
 	} else {
 		if (now < np->lowtime && now >= np->hightime) {
 			if (nntptrace >= 3)
-				printf("NNTP window to '%s' not open\n", np->name);
+				kprintf("NNTP window to '%s' not kopen\n", np->name);
 			start_timer(&np->nntpcli_t);
 			return;
 		}
@@ -388,62 +394,62 @@ void *tp, *v1;
 	fsocket.sin_addr.s_addr = resolve(np->name);
 	if(fsocket.sin_addr.s_addr == 0) {  /* No IP address found */
 		if (nntptrace >= 2)
-			printf("NNTP can't resolve host '%s'\n", np->name);
+			kprintf("NNTP can't resolve host '%s'\n", np->name);
 		/* Try again later */
 		start_timer(&np->nntpcli_t);
 		return;
 	}
-	fsocket.sin_family = AF_INET;
+	fsocket.sin_family = kAF_INET;
 	fsocket.sin_port = IPPORT_NNTP;
 
-	s = socket(AF_INET,SOCK_STREAM,0);
-	if(connect(s,(struct sockaddr *)&fsocket,SOCKSIZE) == -1){
+	s = ksocket(kAF_INET,kSOCK_STREAM,0);
+	if(kconnect(s,(struct ksockaddr *)&fsocket,SOCKSIZE) == -1){
 		cp = sockerr(s);
 		logmsg(s,"NNTP %s Connect failed: %s",psocket(&fsocket),
 			cp != NULL ? cp : "");
 		if (nntptrace >= 2)
-			printf("NNTP %s Connect failed: %s\n",psocket(&fsocket),
+			kprintf("NNTP %s Connect failed: %s\n",psocket(&fsocket),
 		cp != NULL ? cp : "");
 		goto quit;
 	}
-	network = fdopen(s,"r+t");
+	network = kfdopen(s,"r+t");
 
 	/* Eat the banner */
 	i = getreply(network);
 	if(i == -1 || i >= 400) {
-		logmsg(fileno(network),"NNTP %s bad reply on banner (response was %d)",psocket(&fsocket),i);
+		logmsg(kfileno(network),"NNTP %s bad reply on banner (response was %d)",psocket(&fsocket),i);
 		if (nntptrace >= 1)
-			printf("NNTP %s bad reply on banner (response was %d)\n",psocket(&fsocket),i);
+			kprintf("NNTP %s bad reply on banner (response was %d)\n",psocket(&fsocket),i);
 		goto quit;
 	}
 
 	if (mlock(Newsdir, "nntp")) {
 		if (nntptrace >= 2)
-			printf("NNTP %s Connect failed: cannot lock nntp.dat\n", psocket(&fsocket));
+			kprintf("NNTP %s Connect failed: cannot lock nntp.dat\n", psocket(&fsocket));
 		goto quit;
 	}
 	sprintf(buf,"%s/nntp.dat",Newsdir);
-	if((fp = fopen(buf,APPEND_TEXT)) == NULL) {
-		logmsg(fileno(network),"NNTP %s Connect failed: Cannot open %s",psocket(&fsocket),
+	if((fp = kfopen(buf,APPEND_TEXT)) == NULL) {
+		logmsg(kfileno(network),"NNTP %s Connect failed: Cannot kopen %s",psocket(&fsocket),
 			buf);
 		if (nntptrace >= 1)
-			printf("NNTP %s Connect failed: Cannot open %s\n",psocket(&fsocket), buf);
+			kprintf("NNTP %s Connect failed: Cannot kopen %s\n",psocket(&fsocket), buf);
 		rmlock(Newsdir, "nntp");
 		goto quit;
 	}
-	rewind(fp);
-/*	for(pos=0L; fgets(buf,NNTPMAXLEN,fp) != NULL;pos=ftell(fp)) { */
-	for(; fgets(buf,NNTPMAXLEN,fp) != NULL;) {
+	krewind(fp);
+/*	for(pos=0L; kfgets(buf,NNTPMAXLEN,fp) != NULL;pos=kftell(fp)) { */
+	for(; kfgets(buf,NNTPMAXLEN,fp) != NULL;) {
 		if((cp = strchr(buf,' ')) == NULL)
 			continue;	/* something wrong with this line, skip it */
 		*cp = '\0';
-		if(stricmp(buf,np->name) == 0) {
+		if(STRICMP(buf,np->name) == 0) {
 			rip(cp+1);
 			lastdate = strdup(cp+1);
 			break;
 		}
 	}
-	fclose(fp);
+	kfclose(fp);
 	rmlock(Newsdir, "nntp");
 
 	if(lastdate == NULL)
@@ -455,56 +461,56 @@ void *tp, *v1;
 	/* Get a list of new message-id's */
 	if (np->groups) {
 		if (nntptrace >= 3)
-			printf("==>NEWNEWS %s %s\n", np->groups, lastdate);
-		fprintf(network,"NEWNEWS %s %s\n", np->groups, lastdate);
+			kprintf("==>NEWNEWS %s %s\n", np->groups, lastdate);
+		kfprintf(network,"NEWNEWS %s %s\n", np->groups, lastdate);
 	} else {
 		if (nntptrace >= 3)
-			printf("==>NEWNEWS %s %s\n", Nntpgroups != NULL ? Nntpgroups : "*", lastdate);
-		fprintf(network,"NEWNEWS %s %s\n",Nntpgroups != NULL ? Nntpgroups : "*", lastdate);
+			kprintf("==>NEWNEWS %s %s\n", Nntpgroups != NULL ? Nntpgroups : "*", lastdate);
+		kfprintf(network,"NEWNEWS %s %s\n",Nntpgroups != NULL ? Nntpgroups : "*", lastdate);
 	}
 	free(lastdate);
 	/* Get the response */
 	if((i = getreply(network)) != 230) { /* protocol error */
-		logmsg(fileno(network),"NNTP %s protocol error (response was %d)",psocket(&fsocket),i);
+		logmsg(kfileno(network),"NNTP %s protocol error (response was %d)",psocket(&fsocket),i);
 		if (nntptrace >= 1)
-			printf("NNTP %s protocol error (response was %d)\n",psocket(&fsocket),i);
+			kprintf("NNTP %s protocol error (response was %d)\n",psocket(&fsocket),i);
 		goto quit;
 	}
-	if((tmpf = tmpfile()) == NULL) {
+	if((tmpf = ktmpfile()) == NULL) {
 		if (nntptrace >= 1)
-			printf("NNTP %s Cannot open temp file\n", psocket(&fsocket));
+			kprintf("NNTP %s Cannot kopen temp file\n", psocket(&fsocket));
 		goto quit;
 	}
 	if(gettxt(network,tmpf) == -1) {
-		logmsg(fileno(network), "NNTP %s giving up: gettxt() failure",psocket(&fsocket));
+		logmsg(kfileno(network), "NNTP %s giving up: gettxt() failure",psocket(&fsocket));
 		if (nntptrace >= 1)
-			printf("NNTP %s giving up: gettxt() failure\n",psocket(&fsocket));
-		fclose(tmpf);
+			kprintf("NNTP %s giving up: gettxt() failure\n",psocket(&fsocket));
+		kfclose(tmpf);
 		goto quit;
 	}
 
 	/* Open the history file */
 	if (mlock(Newsdir, "history")) {
 		if (nntptrace >= 1)
-			printf("NNTP %s giving up: couldn't lock history file\n", psocket(&fsocket));
-		fclose(tmpf);
+			kprintf("NNTP %s giving up: couldn't lock history file\n", psocket(&fsocket));
+		kfclose(tmpf);
 		goto quit;
 	}
 	sprintf(buf,"%s/history",Newsdir);
-	if((fp = fopen(buf,APPEND_TEXT)) == NULL) {
-		logmsg(fileno(network),"NNTP %s Connect failed: Cannot open %s",psocket(&fsocket), buf);
+	if((fp = kfopen(buf,APPEND_TEXT)) == NULL) {
+		logmsg(kfileno(network),"NNTP %s Connect failed: Cannot kopen %s",psocket(&fsocket), buf);
 		if (nntptrace >= 1)
-			printf("NNTP %s Connect failed: Cannot open %s\n",psocket(&fsocket), buf);
-		fclose(tmpf);
+			kprintf("NNTP %s Connect failed: Cannot kopen %s\n",psocket(&fsocket), buf);
+		kfclose(tmpf);
 		goto quit;
 	}
 	/* search through the history file for matching message id's */
-	rewind(tmpf);
-	while(fgets(tbuf,NNTPMAXLEN,tmpf) != NULL) {
+	krewind(tmpf);
+	while(kfgets(tbuf,NNTPMAXLEN,tmpf) != NULL) {
 		i = 0;
-		rewind(fp);
-		while(fgets(buf,NNTPMAXLEN,fp) != NULL) {
-			if(stricmp(buf,tbuf) == 0) {
+		krewind(fp);
+		while(kfgets(buf,NNTPMAXLEN,fp) != NULL) {
+			if(STRICMP(buf,tbuf) == 0) {
 				i = 1;
 				break;
 			}
@@ -512,55 +518,55 @@ void *tp, *v1;
 		}
 		if(i == 0) {		/* not found, get the article */
 			if(getarticle(network,tbuf) == -1) {
-				logmsg(fileno(network),"NNTP %s Giving up: could not get article",psocket(&fsocket));
+				logmsg(kfileno(network),"NNTP %s Giving up: could not get article",psocket(&fsocket));
 				if (nntptrace >= 2)
-					printf("NNTP %s Giving up: could not get article\n",psocket(&fsocket));
-				fclose(fp);
+					kprintf("NNTP %s Giving up: could not get article\n",psocket(&fsocket));
+				kfclose(fp);
 				rmlock(Newsdir, "history");
-				fclose(tmpf);
+				kfclose(tmpf);
 				goto quit;
 			}
-			fprintf(fp,"%s",tbuf); /* add the new message id */
+			kfprintf(fp,"%s",tbuf); /* add the new message id */
 		}
 	}
-	fclose(fp);
+	kfclose(fp);
 	rmlock(Newsdir, "history");
-	fclose(tmpf);
+	kfclose(tmpf);
 	if (nntptrace >= 3)
-		printf("==>QUIT\n");
-	fprintf(network,"QUIT\n");
+		kprintf("==>QUIT\n");
+	kfprintf(network,"QUIT\n");
 	/* Eat the response */
 	getreply(network);
 	/* NOW, update the nntp.dat file */
 	if (mlock(Newsdir, "nntp")) {
 		if (nntptrace >= 2)
-			printf("NNTP %s Could not lock nntp.dat for update\n", psocket(&fsocket));
+			kprintf("NNTP %s Could not lock nntp.dat for update\n", psocket(&fsocket));
 		goto quit;
 	}
 	sprintf(buf,"%s/nntp.dat",Newsdir);
-	fp = fopen(buf,READ_TEXT);
+	fp = kfopen(buf,READ_TEXT);
 	sprintf(buf, "%s/nntp.tmp",Newsdir);
-	if ((tmpf = fopen(buf, WRITE_TEXT)) == NULL)
+	if ((tmpf = kfopen(buf, WRITE_TEXT)) == NULL)
 		if (nntptrace >= 1)
-			printf("NNTP %s Cannot create temp file '%s'\n", psocket(&fsocket), buf);
+			kprintf("NNTP %s Cannot create temp file '%s'\n", psocket(&fsocket), buf);
 	if (fp == NULL || tmpf == NULL) {
-		logmsg(fileno(network),"NNTP %s Could not update %s", psocket(&fsocket), buf);
+		logmsg(kfileno(network),"NNTP %s Could not update %s", psocket(&fsocket), buf);
 		if (nntptrace >= 2)
-			printf("NNTP %s Could not update %s\n",psocket(&fsocket), buf);
+			kprintf("NNTP %s Could not update %s\n",psocket(&fsocket), buf);
 		if (fp)
-			fclose(fp);
+			kfclose(fp);
 		if (tmpf)
-			fclose(tmpf);
+			kfclose(tmpf);
 		rmlock(Newsdir, "nntp");
 		goto quit;
 	}
-	while (fgets(tbuf, sizeof(tbuf), fp))
-		if (strnicmp(tbuf, np->name, strlen(np->name)))
-			fputs(tbuf, tmpf);
-	fprintf(tmpf,"%s %02d%02d%02d %02d%02d%02d\n",np->name,ltm->tm_year%100,ltm->tm_mon+1,
+	while (kfgets(tbuf, sizeof(tbuf), fp))
+		if (STRNICMP(tbuf, np->name, strlen(np->name)))
+			kfputs(tbuf, tmpf);
+	kfprintf(tmpf,"%s %02d%02d%02d %02d%02d%02d\n",np->name,ltm->tm_year%100,ltm->tm_mon+1,
 		ltm->tm_mday,ltm->tm_hour,ltm->tm_min,ltm->tm_sec);
-	fclose(fp);
-	fclose(tmpf);
+	kfclose(fp);
+	kfclose(tmpf);
 	sprintf(buf, "%s/nntp.dat", Newsdir);
 	sprintf(tbuf, "%s/nntp.tmp", Newsdir);
 	unlink(buf);
@@ -568,8 +574,8 @@ void *tp, *v1;
 	rmlock(Newsdir, "nntp");
 quit:
 	if (nntptrace >= 3)
-		printf("NNTP daemon exiting\n");
-	fclose(network);
+		kprintf("NNTP daemon exiting\n");
+	kfclose(network);
 	/* Restart timer */
 	start_timer(&np->nntpcli_t);
 	return;
@@ -577,83 +583,83 @@ quit:
 
 static int
 gettxt(network,fp)
-FILE *network;
-FILE *fp;
+kFILE *network;
+kFILE *fp;
 {
 	char buf[NNTPMAXLEN];
 	int nlines;
-	for (nlines = 0; fgets(buf,NNTPMAXLEN,network) != NULL; ++nlines) {
+	for (nlines = 0; kfgets(buf,NNTPMAXLEN,network) != NULL; ++nlines) {
 		if (nntptrace >= 4)
-			printf("<==%s", buf);
+			kprintf("<==%s", buf);
 		if(strcmp(buf,".\n") == 0) {
 			if (nntptrace >= 3)
-				printf("NNTP received %d lines\n", nlines);
+				kprintf("NNTP received %d lines\n", nlines);
 			return 0;
 			}
 		/* check for escaped '.' characters */
 		if(strcmp(buf,"..\n") == 0)
-			fputs(".\n",fp);
+			kfputs(".\n",fp);
 		else
-			fputs(buf,fp);
+			kfputs(buf,fp);
 	}
 	if (nntptrace >= 1)
-		printf("NNTP receive error after %d lines\n", nlines);
+		kprintf("NNTP receive error after %d lines\n", nlines);
 	return -1;
 }
 
 static int
 getreply(network)
-FILE *network;
+kFILE *network;
 {
 	char buf[NNTPMAXLEN];
 	int response;
-	while(fgets(buf,NNTPMAXLEN,network) != NULL) {
+	while(kfgets(buf,NNTPMAXLEN,network) != NULL) {
 		/* skip informative messages and blank lines */
 		if(buf[0] == '\0' || buf[0] == '1')
 			continue;
 		sscanf(buf,"%d",&response);
 		if (nntptrace >= 3)
-			printf("<==%s\n", buf);
+			kprintf("<==%s\n", buf);
 		return response;
 	}
 	if (nntptrace >= 3)
-		printf("==No response\n");
+		kprintf("==No response\n");
 	return -1;
 }
 
 static int
 getarticle(network,msgid)
-FILE *network;
+kFILE *network;
 char *msgid;
 {
 	char buf[NNTPMAXLEN], froml[NNTPMAXLEN], newgl[NNTPMAXLEN];
-	FILE *fp, *tmpf;
+	kFILE *fp, *tmpf;
 	int r;
 	char *cp;
 	extern int Smtpquiet;
 
 	if (nntptrace >= 3)
-		printf("==>ARTICLE %s", msgid);
-	fprintf(network,"ARTICLE %s", msgid);
+		kprintf("==>ARTICLE %s", msgid);
+	kfprintf(network,"ARTICLE %s", msgid);
 	r = getreply(network);
 	if(r == -1 || r >= 500)
 		return -1;
 	if(r >= 400)
 		return 0;
-	if((tmpf = tmpfile()) == NULL) {
+	if((tmpf = ktmpfile()) == NULL) {
 		if (nntptrace >= 1)
-			printf("NNTP Cannot open temp file for article\n");
+			kprintf("NNTP Cannot kopen temp file for article\n");
 		return -1;
 	}
 	if(gettxt(network,tmpf) == -1) {
-		fclose(tmpf);
+		kfclose(tmpf);
 		return -1;
 	}
 	/* convert the article into mail format */
-	rewind(tmpf);
+	krewind(tmpf);
 	froml[0] = '\0';
 	newgl[0] = '\0';
-	while(fgets(buf,NNTPMAXLEN,tmpf) != NULL) {
+	while(kfgets(buf,NNTPMAXLEN,tmpf) != NULL) {
 		if(strncmp(buf,"From: ",6) == 0) {
 			struct timeb t;
 			ftime(&t);
@@ -669,8 +675,8 @@ char *msgid;
 		}
 		/* invalid article - missing 'From:' line or 'Newsgroups:' line */
 		if(strcmp(buf,"\n") == 0 && (froml[0] == '\0' || newgl[0] == '\0')) {
-/*			fclose(fp); */
-			fclose(tmpf);
+/*			kfclose(fp); */
+			kfclose(tmpf);
 			return 0;
 		}
 	}
@@ -694,24 +700,24 @@ char *msgid;
 			}
 			if (mlock(tempdir, prefix)) {
 				if (nntptrace >= 2)
-					printf("NNTP group '%s' is locked\n", buf);
+					kprintf("NNTP group '%s' is locked\n", buf);
 				return -1;
 			}
 			strcat(buf,".txt");
-			/* open the mail file */
+			/* kopen the mail file */
 			if (nntptrace >= 3)
-				printf("Writing article to '%s'\n", buf);
-			if((fp = fopen(buf,APPEND_TEXT)) != NULL) {
-				fputs(froml,fp);
-				rewind(tmpf);
-				while(fgets(buf,NNTPMAXLEN,tmpf) != NULL) {
+				kprintf("Writing article to '%s'\n", buf);
+			if((fp = kfopen(buf,APPEND_TEXT)) != NULL) {
+				kfputs(froml,fp);
+				krewind(tmpf);
+				while(kfgets(buf,NNTPMAXLEN,tmpf) != NULL) {
 					/* for UNIX mail compatiblity */
 					if(strncmp(buf,"From ",5) == 0)
-						putc('>',fp);
-					fputs(buf,fp);
+						kputc('>',fp);
+					kfputs(buf,fp);
 				}
-				putc('\n',fp);
-				fclose(fp);
+				kputc('\n',fp);
+				kfclose(fp);
 			}
 			rmlock(tempdir, prefix);
 			if (*cp == '\n') 
@@ -723,14 +729,14 @@ char *msgid;
 		buf[strlen(buf)+1] = '\0';
 		buf[strlen(buf)] = strchr(validchars, tolower(*cp)) ? *cp : '_';
 	}
-	fclose(tmpf);
+	kfclose(tmpf);
 	strcpy(buf,msgid);		/* Get a copy we can munge */
 	rip(buf);			/* remove trailing new-line */
 	rip(newgl);			/* ditto */
 #ifdef	notdef
-	printf("New news arrived: %s, article %s%c\n",newgl,buf,Smtpquiet?' ':'\007');
+	kprintf("New news arrived: %s, article %s%c\n",newgl,buf,Smtpquiet?' ':'\007');
 #else
-	printf("New news arrived: %s, article %s\n",newgl,buf);
+	kprintf("New news arrived: %s, article %s\n",newgl,buf);
 #endif
 	return 0;
 }

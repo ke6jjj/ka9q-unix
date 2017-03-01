@@ -1,6 +1,8 @@
 /* Maintain source of random numbers for cryptographic keys, etc
  * This is inherently machine dependent code
  */
+#include "top.h"
+
 #include "stdio.h"
 #include <dos.h>
 #include "global.h"

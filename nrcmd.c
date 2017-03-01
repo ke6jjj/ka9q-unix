@@ -2,8 +2,9 @@
  * Copyright 1989 by Daniel M. Frank, W9NK.  Permission granted for
  * non-commercial distribution only.
  */
+#include "top.h"
 
-#include <stdio.h>
+#include "stdio.h"
 #include <ctype.h>
 #include "global.h"
 #include "mbuf.h"
@@ -18,6 +19,7 @@
 #include "session.h"
 #include "socket.h"
 #include "commands.h"
+#include "errno.h"
 
 uint8 Nr4user[AXALEN];
 
@@ -67,7 +69,7 @@ static int doobsotimer(int argc,char *argv[],void *p);
 static struct cmds Nrcmds[] = {
 	"acktime",	donracktime,	0, 0,	NULL,
 	"bcnodes",	dobcnodes,	0, 2,	"netrom bcnodes <interface>",
-	"connect",	donrconnect, 1024, 2,	"netrom connect <node>",
+	"connect",	donrconnect, 1024, 2,	"netrom kconnect <node>",
 	"choketime",	donrchoketime,	0, 0,	NULL,
 	"interface",	dointerface,	0, 4,
 		"netrom interface <interface> <alias> <quality>",
@@ -147,15 +149,15 @@ doroutedump(void)
 			if (cp != buf)		/* don't include colon for null alias */
 				*cp++ = ':' ;
 			pax25(cp,rp->call) ;
-			printf("%-16s  ",buf) ;
+			kprintf("%-16s  ",buf) ;
 			if (column++ == 4) {
-				printf("\n");
+				kprintf("\n");
 				column = 1 ;
 			}
 		}
 
 	if (column != 1)
-		printf("\n") ;
+		kprintf("\n") ;
 		
 	return 0 ;
 }
@@ -174,18 +176,18 @@ void *p;
 	char neighbor[AXBUF] ;
 
 	if (setcall(dest,argv[1]) == -1) {
-		printf ("bad destination name\n") ;
+		kprintf ("bad destination name\n") ;
 		return -1 ;
 	}
 		
 	if ((rp = find_nrroute(dest)) == NULL) {
-		printf("no such route\n") ;
+		kprintf("no such route\n") ;
 		return -1 ;
 	}
 
 	for (bp = rp->routes ; bp != NULL ; bp = bp->next) {
 		np = bp->via ;
-		printf("%1s %3d  %3d  %-8s  %s\n",
+		kprintf("%1s %3d  %3d  %-8s  %s\n",
 		 (bp->flags & NRB_PERMANENT ? "P" :
 		 bp->flags & NRB_RECORDED ? "R" : " "),
 		 bp->quality,bp->obsocnt,
@@ -206,7 +208,7 @@ int complain ;
 	
 	if ((len = strlen(from)) > ALEN) {
 		if (complain)
-			printf ("alias too long - six characters max\n") ;
+			kprintf ("alias too long - six characters max\n") ;
 		return -1 ;
 	}
 	
@@ -245,7 +247,7 @@ void *p;
 
 	/* format destination callsign */
 	if (setcall(dest,argv[2]) == -1) {
-		printf("bad destination callsign\n") ;
+		kprintf("bad destination callsign\n") ;
 		return -1 ;
 	}
 
@@ -254,20 +256,20 @@ void *p;
 		if (!strcmp(Nrifaces[i].iface->name,argv[3]))
 			break ;
 	if (i == Nr_numiface) {
-		printf("Interface \"%s\" not found\n",argv[3]) ;
+		kprintf("Interface \"%s\" not found\n",argv[3]) ;
 		return -1 ;
 	}
 	
 	/* get and check quality value */
 	if ((quality = atoi(argv[4])) > 255) {
-		printf("maximum route quality is 255\n") ;
+		kprintf("maximum route quality is 255\n") ;
 		return -1 ;
 	}
 
 	/* Change from 871225 -- no digis in net/rom table */
 	naddr = argc - 5 ;
 	if (naddr > 1) {
-		printf("Use the ax25 route command to specify digipeaters\n") ;
+		kprintf("Use the ax25 route command to specify digipeaters\n") ;
 		return -1 ;
 	}
 	
@@ -290,11 +292,11 @@ void *p;
 
 	/* format destination and neighbor callsigns */
 	if (setcall(dest,argv[1]) == -1) {
-		printf("bad destination callsign\n") ;
+		kprintf("bad destination callsign\n") ;
 		return -1 ;
 	}
 	if (setcall(neighbor,argv[2]) == -1) {
-		printf("bad neighbor callsign\n") ;
+		kprintf("bad neighbor callsign\n") ;
 		return -1 ;
 	}
 
@@ -303,7 +305,7 @@ void *p;
 		if (!strcmp(Nrifaces[i].iface->name,argv[3]))
 			break ;
 	if (i == Nr_numiface) {
-		printf("Interface \"%s\" not found\n",argv[3]) ;
+		kprintf("Interface \"%s\" not found\n",argv[3]) ;
 		return -1 ;
 	}
 
@@ -322,22 +324,22 @@ void *p;
 	struct iface *ifp ;
 
 	if (Nr_iface == NULL) {
-		printf("Attach netrom interface first\n") ;
+		kprintf("Attach netrom interface first\n") ;
 		return 1 ;
 	}
 	
 	if (Nr_numiface >= NRNUMIFACE) {
-		printf("Only %d net/rom interfaces available\n",NRNUMIFACE) ;
+		kprintf("Only %d net/rom interfaces available\n",NRNUMIFACE) ;
 		return 1 ;
 	}
 	
 	if((ifp = if_lookup(argv[1])) == NULL){
-		printf("Interface \"%s\" unknown\n",argv[1]);
+		kprintf("Interface \"%s\" unknown\n",argv[1]);
 		return 1;
 	}
 	for (i = 0 ; i < Nr_numiface ; i++)
 		if (Nrifaces[i].iface == ifp) {
-			printf("Interface \"%s\" is already registered\n",argv[1]) ;
+			kprintf("Interface \"%s\" is already registered\n",argv[1]) ;
 			return 1 ;
 		}
 		
@@ -347,11 +349,11 @@ void *p;
 		return 1 ;
 		
 	if ((Nrifaces[Nr_numiface].quality = atoi(argv[3])) > 255) {
-		printf("Quality cannot be greater than 255\n") ;
+		kprintf("Quality cannot be greater than 255\n") ;
 		return 1 ;
 	}
 		
-	Nr_numiface++ ;			/* accept this interface */
+	Nr_numiface++ ;			/* kaccept this interface */
 	return 0 ;
 }
 
@@ -368,7 +370,7 @@ void *p;
 		if (!strcmp(Nrifaces[i].iface->name,argv[1]))
 			break ;
 	if (i == Nr_numiface) {
-		printf("Interface \"%s\" not found\n",argv[1]) ;
+		kprintf("Interface \"%s\" not found\n",argv[1]) ;
 		return 1 ;
 	}
 		
@@ -384,7 +386,7 @@ char *argv[];
 void *p;
 {
 	if(argc < 2){
-		printf("Nodetimer %lu/%lu seconds\n",
+		kprintf("Nodetimer %lu/%lu seconds\n",
 			read_timer(&Nodetimer)/1000L,
 			dur_timer(&Nodetimer)/1000L);
 		return 0;
@@ -417,7 +419,7 @@ char *argv[];
 void *p;
 {
 	if(argc < 2){
-		printf("Obsotimer %lu/%lu seconds\n",
+		kprintf("Obsotimer %lu/%lu seconds\n",
 			read_timer(&Obsotimer)/1000L,
 			dur_timer(&Obsotimer)/1000L);
 		return 0;
@@ -526,16 +528,16 @@ donfdump()
 	for (i = 0 ; i < NRNUMCHAINS ; i++)
 		for (fp = Nrnf_tab[i] ; fp != NULL ; fp = fp->next) {
 			pax25(buf,fp->neighbor) ;
-			printf("%-7s %-8s  ",
+			kprintf("%-7s %-8s  ",
 			 buf,Nrifaces[fp->iface].iface->name) ;
 			if (column++ == 4) {
-				printf("\n");
+				kprintf("\n");
 				column = 1 ;
 			}
 		}
 
 	if (column != 1)
-		printf("\n") ;
+		kprintf("\n") ;
 
 	return 0 ;
 }
@@ -552,7 +554,7 @@ void *p;
 
 	/* format callsign */
 	if (setcall(neighbor,argv[1]) == -1) {
-		printf("bad neighbor callsign\n") ;
+		kprintf("bad neighbor callsign\n") ;
 		return -1 ;
 	}
 
@@ -561,7 +563,7 @@ void *p;
 		if (!strcmp(Nrifaces[i].iface->name,argv[2]))
 			break ;
 	if (i == Nr_numiface) {
-		printf("Interface \"%s\" not found\n",argv[2]) ;
+		kprintf("Interface \"%s\" not found\n",argv[2]) ;
 		return -1 ;
 	}
 
@@ -580,7 +582,7 @@ void *p;
 
 	/* format neighbor callsign */
 	if (setcall(neighbor,argv[1]) == -1) {
-		printf("bad neighbor callsign\n") ;
+		kprintf("bad neighbor callsign\n") ;
 		return -1 ;
 	}
 
@@ -589,7 +591,7 @@ void *p;
 		if (!strcmp(Nrifaces[i].iface->name,argv[2]))
 			break ;
 	if (i == Nr_numiface) {
-		printf("Interface \"%s\" not found\n",argv[2]) ;
+		kprintf("Interface \"%s\" not found\n",argv[2]) ;
 		return -1 ;
 	}
 
@@ -604,19 +606,19 @@ char *argv[] ;
 void *p;
 {
 	if (argc < 2) {
-		printf("filter mode is ") ;
+		kprintf("filter mode is ") ;
 		switch (Nr_nfmode) {
 			case NRNF_NOFILTER:
-				printf("none\n") ;
+				kprintf("none\n") ;
 				break ;
 			case NRNF_ACCEPT:
-				printf("accept\n") ;
+				kprintf("accept\n") ;
 				break ;
 			case NRNF_REJECT:
-				printf("reject\n") ;
+				kprintf("reject\n") ;
 				break ;
 			default:
-				printf("some strange, unknown value\n") ;
+				kprintf("some strange, unknown value\n") ;
 		}
 		return 0 ;
 	}
@@ -635,7 +637,7 @@ void *p;
 			Nr_nfmode = NRNF_REJECT ;
 			break ;
 		default:
-			printf("modes are: none accept reject\n") ;
+			kprintf("modes are: none kaccept reject\n") ;
 			return -1 ;
 	}
 
@@ -670,29 +672,29 @@ char *argv[] ;
 void *p;
 {
 	uint8 *np ;
-	struct sockaddr_nr lsocket, fsocket;
+	struct ksockaddr_nr lsocket, fsocket;
 	char alias[AXBUF];
 	struct session *sp;
 	int s;
 
 	/* Get a session descriptor */
 	if ((sp = newsession(Cmdline,NRSESSION,1)) == NULL) {
-		printf("Too many sessions\n") ;
+		kprintf("Too many sessions\n") ;
 		return 1 ;
 	}
 	sp->inproc = keychar;	/* Intercept ^C */
-	if((s = socket(AF_NETROM,SOCK_SEQPACKET,0)) == -1){
-		printf("Can't create socket\n");
+	if((s = ksocket(kAF_NETROM,kSOCK_SEQPACKET,0)) == -1){
+		kprintf("Can't create ksocket\n");
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
 	}
-	lsocket.nr_family = AF_NETROM;
+	lsocket.nr_family = kAF_NETROM;
 	/* Set up our local username, bind would use Mycall instead */
 	memcpy(lsocket.nr_addr.user,Nr4user,AXALEN);
 	/* Putting anything else than Mycall here will not work */
 	memcpy(lsocket.nr_addr.node,Mycall,AXALEN);
-	bind(s,(struct sockaddr *)&lsocket,sizeof(struct sockaddr_nr));
+	kbind(s,(struct ksockaddr *)&lsocket,sizeof(struct ksockaddr_nr));
 
 	/* See if the requested destination could be an alias, and */
 	/* find and use it if it is.  Otherwise assume it is an ax.25 */
@@ -708,16 +710,16 @@ void *p;
 		setcall(fsocket.nr_addr.user,argv[1]);
 		setcall(fsocket.nr_addr.node,argv[1]);
 	}
-	fsocket.nr_family = AF_NETROM;
+	fsocket.nr_family = kAF_NETROM;
 	pax25(alias,fsocket.nr_addr.node);
-	sp->network = fdopen(s,"r+t");
-	setvbuf(sp->network,NULL,_IOLBF,BUFSIZ);
-	if(SETSIG(EABORT)){
+	sp->network = kfdopen(s,"r+t");
+	ksetvbuf(sp->network,NULL,_kIOLBF,kBUFSIZ);
+	if(SETSIG(kEABORT)){
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
 	}
-	return tel_connect(sp, (struct sockaddr *)&fsocket, sizeof(struct sockaddr_nr));
+	return tel_connect(sp, (struct ksockaddr *)&fsocket, sizeof(struct ksockaddr_nr));
 }
 
 /* Reset a net/rom connection abruptly */
@@ -731,7 +733,7 @@ void *p;
 
 	cb = (struct nr4cb *)htol(argv[1]);
 	if(!nr4valcb(cb)){
-		printf(Notval);
+		kprintf(Notval);
 		return 1;
 	}
 	reset_nr4(cb);
@@ -751,7 +753,7 @@ void *p;
 	cb = (struct nr4cb *)htol(argv[1]);
 
 	if (kick_nr4(cb) == -1) {
-		printf(Notval);
+		kprintf(Notval);
 		return 1;
 	} else
 		return 0;
@@ -811,7 +813,7 @@ void *p;
 
 	if(argc < 2){
 		pax25(buf,Nr4user);
-		printf("%s\n",buf);
+		kprintf("%s\n",buf);
 		return 0;
 	}
 	if(setcall(Nr4user,argv[1]) == -1)
@@ -832,7 +834,7 @@ void *p;
 	return setshort(&Nr4window,"Window (frames)",argc,argv);
 }
 
-/* netrom transport maximum retries.  This is used in connect and */
+/* netrom transport maximum retries.  This is used in kconnect and */
 /* disconnect attempts; I haven't decided what to do about actual */
 /* data retries yet. */
 
@@ -858,14 +860,14 @@ void *p;
 	char luser[AXBUF], ruser[AXBUF], node[AXBUF] ;
 	
 	if (argc < 2) {
-		printf("&CB       Snd-W Snd-Q Rcv-Q     LUser      RUser @Node     State\n");
+		kprintf("&CB       Snd-W Snd-Q Rcv-Q     LUser      RUser @Node     State\n");
 		for (i = 0 ; i < NR4MAXCIRC ; i++) {
 			if ((cb = Nr4circuits[i].ccb) == NULL)
 				continue ;
 			pax25(luser,cb->local.user) ;
 			pax25(ruser,cb->remote.user) ;
 			pax25(node,cb->remote.node) ;
-			printf("%9p   %3d %5d %5d %9s  %9s %-9s %s\n",
+			kprintf("%9p   %3d %5d %5d %9s  %9s %-9s %s\n",
 			 cb, cb->nbuffered, len_q(cb->txq),
 			 len_p(cb->rxq), luser, ruser, node,
 			 Nr4states[cb->state]);
@@ -875,7 +877,7 @@ void *p;
 
 	cb = (struct nr4cb *)htol(argv[1]) ;
 	if (!nr4valcb(cb)) {
-		printf(Notval) ;
+		kprintf(Notval) ;
 		return 1 ;
 	}
 
@@ -898,53 +900,53 @@ struct nr4cb *cb ;
 	pax25(ruser,cb->remote.user) ;
 	pax25(node,cb->remote.node) ;
 
-	printf("Local: %s %d/%d Remote: %s @ %s %d/%d State: %s\n",
+	kprintf("Local: %s %d/%d Remote: %s @ %s %d/%d State: %s\n",
 		   luser, cb->mynum, cb->myid, ruser, node,
 		   cb->yournum, cb->yourid, Nr4states[cb->state]) ;
 
-	printf("Window: %-5u Rxpect: %-5u RxNext: %-5u RxQ: %-5d %s\n",
+	kprintf("Window: %-5u Rxpect: %-5u RxNext: %-5u RxQ: %-5d %s\n",
 		   cb->window, cb->rxpected, cb->rxpastwin,
 		   len_p(cb->rxq), cb->qfull ? "RxCHOKED" : "") ;
 
-	printf(" Unack: %-5u Txpect: %-5u TxNext: %-5u TxQ: %-5d %s\n",
+	kprintf(" Unack: %-5u Txpect: %-5u TxNext: %-5u TxQ: %-5d %s\n",
 		   cb->nbuffered, cb->ackxpected, cb->nextosend,
 		   len_q(cb->txq), cb->choked ? "TxCHOKED" : "") ;
 
-	printf("TACK: ") ;
+	kprintf("TACK: ") ;
 	if (run_timer(&cb->tack))
-		printf("%lu", read_timer(&cb->tack)) ;
+		kprintf("%lu", read_timer(&cb->tack)) ;
 	else
-		printf("stop") ;
-	printf("/%lu ms; ", dur_timer(&cb->tack)) ;
+		kprintf("stop") ;
+	kprintf("/%lu ms; ", dur_timer(&cb->tack)) ;
 
-	printf("TChoke: ") ;
+	kprintf("TChoke: ") ;
 	if (run_timer(&cb->tchoke))
-		printf("%lu", read_timer(&cb->tchoke)) ;
+		kprintf("%lu", read_timer(&cb->tchoke)) ;
 	else
-		printf("stop") ;
-	printf("/%lu ms; ", dur_timer(&cb->tchoke)) ;
+		kprintf("stop") ;
+	kprintf("/%lu ms; ", dur_timer(&cb->tchoke)) ;
 
-	printf("TCD: ") ;
+	kprintf("TCD: ") ;
 	if (run_timer(&cb->tcd))
-		printf("%lu", read_timer(&cb->tcd)) ;
+		kprintf("%lu", read_timer(&cb->tcd)) ;
 	else
-		printf("stop") ;
-	printf("/%lu ms", dur_timer(&cb->tcd)) ;
+		kprintf("stop") ;
+	kprintf("/%lu ms", dur_timer(&cb->tcd)) ;
 
 	if (run_timer(&cb->tcd))
-		printf("; Tries: %u\n", cb->cdtries) ;
+		kprintf("; Tries: %u\n", cb->cdtries) ;
 	else
-		printf("\n") ;
+		kprintf("\n") ;
 
-	printf("Backoff Level %u SRTT %ld ms Mean dev %ld ms\n",
+	kprintf("Backoff Level %u SRTT %ld ms Mean dev %ld ms\n",
 		   cb->blevel, cb->srtt, cb->mdev) ;
 
-	/* If we are connected and the send window is open, display */
+	/* If we are connected and the send window is kopen, display */
 	/* the status of all the buffers and their timers */
 	
 	if (cb->state == NR4STCON && cb->nextosend != cb->ackxpected) {
 
-		printf("TxBuffers:  Seq  Size  Tries  Timer\n") ;
+		kprintf("TxBuffers:  Seq  Size  Tries  Timer\n") ;
 
 		for (seq = cb->ackxpected ;
 			 nr4between(cb->ackxpected, seq, cb->nextosend) ;
@@ -953,7 +955,7 @@ struct nr4cb *cb ;
 			b = &cb->txbufs[seq % cb->window] ;
 			t = &b->tretry ;
 
-			printf("            %3u   %3d  %5d  %lu/%lu\n",
+			kprintf("            %3u   %3d  %5d  %lu/%lu\n",
 			 seq, len_p(b->data), b->retries + 1,
 			 read_timer(t), dur_timer(t));
 		}
@@ -968,8 +970,8 @@ int c;
 	if(c != CTLC)
 		return 1;	/* Ignore all but ^C */
 
-	fprintf(Current->output,"^C\n");
-	alert(Current->proc,EABORT);
+	kfprintf(Current->output,"^C\n");
+	alert(Current->proc,kEABORT);
 	return 0;
 }
 

@@ -3,7 +3,13 @@
  *
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#ifndef MSDOS
+#error "Don't build this file"
+#endif
+
+#include "stdio.h"
 #include <dos.h>
 #include "global.h"
 #include "proc.h"
@@ -46,14 +52,14 @@ void *p;
 	struct proc *pp;
 	int i;
 
-	printf("Uptime %s\n",tformat(secclock()));
+	kprintf("Uptime %s\n",tformat(secclock()));
 
-	printf("ksigs %lu queued %lu hiwat %u woken %lu nops %lu dups %u\n",Ksig.ksigs,
+	kprintf("ksigs %lu queued %lu hiwat %u woken %lu nops %lu dups %u\n",Ksig.ksigs,
 	 Ksig.ksigsqueued,Ksig.maxentries,Ksig.ksigwakes,Ksig.ksignops,Ksig.duksigs);
 	Ksig.maxentries = 0;
-	printf("kwaits %lu nops %lu from int %lu\n",
+	kprintf("kwaits %lu nops %lu from int %lu\n",
 	 Ksig.kwaits,Ksig.kwaitnops,Ksig.kwaitints);
-	printf("PID       SP        stksize   event     fl  in  out  name\n");
+	kprintf("PID       SP        stksize   event     fl  in  out  name\n");
 
 	for(pp = Susptab;pp != NULL;pp = pp->next)
 		pproc(pp);
@@ -76,15 +82,15 @@ struct proc *pp;
 {
 	char insock[5],outsock[5];
 
-	if(fileno(pp->input) != -1)
-		sprintf(insock,"%3d",fileno(pp->input));
+	if(kfileno(pp->input) != -1)
+		sprintf(insock,"%3d",kfileno(pp->input));
 	else
 		sprintf(insock,"   ");
-	if(fileno(pp->output) != -1)
-		sprintf(outsock,"%3d",fileno(pp->output));
+	if(kfileno(pp->output) != -1)
+		sprintf(outsock,"%3d",kfileno(pp->output));
 	else
 		sprintf(outsock,"   ");
-	printf("%-10p%-10lx%-10u%-10p%c%c%c %s %s  %s\n",
+	kprintf("%-10p%-10lx%-10u%-10p%c%c%c %s %s  %s\n",
 	 pp,pp->env[0].__esp,pp->stksize,
 	 pp->event,
 	 pp->flags.istate ? 'I' : ' ',

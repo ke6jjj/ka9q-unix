@@ -1,6 +1,8 @@
 /* Tracing routines for KISS TNC 
  * Copyright 1991 Phil Karn, KA9Q
  */
+#include "top.h"
+
 #include "global.h"
 #include "mbuf.h"
 #include "kiss.h"
@@ -10,45 +12,45 @@
 
 void
 ki_dump(fp,bpp,check)
-FILE *fp;
+kFILE *fp;
 struct mbuf **bpp;
 int check;
 {
 	int type;
 	int val;
 
-	fprintf(fp,"KISS: ");
+	kfprintf(fp,"KISS: ");
 	type = PULLCHAR(bpp);
 	if(type == PARAM_DATA){
-		fprintf(fp,"Data\n");
+		kfprintf(fp,"Data\n");
 		ax25_dump(fp,bpp,check);
 		return;
 	}
 	val = PULLCHAR(bpp);
 	switch(type){
 	case PARAM_TXDELAY:
-		fprintf(fp,"TX Delay: %lu ms\n",val * 10L);
+		kfprintf(fp,"TX Delay: %lu ms\n",val * 10L);
 		break;
 	case PARAM_PERSIST:
-		fprintf(fp,"Persistence: %u/256\n",val + 1);
+		kfprintf(fp,"Persistence: %u/256\n",val + 1);
 		break;
 	case PARAM_SLOTTIME:
-		fprintf(fp,"Slot time: %lu ms\n",val * 10L);
+		kfprintf(fp,"Slot time: %lu ms\n",val * 10L);
 		break;
 	case PARAM_TXTAIL:
-		fprintf(fp,"TX Tail time: %lu ms\n",val * 10L);
+		kfprintf(fp,"TX Tail time: %lu ms\n",val * 10L);
 		break;
 	case PARAM_FULLDUP:
-		fprintf(fp,"Duplex: %s\n",val == 0 ? "Half" : "Full");
+		kfprintf(fp,"Duplex: %s\n",val == 0 ? "Half" : "Full");
 		break;
 	case PARAM_HW:
-		fprintf(fp,"Hardware %u\n",val);
+		kfprintf(fp,"Hardware %u\n",val);
 		break;
 	case PARAM_RETURN:
-		fprintf(fp,"RETURN\n");
+		kfprintf(fp,"RETURN\n");
 		break;
 	default:
-		fprintf(fp,"code %u arg %u\n",type,val);
+		kfprintf(fp,"code %u arg %u\n",type,val);
 		break;
 	}
 }

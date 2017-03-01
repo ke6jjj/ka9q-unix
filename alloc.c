@@ -7,8 +7,13 @@
  * collisions. This causes erroneous failures because process stacks are
  * allocated off the heap.
  */
+#include "top.h"
 
-#include <stdio.h>
+#ifdef USE_SYSTEM_MALLOC
+#error "Don't build this file with USE_SYSTEM_MALLOC"
+#endif
+
+#include "stdio.h"
 #include <dos.h>
 #include "global.h"
 #include "mbuf.h"
@@ -245,13 +250,13 @@ free(void *blk)
 		Invalid++;
 		if(istate()){
 			ptr = (unsigned short *)&blk;
-			printf("free: WARNING! invalid pointer (%p) proc %s\n",
+			kprintf("free: WARNING! invalid pointer (%p) proc %s\n",
 			 blk,Curproc->name);
-			printf("p = %p, p->s.ptr = %p\n",p,p->s.ptr);
+			kprintf("p = %p, p->s.ptr = %p\n",p,p->s.ptr);
 
 			logmsg(-1,"free: WARNING! invalid pointer (%p) pc = 0x%x %x proc %s\n",
 			 blk,ptr[-1],ptr[-2],Curproc->name);
-			fflush(stdout); ppause(1000L);
+			kfflush(kstdout); ppause(1000L);
 			abort();
 		}
 		return;
@@ -399,22 +404,22 @@ void *envp
 	struct sysblock *sp;
 	int i;
 
-	printf("heap size %lu avail %lu (%lu%%) morecores %lu\n",
+	kprintf("heap size %lu avail %lu (%lu%%) morecores %lu\n",
 	 Heapsize,Availmem * ABLKSIZE,100L*Availmem*ABLKSIZE/Heapsize,
 	 Morecores);
 	if(Sysblock[0].npar != 0){
-		printf("Extra blocks:");
+		kprintf("Extra blocks:");
 		for(i=0,sp=Sysblock;i< NSYSBLOCK;i++,sp++){
 			if(sp->npar == 0)
 				break;
-			printf(" (%x0-%x0)",sp->seg,sp->seg+sp->npar);
+			kprintf(" (%x0-%x0)",sp->seg,sp->seg+sp->npar);
 		}
-		printf("\n");
+		kprintf("\n");
 	}
-	printf("allocs %lu frees %lu (diff %lu) alloc fails %lu invalid frees %lu\n",
+	kprintf("allocs %lu frees %lu (diff %lu) alloc fails %lu invalid frees %lu\n",
 		Allocs,Frees,Allocs-Frees,Memfail,Invalid);
-	printf("garbage collections yellow %lu red %lu\n",Yellows,Reds);
-	printf("\n");
+	kprintf("garbage collections yellow %lu red %lu\n",Yellows,Reds);
+	kprintf("\n");
 	mbufstat();
 	return 0;
 }
@@ -445,19 +450,19 @@ void *envp
 			restore(i_state);
 		}
 		if(corrupt)
-			printf("%8p %7lu C: %u",p,p->s.size * ABLKSIZE,corrupt);
+			kprintf("%8p %7lu C: %u",p,p->s.size * ABLKSIZE,corrupt);
 		else
-			printf("%8p %7lu",p,p->s.size * ABLKSIZE);
+			kprintf("%8p %7lu",p,p->s.size * ABLKSIZE);
 
 		if(++i == 4){
 			i = 0;
-			if(printf("\n") == EOF)
+			if(kprintf("\n") == kEOF)
 				return 0;
 		} else
-			printf(" | ");
+			kprintf(" | ");
 	}
 	if(i != 0)
-		printf("\n");
+		kprintf("\n");
 	return 0;
 }
 static int
@@ -469,7 +474,7 @@ void *p
 	int i;
 
 	for(i=0;i<16;i += 4){
-		printf("N>=%5u:%7ld| N>=%5u:%7ld| N>=%5u:%7ld| N>=%5u:%7ld\n",
+		kprintf("N>=%5u:%7ld| N>=%5u:%7ld| N>=%5u:%7ld| N>=%5u:%7ld\n",
 		 1<<i,Sizes[i],	2<<i,Sizes[i+1],
 		 4<<i,Sizes[i+2],8<<i,Sizes[i+3]);
 	}

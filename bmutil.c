@@ -10,11 +10,13 @@
  *
  *	Ported to NOS at 900120 by Anders Klemets SM0RGV.
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
-#include <errno.h>
+#include "errno.h"
 #include "global.h"
 #include "ftpserv.h"
 #include "smtp.h"
@@ -29,6 +31,7 @@
 #define		SETVBUF
 #if	defined(UNIX) || defined(MICROSOFT)
 #include	<sys/types.h>
+#include	<unistd.h>
 #endif
 /*
 #if	defined(UNIX) || defined(MICROSOFT) || defined(__TURBOC__)
@@ -46,11 +49,11 @@
 #define		MYBUF	1024
 #endif
 
-extern long ftell();
+extern long kftell();
 static char Badmsg[] = "Invalid Message number %d\n";
 static char Nomail[] = "No messages\n";
 static char Noaccess[] = "Unable to access %s\n";
-static int readnotes(struct mbx *m,FILE *ifile,int update);
+static int readnotes(struct mbx *m,kFILE *ifile,int update);
 static long isnewmail(struct mbx *m);
 static int initnotes(struct mbx *m);
 static int lockit(struct mbx *m);
@@ -62,31 +65,31 @@ static int
 initnotes(m)
 struct mbx *m;
 {
-	FILE	*tmpfile();
-	FILE	*ifile;
+	kFILE	*ktmpfile();
+	kFILE	*ifile;
 	register struct	let *cmsg;
 	char buf[256];
 	int 	i, ret;
 
 	sprintf(buf,"%s/%s.txt",Mailspool,m->area);
-	if ((ifile = fopen(buf,READ_TEXT)) == NULL)
+	if ((ifile = kfopen(buf,READ_TEXT)) == NULL)
 		return 0;
-	fseek(ifile,0L,2);	 /* go to end of file */
-	m->mboxsize = ftell(ifile);
-	rewind(ifile);
-	if(!stricmp(m->area,m->name)) /* our private mail area */
+	kfseek(ifile,0L,2);	 /* go to end of file */
+	m->mboxsize = kftell(ifile);
+	krewind(ifile);
+	if(!STRICMP(m->area,m->name)) /* our private mail area */
 		m->mysize = m->mboxsize;
-	if ((m->mfile = tmpfile()) == NULL) {
-		(void) fclose(ifile);
+	if ((m->mfile = ktmpfile()) == NULL) {
+		(void) kfclose(ifile);
 		return -1;
 	}
 #ifdef	SETVBUF
 	if (m->stdinbuf == NULL)
 		m->stdinbuf = mallocw(MYBUF);
-	setvbuf(ifile, m->stdinbuf, _IOFBF, MYBUF);
+	ksetvbuf(ifile, m->stdinbuf, _kIOFBF, MYBUF);
 	if (m->stdoutbuf == NULL)
 		m->stdoutbuf = mallocw(MYBUF);
-	setvbuf(m->mfile, m->stdoutbuf, _IOFBF, MYBUF);
+	ksetvbuf(m->mfile, m->stdoutbuf, _kIOFBF, MYBUF);
 #endif
 	m->nmsgs = 0;
 	m->current = 0;
@@ -97,7 +100,7 @@ struct mbx *m;
 	free(m->mbox);
 	m->mbox = (struct let *)callocw(Maxlet+1,sizeof(struct let));
 	ret = readnotes(m,ifile,0);
-	(void) fclose(ifile);
+	(void) kfclose(ifile);
 #ifdef SETVBUF
 	free(m->stdinbuf);
 	m->stdinbuf = NULL;
@@ -118,7 +121,7 @@ struct mbx *m;
 }
 
 /* readnotes assumes that ifile is pointing to the first
- * message that needs to be read.  For initial reads of a
+ * message that needs to be kread.  For initial reads of a
  * notesfile, this will be the beginning of the file.  For
  * rereads when new mail arrives, it will be the first new
  * message.
@@ -126,8 +129,8 @@ struct mbx *m;
 static int
 readnotes(m,ifile,update)
 struct mbx *m;
-FILE *ifile ;
-int update;	/* true if this is not the initial read of the notesfile */
+kFILE *ifile ;
+int update;	/* true if this is not the initial kread of the notesfile */
 {
 	char 	tstring[LINELEN];
 	long	cpos;
@@ -136,14 +139,14 @@ int update;	/* true if this is not the initial read of the notesfile */
 
 	cmsg = (struct let *)NULL;
 	line = tstring;
-	while(fgets(line,LINELEN,ifile) != NULL) {
+	while(kfgets(line,LINELEN,ifile) != NULL) {
 		/* scan for begining of a message */
 		if(strncmp(line,"From ",5) == 0) {
 			kwait(NULL);
-			cpos = ftell(m->mfile);
-			fputs(line,m->mfile);
+			cpos = kftell(m->mfile);
+			kfputs(line,m->mfile);
 			if (m->nmsgs == Maxlet) {
-				printf("Mail box full: > %d messages\n",Maxlet);
+				kprintf("Mail box full: > %d messages\n",Maxlet);
 				mfclose(m);
 				return -1;
 			}
@@ -153,10 +156,10 @@ int update;	/* true if this is not the initial read of the notesfile */
 			if(!update)
 				cmsg->status = 0;
 			cmsg->size = strlen(line);
-			while (fgets(line,LINELEN,ifile) != NULL) {
+			while (kfgets(line,LINELEN,ifile) != NULL) {
 				if (*line == '\n') { /* done header part */
 					cmsg->size++;
-					putc(*line, m->mfile);
+					kputc(*line, m->mfile);
 					break;
 				}
 				if (htype(line) == STATUS) {
@@ -165,8 +168,8 @@ int update;	/* true if this is not the initial read of the notesfile */
 					continue;
 				}
 				cmsg->size += strlen(line);
-				if (fputs(line,m->mfile) == EOF) {
-					printf("tmp file: %s",sys_errlist[errno]);
+				if (kfputs(line,m->mfile) == kEOF) {
+					kprintf("tmp file: %s",ksys_errlist[kerrno]);
 					mfclose(m);
 					return -1;
 				}
@@ -174,7 +177,7 @@ int update;	/* true if this is not the initial read of the notesfile */
 			}
 		} else if (cmsg) {
 			cmsg->size += strlen(line);
-			fputs(line,m->mfile);
+			kfputs(line,m->mfile);
 		}
 	}
 	return 0;
@@ -198,14 +201,14 @@ void *p;
 
 	m = (struct mbx *) p;
 	if (m->mfile == NULL) {
-		printf(Nomail);
+		kprintf(Nomail);
 		return 0;
 	}
 
 	area = strdup(m->area);
 	while((cp = strchr(area,'/')) != NULL)
 		*cp = '.';
-	printf("Mail area: %s  %d message%s -  %d new\n\n",area,m->nmsgs,
+	kprintf("Mail area: %s  %d message%s -  %d new\n\n",area,m->nmsgs,
 		m->nmsgs == 1 ? " " : "s ", m->newmsgs);
 	free(area);
 
@@ -227,7 +230,7 @@ void *p;
 	if(stop > m->nmsgs)
 		stop = m->nmsgs;
 	if(start < 1 || start > stop) {
-		printf("Invalid range.\n");
+		kprintf("Invalid range.\n");
 		return 0;
 	}
 	for (cmsg = &m->mbox[start]; start <= stop; start++, cmsg++) {
@@ -235,9 +238,9 @@ void *p;
 		*smtp_from = '\0';
 		*smtp_subject = '\0';
 		type = ' ';
-		fseek(m->mfile,cmsg->start,0);
+		kfseek(m->mfile,cmsg->start,0);
 		size = cmsg->size;
-		while (size > 0 && fgets(tstring,sizeof(tstring),m->mfile)
+		while (size > 0 && kfgets(tstring,sizeof(tstring),m->mfile)
 		       != NULL) {
 			if (*tstring == '\n')	/* end of header */
 				break;
@@ -295,7 +298,7 @@ void *p;
 		}
 		if((type == m->stype && m->stype != ' ') || m->stype == ' '
 		   || m->stype == 'L')
-		     printf("%c%c%c%3d %-27.27s %-12.12s %5ld %.25s\n",
+		     kprintf("%c%c%c%3d %-27.27s %-12.12s %5ld %.25s\n",
 			     (start == m->current ? '>' : ' '),
 			     (cmsg->status & BM_DELETE ? 'D' : ' '),
 			     (cmsg->status & BM_READ ? 'Y' : 'N'),
@@ -310,34 +313,34 @@ int
 msgtofile(m,msg,tfile,noheader)
 struct mbx *m;
 int msg;
-FILE *tfile;   /* already open for write */
+kFILE *tfile;   /* already kopen for kwrite */
 int noheader;
 {
 	char	tstring[LINELEN];
 	long 	size;
 
 	if (m->mfile == NULL) {
-		printf(Nomail);
+		kprintf(Nomail);
 		return -1;
 	}
-	fseek(m->mfile,m->mbox[msg].start,0);
+	kfseek(m->mfile,m->mbox[msg].start,0);
 	size = m->mbox[msg].size;
 
 	if (noheader) {
 		/* skip header */
-		while (size > 0 && fgets(tstring,sizeof(tstring),m->mfile)
+		while (size > 0 && kfgets(tstring,sizeof(tstring),m->mfile)
 		       != NULL) {
 			size -= strlen(tstring);
 			if (*tstring == '\n')
 				break;
 		}
 	}
-	while (size > 0 && fgets(tstring,sizeof(tstring),m->mfile)
+	while (size > 0 && kfgets(tstring,sizeof(tstring),m->mfile)
 	       != NULL) {
 		size -= strlen(tstring);
-		fputs(tstring,tfile);
-		if (ferror(tfile)) {
-			printf("Error writing mail file\n");
+		kfputs(tstring,tfile);
+		if (kferror(tfile)) {
+			kprintf("Error writing mail file\n");
 			return -1;
 		}
 	}
@@ -355,27 +358,27 @@ void *p;
 	int msg,i;
 	m = (struct mbx *) p;
 	if (m->mfile == NULL) {
-		printf(Nomail);
+		kprintf(Nomail);
 		return 0;
 	}
 	for(i = 1; i < argc; ++i) {
 		msg = atoi(argv[i]);
 		if(msg < 0 || msg > m->nmsgs) {
-			printf(Badmsg,msg);
+			kprintf(Badmsg,msg);
 			continue;
 		}
 		/* Check if we have permission to delete others mail */
-		if(!(m->privs & FTP_WRITE) && stricmp(m->area,m->name)) {
-			printf(Noperm);
+		if(!(m->privs & FTP_WRITE) && STRICMP(m->area,m->name)) {
+			kprintf(Noperm);
 			return 0;
 		}
 		m->mbox[msg].status |= BM_DELETE;
-		printf("Msg %d Killed.\n", msg);
+		kprintf("Msg %d Killed.\n", msg);
 		m->change = 1;
 	}
 	return 0;
 }
-/* close the temp file while coping mail back to the mailbox */
+/* kclose the temp file while coping mail back to the mailbox */
 int
 closenotes(m)
 struct mbx *m;
@@ -385,7 +388,7 @@ struct mbx *m;
 	char tstring[LINELEN], buf[256];
 	long size;
 	int i, nostatus = 0, nodelete;
-	FILE	*nfile;
+	kFILE	*nfile;
 
 	if (m->mfile == NULL)
 		return 0;
@@ -396,7 +399,7 @@ struct mbx *m;
 		return 0;
 	}
 	/* If this area is a public message area, then we will not add a
-	 * Status line to indicate that the message has been read.
+	 * Status line to indicate that the message has been kread.
 	 */
 	nostatus = isarea(m->area);
 
@@ -408,8 +411,8 @@ struct mbx *m;
 	else
 		nodelete = 0;
 
-	/* See if any messages have been forwarded, otherwise just close
-	 * the file and return since there is nothing to write back.
+	/* See if any messages have been forwarded, otherwise just kclose
+	 * the file and return since there is nothing to kwrite back.
 	 */
 	if(nostatus && nodelete) {
 		for(i=1; i <= m->nmsgs; ++i)
@@ -426,8 +429,8 @@ struct mbx *m;
 	if(lockit(m))
 		return -1;
 	sprintf(buf,"%s/%s.txt",Mailspool,m->area);
-	if ((nfile = fopen(buf,WRITE_TEXT)) == NULL) {
-		printf(Noaccess,buf);
+	if ((nfile = kfopen(buf,WRITE_TEXT)) == NULL) {
+		kprintf(Noaccess,buf);
 		mfclose(m);
 		m->mboxsize = 0;
 		rmlock(Mailspool,m->area);
@@ -435,33 +438,33 @@ struct mbx *m;
 	}
 	/* copy tmp file back to notes file */
 	for (cmsg = &m->mbox[1],i = 1; i <= m->nmsgs; i++, cmsg++) {
-		fseek(m->mfile,cmsg->start,0);
+		kfseek(m->mfile,cmsg->start,0);
 		size = cmsg->size;
 		/* It is not possible to delete messages if nodelete is set */
 		if ((cmsg->status & BM_DELETE) && !nodelete)
 			continue;
 		/* copy the header */
-		while (size > 0 && fgets(line,LINELEN,m->mfile) != NULL) {
+		while (size > 0 && kfgets(line,LINELEN,m->mfile) != NULL) {
 			size -= strlen(line);
 			if (*line == '\n') {
 				if (cmsg->status & BM_FORWARDED)
-					fprintf(nfile,"%s%s\n",Hdrs[XFORWARD],
+					kfprintf(nfile,"%s%s\n",Hdrs[XFORWARD],
 						m->name);
 				if ((cmsg->status & BM_READ) != 0 && !nostatus)
-					fprintf(nfile,"%sR\n",Hdrs[STATUS]);
-				fprintf(nfile,"\n");
+					kfprintf(nfile,"%sR\n",Hdrs[STATUS]);
+				kfprintf(nfile,"\n");
 				break;
 			}
-			fputs(line,nfile);
+			kfputs(line,nfile);
 			/* kwait(NULL);  can cause problems if exiting NOS */
 		}
-		while (size > 0 && fgets(line,LINELEN,m->mfile) != NULL) {
-			fputs(line,nfile);
+		while (size > 0 && kfgets(line,LINELEN,m->mfile) != NULL) {
+			kfputs(line,nfile);
 			size -= strlen(line);
 			/* kwait(NULL);   dont want no damaged files */
-			if (ferror(nfile)) {
-				printf("Error writing mail file\n");
-				(void) fclose(nfile);
+			if (kferror(nfile)) {
+				kprintf("Error writing mail file\n");
+				(void) kfclose(nfile);
 				mfclose(m);
 				m->mboxsize = 0;
 				rmlock(Mailspool,m->area);
@@ -470,12 +473,12 @@ struct mbx *m;
 		}
 	}
 	m->nmsgs = 0;
-	if (!stricmp(m->name,m->area))
-		m->mysize = ftell(nfile); /* Update the size of our mailbox */
+	if (!STRICMP(m->name,m->area))
+		m->mysize = kftell(nfile); /* Update the size of our mailbox */
 	/* remove a zero length file */
-	if (ftell(nfile) == 0L)
+	if (kftell(nfile) == 0L)
 		(void) unlink(buf);
-	(void) fclose(nfile);
+	(void) kfclose(nfile);
 	mfclose(m);
 	m->mboxsize = 0;
 	rmlock(Mailspool,m->area);
@@ -489,10 +492,10 @@ isarea(name)
 char *name;
 {
 	char buf[LINELEN], *cp;
-	FILE *fp;
-	if((fp = fopen(Arealist,READ_TEXT)) == NULL)
+	kFILE *fp;
+	if((fp = kfopen(Arealist,READ_TEXT)) == NULL)
 		return 0;
-	while(fgets(buf,sizeof(buf),fp) != NULL) {
+	while(kfgets(buf,sizeof(buf),fp) != NULL) {
 		/* The first word on each line is all that matters */
 		if((cp = strchr(buf,' ')) == NULL)
 			if((cp = strchr(buf,'\t')) == NULL)
@@ -500,12 +503,12 @@ char *name;
 		*cp = '\0';
 		if((cp = strchr(buf,'\t')) != NULL)
 			*cp = '\0';
-		if(stricmp(name,buf) == 0) {	/* found it */
-			fclose(fp);
+		if(STRICMP(name,buf) == 0) {	/* found it */
+			kfclose(fp);
 			return 1;
 		}
 	}
-	fclose(fp);
+	kfclose(fp);
 	return 0;
 }
 
@@ -520,7 +523,7 @@ struct mbx *m;
 		if(++cnt == 10) {
 			cnt = 0;
 			c = tkeywait("Mail file is busy, Abort or Retry ? ",1);
-			if (c == 'A' || c == 'a' || c == EOF) {
+			if (c == 'A' || c == 'a' || c == kEOF) {
 				mfclose(m);
 				return 1;
 			}
@@ -529,7 +532,7 @@ struct mbx *m;
 	return 0;
 }
 
-/* read the next message or the current one if new */
+/* kread the next message or the current one if new */
 int
 doreadnext(argc,argv,p)
 int argc;
@@ -547,7 +550,7 @@ void *p;
 		else if (m->current < m->nmsgs) {
 			m->current++;
 		} else {
-			printf("Last message\n");
+			kprintf("Last message\n");
 			return 0;
 		}
 	}
@@ -574,7 +577,7 @@ void *p;
 
 	m = (struct mbx *) p;
 	if (m->mfile == NULL) {
-		printf(Nomail);
+		kprintf(Nomail);
 		return 0;
 	}
 	if(m->type == TELNET || m->type == TIP)
@@ -585,10 +588,10 @@ void *p;
 	for(i = 1; i < argc; ++i) {
 		msg = atoi(argv[i]);
 		if( msg < 1 || msg > m->nmsgs) {
-			printf(Badmsg,msg);
+			kprintf(Badmsg,msg);
 			return 0;
 		}
-		fseek(m->mfile,m->mbox[msg].start,0);
+		kfseek(m->mfile,m->mbox[msg].start,0);
 		size = m->mbox[msg].size;
 		m->current = msg;
 		header = NOHEADER;
@@ -598,7 +601,7 @@ void *p;
 		else
 			verbose = 0;
 
-		printf("Message #%d %s\n", msg,
+		kprintf("Message #%d %s\n", msg,
 			m->mbox[msg].status & BM_DELETE ? "[Deleted]" : "");
 		if ((m->mbox[msg].status & BM_READ) == 0) {
 			m->mbox[msg].status |= BM_READ;
@@ -607,11 +610,11 @@ void *p;
 		}
 		--lin;
 		col = 0;
-		while (!feof(m->mfile) && size > 0) {
+		while (!kfeof(m->mfile) && size > 0) {
 			for (col = 0;  col < MAXCOL;) {
-				c = getc(m->mfile);
+				c = kgetc(m->mfile);
 				size--;
-				if (feof(m->mfile) || size == 0) /* end this line */
+				if (kfeof(m->mfile) || size == 0) /* end this line */
 					break;
 				if (c == '\t') {
 					cnt = col + 8 - (col & 7);
@@ -632,7 +635,7 @@ void *p;
 			     /* Digest R: lines and display as a Path: line */
 			     if(strncmp(buf,"R:",2) != 0 ||
 				(cp = strchr(buf,'@')) == NULL) {
-				  putchar('\n');
+				  kputchar('\n');
 				  mbxheader = -1; /* don't get here again */
 				  verbose = 1;
 			     }
@@ -642,19 +645,19 @@ void *p;
 				  for(cp2 = cp; isalnum(*cp2); ++cp2)  ;
 				  *cp2 = '\0';
 				  if(mbxheader++ == 1) {
-				       fputs("Path: ",stdout);
+				       kfputs("Path: ",kstdout);
 				       pathcol = 5;
 				       --lin;
 				  }
 				  else {
-				       putchar('!');
+				       kputchar('!');
 				       if(++pathcol + strlen(cp) > MAXCOL-3){
-					    fputs("\n      ",stdout);
+					    kfputs("\n      ",kstdout);
 					    pathcol = 5;
 					    --lin;
 				       }
 				  }
-				  fputs(cp,stdout);
+				  kfputs(cp,kstdout);
 				  pathcol += strlen(cp);
 				  ++lin;	/* to allow for not printing it later */
 			     }
@@ -663,7 +666,7 @@ void *p;
 			     /* last header line reached */
 			     mbxheader = 1;
 			if(verbose)
-				fputs(buf,stdout);
+				kfputs(buf,kstdout);
 			if(!verbose && !mbxheader){
 				lastheader = header;
 				if(!isspace(*buf))
@@ -678,7 +681,7 @@ void *p;
 				case SUBJECT:
 				case APPARTO:
 				case ORGANIZATION:
-					fputs(buf,stdout);
+					kfputs(buf,kstdout);
 					break;
 				default:
 					++lin;
@@ -733,20 +736,20 @@ char **rhdr;		/* Pointer to buffer for extra reply headers */
 	     msg = atoi(argv[1]);
 	if (m->mfile == NULL) {
 	     if(m->sid & MBX_SID)
-		  fputs("NO - ",stdout);
-		puts(Nomail);
+		  kfputs("NO - ",kstdout);
+		kputs(Nomail);
 		return 0;
 	}
 	if(msg < 1 || msg > m->nmsgs) {
 	     if(m->sid & MBX_SID)
-		  fputs("NO - ",stdout);
-	     puts(Badmsg);
+		  kfputs("NO - ",kstdout);
+	     kputs(Badmsg);
 	     return -1;
 	}
-	fseek(m->mfile,m->mbox[msg].start,0);
+	kfseek(m->mfile,m->mbox[msg].start,0);
 	size = m->mbox[msg].size;
 	m->current = msg;
-	while(size > 0 && fgets(m->line,MBXLINE-1,m->mfile) != NULL) {
+	while(size > 0 && kfgets(m->line,MBXLINE-1,m->mfile) != NULL) {
 	     size -= strlen(m->line);
 	     if(m->line[0] == '\n')	/* end of header */
 		  break;
@@ -758,7 +761,7 @@ char **rhdr;		/* Pointer to buffer for extra reply headers */
 	     }
 	     switch(header) {
 	     case SUBJECT:
-		  if(strlen(m->line) > 11 && !strnicmp(&m->line[9],"Re:",3))
+		  if(strlen(m->line) > 11 && !STRNICMP(&m->line[9],"Re:",3))
 		       strcpy(subject,&m->line[9]);
 		  else
 		       sprintf(subject,"Re: %s",&m->line[9]);
@@ -823,7 +826,7 @@ void
 scanmail(m)		 /* Get any new mail */
 struct mbx *m;
 {
-	FILE *nfile;
+	kFILE *nfile;
 	int ret, cnt;
 	char buf[256];
 	long diff;
@@ -843,11 +846,11 @@ struct mbx *m;
 		return;
 	}
 	sprintf(buf,"%s/%s.txt",Mailspool,m->area);
-	if ((nfile = fopen(buf,READ_TEXT)) == NULL)
-		printf(Noaccess,buf);
+	if ((nfile = kfopen(buf,READ_TEXT)) == NULL)
+		kprintf(Noaccess,buf);
 	else {
-		/* rewind tempfile */
-		fseek(m->mfile,0L,0);
+		/* krewind tempfile */
+		kfseek(m->mfile,0L,0);
 		cnt = m->nmsgs;
 		/* Reread all messages since size they may have changed
 		 * in size after a X-Forwarded-To line was added.
@@ -855,12 +858,12 @@ struct mbx *m;
 		m->nmsgs = 0;
 		ret = readnotes(m,nfile,1);   /* get the mail */
 		m->newmsgs += m->nmsgs - cnt;
-		m->mboxsize = ftell(nfile);
-		if(!stricmp(m->name,m->area))
+		m->mboxsize = kftell(nfile);
+		if(!STRICMP(m->name,m->area))
 			m->mysize = m->mboxsize;
-		(void) fclose(nfile);
+		(void) kfclose(nfile);
 		if (ret != 0)
-			printf("Error updating mail file\n");
+			kprintf("Error updating mail file\n");
 	}
 	rmlock(Mailspool,m->area);
 }
@@ -901,22 +904,22 @@ fsize(name)
 char *name;
 {
 	long cnt;
-	FILE *fp;
-	if((fp = fopen(name,READ_TEXT)) == NULL)
+	kFILE *fp;
+	if((fp = kfopen(name,READ_TEXT)) == NULL)
 		return -1L;
-	fseek(fp,0L,2);
-	cnt = ftell(fp);
-	fclose(fp);
+	kfseek(fp,0L,2);
+	cnt = kftell(fp);
+	kfclose(fp);
 	return cnt;
 }
 
-/* close the temporary mail file */
+/* kclose the temporary mail file */
 static void
 mfclose(m)
 struct mbx *m;
 {
 	if(m->mfile != NULL)
-		fclose(m->mfile);
+		kfclose(m->mfile);
 	m->mfile = NULL;
 #ifdef SETVBUF
 	free(m->stdoutbuf);
@@ -925,7 +928,7 @@ struct mbx *m;
 }
 
 
-/* Print prompt and read one character, telnet version */
+/* Print prompt and kread one character, telnet version */
 static int
 tkeywait(prompt,flush)
 char *prompt;	/* Optional prompt */
@@ -933,35 +936,35 @@ int flush;	/* Flush queued input? */
 {
 	int c, i, oldimode,oldomode;
 
-	if(flush && socklen(fileno(stdin),0) != 0)
-		recv_mbuf(fileno(stdin),NULL,0,NULL,0); /* flush */
+	if(flush && socklen(kfileno(kstdin),0) != 0)
+		recv_mbuf(kfileno(kstdin),NULL,0,NULL,0); /* flush */
 	if(prompt == NULL)
 		prompt = "Hit enter to continue"; 
-	printf("%s%c%c%c",prompt,IAC,WILL,TN_ECHO);
-	fflush(stdout);
+	kprintf("%s%c%c%c",prompt,IAC,WILL,TN_ECHO);
+	kfflush(kstdout);
 
 	/* discard the response */
 
-	oldimode = fmode(stdin,STREAM_BINARY);
-	oldomode = fmode(stdout,STREAM_BINARY);
+	oldimode = kfmode(kstdin,STREAM_BINARY);
+	oldomode = kfmode(kstdout,STREAM_BINARY);
 
-	while((c = getchar()) == IAC){
-		c = getchar();
+	while((c = kgetchar()) == IAC){
+		c = kgetchar();
 		if(c > 250 && c < 255)
-			getchar();
+			kgetchar();
 	}
 
-	fmode(stdout,oldomode);
-	fmode(stdin,oldimode);
+	kfmode(kstdout,oldomode);
+	kfmode(kstdin,oldimode);
 
 	/* Get rid of the prompt */
 	for(i=strlen(prompt);i != 0;i--)
-		putchar('\b');
+		kputchar('\b');
 	for(i=strlen(prompt);i != 0;i--)
-		putchar(' ');
+		kputchar(' ');
 	for(i=strlen(prompt);i != 0;i--)
-		putchar('\b');
-	printf("%c%c%c",IAC,WONT,TN_ECHO);
-	fflush(stdout);
+		kputchar('\b');
+	kprintf("%c%c%c",IAC,WONT,TN_ECHO);
+	kfflush(kstdout);
 	return c;
 }

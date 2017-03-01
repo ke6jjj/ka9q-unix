@@ -10,7 +10,9 @@
  *	Jan 91	[Bill Simpson] small changes to match rewrite of PPP
  *	Aug 91	[Bill Simpson] fixed some buffer loss
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "iface.h"
@@ -25,20 +27,20 @@
 /* dump a PPP packet */
 void
 ppp_dump(fp,bpp,unused)
-FILE *fp;
+kFILE *fp;
 struct mbuf **bpp;
 int unused;
 {
 	struct ppp_hdr hdr;
 	struct mbuf *tbp;
 
-	fprintf(fp,"PPP: len %3u\t", len_p(*bpp));
+	kfprintf(fp,"PPP: len %3u\t", len_p(*bpp));
 
 	/* HDLC address and control fields may be compressed out */
 	if ((byte_t)(*bpp)->data[0] != HDLC_ALL_ADDR) {
-		fprintf(fp,"(compressed ALL/UI)\t");
+		kfprintf(fp,"(compressed ALL/UI)\t");
 	} else if ((byte_t)(*bpp)->data[1] != HDLC_UI) {
-		fprintf(fp,"(missing UI!)\t");
+		kfprintf(fp,"(missing UI!)\t");
 	} else {
 		/* skip address/control fields */
 		pull16(bpp);
@@ -51,42 +53,42 @@ int unused;
 
 	/* First byte of PPP protocol field may be compressed out */
 	if ( hdr.protocol & 0x01 ) {
-		fprintf(fp,"compressed ");
+		kfprintf(fp,"compressed ");
 	} else {
 		hdr.protocol = (hdr.protocol << 8) | PULLCHAR(bpp);
 
 		/* Second byte of PPP protocol field must be odd */
 		if ( !(hdr.protocol & 0x01) ) {
-			fprintf(fp, "(not odd!) " );
+			kfprintf(fp, "(not odd!) " );
 		}
 	}
 
-	fprintf(fp,"protocol: ");
+	kfprintf(fp,"protocol: ");
 	switch(hdr.protocol){
 		case PPP_IP_PROTOCOL:
-			fprintf(fp,"IP\n");
+			kfprintf(fp,"IP\n");
 			ip_dump(fp,bpp,1);
 			break;
 		case PPP_IPCP_PROTOCOL:
-			fprintf(fp,"IPCP\n");
+			kfprintf(fp,"IPCP\n");
 			break;
 		case PPP_LCP_PROTOCOL:
-			fprintf(fp,"LCP\n");
+			kfprintf(fp,"LCP\n");
 			break;
 		case PPP_PAP_PROTOCOL:
-			fprintf(fp,"PAP\n");
+			kfprintf(fp,"PAP\n");
 			break;
 		case PPP_COMPR_PROTOCOL:
-			fprintf(fp,"VJ Compressed TCP/IP\n");
+			kfprintf(fp,"VJ Compressed TCP/IP\n");
 			vjcomp_dump(fp,bpp,0);
 			break;
 		case PPP_UNCOMP_PROTOCOL:
-			fprintf(fp,"VJ Uncompressed TCP/IP\n");
+			kfprintf(fp,"VJ Uncompressed TCP/IP\n");
 			/* Get our own copy so we can mess with the data */
 			if ( (tbp = copy_p(*bpp, len_p(*bpp))) == NULL)
 				return;
 
-			fprintf(fp,"\tconnection 0x%02x\n",
+			kfprintf(fp,"\tconnection 0x%02x\n",
 				tbp->data[9]);		/* FIX THIS! */
 			/* Restore the bytes used with Uncompressed TCP */
 			tbp->data[9] = TCP_PTCL;	/* FIX THIS! */
@@ -94,7 +96,7 @@ int unused;
 			free_p(&tbp);
 			break;
 		default:
-			fprintf(fp,"unknown 0x%04x\n",hdr.protocol);
+			kfprintf(fp,"unknown 0x%04x\n",hdr.protocol);
 			break;
 	}
 }

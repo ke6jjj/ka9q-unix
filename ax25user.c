@@ -1,6 +1,8 @@
 /* User interface subroutines for AX.25
  * Copyright 1991 Phil Karn, KA9Q
  */
+#include "top.h"
+
 #include "global.h"
 #include "mbuf.h"
 #include "timer.h"
@@ -67,6 +69,8 @@ int user;		/* User linkage area */
 		free_q(&axp->txq);
 		est_link(axp);
 		lapbstate(axp,LAPB_SETUP);
+		break;
+	default:
 		break;
 	}
 	return axp;
@@ -168,6 +172,8 @@ struct ax25_cb *axp;
 		stop_timer(&axp->t3);
 		start_timer(&axp->t1);
 		lapbstate(axp,LAPB_DISCPENDING);
+		break;
+	default:
 		break;
 	}
 	return 0;

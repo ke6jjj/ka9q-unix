@@ -1,7 +1,9 @@
 /* IP interface control and configuration routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "proc.h"
@@ -75,7 +77,7 @@ struct iface Loopback = {
 struct iface Encap = {
 	NULL,
 	"encap",	/* name		*/
-	INADDR_ANY,	/* addr		0.0.0.0 */
+	kINADDR_ANY,	/* addr		0.0.0.0 */
 	0xffffffffL,	/* broadcast	255.255.255.255 */
 	0xffffffffL,	/* netmask	255.255.255.255 */
 	MAXINT16,	/* mtu		No limit */
@@ -249,7 +251,7 @@ doifconfig(int argc,char *argv[],void *p)
 		return 0;
 	}
 	if((ifp = if_lookup(argv[1])) == NULL){
-		printf("Interface %s unknown\n",argv[1]);
+		kprintf("Interface %s unknown\n",argv[1]);
 		return 1;
 	}
 	if(argc == 2){
@@ -260,7 +262,7 @@ doifconfig(int argc,char *argv[],void *p)
 		return 0;
 	}
 	if(argc == 3){
-		printf("Argument missing\n");
+		kprintf("Argument missing\n");
 		return 1;
 	}
 	for(i=2;i<argc-1;i+=2)
@@ -287,7 +289,7 @@ iflinkadr(int argc,char *argv[],void *p)
 	struct iface *ifp = p;
 
 	if(ifp->iftype == NULL || ifp->iftype->scan == NULL){
-		printf("Can't set link address\n");
+		kprintf("Can't set link address\n");
 		return 1;
 	}
 	if(ifp->hwaddr != NULL)
@@ -340,7 +342,7 @@ ifencap(int argc,char *argv[],void *p)
 	struct iface *ifp = p;
 
 	if(setencap(ifp,argv[1]) != 0){
-		printf("Encapsulation mode '%s' unknown\n",argv[1]);
+		kprintf("Encapsulation mode '%s' unknown\n",argv[1]);
 		return 1;
 	}
 	return 0;
@@ -352,7 +354,7 @@ setencap(struct iface *ifp,char *mode)
 	struct iftype *ift;
 
 	for(ift = &Iftypes[0];ift->name != NULL;ift++)
-		if(strnicmp(ift->name,mode,strlen(mode)) == 0)
+		if(STRNICMP(ift->name,mode,strlen(mode)) == 0)
 			break;
 	if(ift->name == NULL)
 		return -1;
@@ -399,26 +401,26 @@ showiface(struct iface *ifp)
 {
 	char tmp[25];
 
-	printf("%-10s IP addr %s MTU %u Link encap %s\n",ifp->name,
+	kprintf("%-10s IP addr %s MTU %u Link encap %s\n",ifp->name,
 	 inet_ntoa(ifp->addr),(int)ifp->mtu,
 	 ifp->iftype != NULL ? ifp->iftype->name : "not set");
 	if(ifp->iftype != NULL && ifp->iftype->format != NULL && ifp->hwaddr != NULL){
-		printf("           Link addr %s\n",
+		kprintf("           Link addr %s\n",
 		 (*ifp->iftype->format)(tmp,ifp->hwaddr));
 	}
-	printf("           trace 0x%x netmask 0x%08lx broadcast %s\n",
+	kprintf("           trace 0x%x netmask 0x%08lx broadcast %s\n",
 		ifp->trace,ifp->netmask,inet_ntoa(ifp->broadcast));
 	if(ifp->forw != NULL)
-		printf("           output forward to %s\n",ifp->forw->name);
-	printf("           sent: ip %lu tot %lu idle %s qlen %u",
+		kprintf("           output forward to %s\n",ifp->forw->name);
+	kprintf("           sent: ip %lu tot %lu idle %s qlen %u",
 	 ifp->ipsndcnt,ifp->rawsndcnt,tformat(secclock() - ifp->lastsent),
 		len_q(ifp->outq));
 	if(ifp->outlim != 0)
-		printf("/%u",ifp->outlim);
+		kprintf("/%u",ifp->outlim);
 	if(ifp->txbusy)
-		printf(" BUSY");
-	printf("\n");
-	printf("           recv: ip %lu tot %lu idle %s\n",
+		kprintf(" BUSY");
+	kprintf("\n");
+	kprintf("           recv: ip %lu tot %lu idle %s\n",
 	 ifp->iprecvcnt,ifp->rawrecvcnt,tformat(secclock() - ifp->lastrecv));
 }
 
@@ -429,11 +431,11 @@ dodetach(int argc,char *argv[],void *p)
 	struct iface *ifp;
 
 	if((ifp = if_lookup(argv[1])) == NULL){
-		printf("Interface %s unknown\n",argv[1]);
+		kprintf("Interface %s unknown\n",argv[1]);
 		return 1;
 	}
 	if(if_detach(ifp) == -1)
-		printf("Can't detach loopback or encap interface\n");
+		kprintf("Can't detach loopback or encap interface\n");
 	return 0;
 }
 /* Detach a specified interface */
@@ -529,7 +531,7 @@ ismyaddr(int32 addr)
 {
 	struct iface *ifp;
 
-	if(addr == INADDR_ANY)
+	if(addr == kINADDR_ANY)
 		return &Loopback;
 	for(ifp = Ifaces; ifp != NULL; ifp = ifp->next)
 		if(addr == ifp->addr)
@@ -585,7 +587,7 @@ dodialer(int argc,char *argv[],void *p)
 	int32 timeout;
 
 	if((ifp = if_lookup(argv[1])) == NULL){
-		printf("Interface %s unknown\n",argv[1]);
+		kprintf("Interface %s unknown\n",argv[1]);
 		return 1;
 	}
 	if(argc < 3){
@@ -594,7 +596,7 @@ dodialer(int argc,char *argv[],void *p)
 		return 0;
 	}
 	if(ifp->iftype->dinit == NULL){
-		printf("Dialing not supported on %s\n",argv[1]);
+		kprintf("Dialing not supported on %s\n",argv[1]);
 		return 1;
 	}
 	timeout = atol(argv[2]) * 1000L;

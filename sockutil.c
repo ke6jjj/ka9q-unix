@@ -1,7 +1,9 @@
 /* Low level socket routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <errno.h>
+#include "top.h"
+
+#include "errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "netuser.h"
@@ -15,10 +17,10 @@ char *
 psocket(p)
 void *p;
 {
-	struct sockaddr *sp;	/* Pointer to structure to decode */
+	struct ksockaddr *sp;	/* Pointer to structure to decode */
 
-	sp = (struct sockaddr *)p;
-	if(sp->sa_family < AF_INET || sp->sa_family >= NAF)
+	sp = (struct ksockaddr *)p;
+	if(sp->sa_family < kAF_INET || sp->sa_family >= NAF)
 		return NULL;
 
 	return (*Psock[sp->sa_family])(sp);
@@ -33,14 +35,14 @@ int s;	/* Socket index */
 	struct socklink *sp;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return Badsocket;
 	}
 	sp = up->sp;
 	if(sp->error != NULL){
 		return sp->error[up->errcodes[0]];
 	} else {
-		errno = EOPNOTSUPP;	/* not yet, anyway */
+		kerrno = kEOPNOTSUPP;	/* not yet, anyway */
 		return NULL;
 	}
 }
@@ -53,11 +55,11 @@ int s;		/* Socket index */
 	struct socklink *sp;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return NULL;
 	}
 	if(up->cb.p == NULL){
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return NULL;
 	}
 	sp = up->sp;	
@@ -65,7 +67,7 @@ int s;		/* Socket index */
 		return (*sp->state)(up);
 	
 	/* Datagram sockets don't have state */
-	errno = EOPNOTSUPP;
+	kerrno = kEOPNOTSUPP;
 	return NULL;
 }
 /* Convert a socket index to an internal user socket structure pointer */

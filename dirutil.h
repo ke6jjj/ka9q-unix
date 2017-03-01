@@ -6,9 +6,9 @@
 #endif
 
 /* In dirutil.c */
-FILE *dir(char *path,int full);
+kFILE *dir(char *path,int full);
 int filedir(char *name,int times,char *ret_str);
-int getdir(char *path,int full,FILE *file);
+int getdir(char *path,int full,kFILE *file);
 
 /* In pathname.c: */
 char *pathname(char *cd,char *path);

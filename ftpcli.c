@@ -1,8 +1,10 @@
 /* Internet FTP client (interactive user)
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
-#include <errno.h>
+#include "top.h"
+
+#include "stdio.h"
+#include "errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "session.h"
@@ -41,13 +43,13 @@ static int doread(int argc,char *argv[],void *p);
 static int dormdir(int argc,char *argv[],void *p);
 static int dotype(int argc,char *argv[],void *p);
 static int doupdate(int argc,char *argv[],void *p);
-static int getline(struct session *sp,char *prompt,char *buf,int n);
+static int ftgetline(struct session *sp,char *prompt,char *buf,int n);
 static int getresp(struct ftpcli *ftp,int mincode);
 static long getsub(struct ftpcli *ftp,char *command,char *remotename,
-	FILE *fp);
+	kFILE *fp);
 static long putsub(struct ftpcli *ftp,char *remotename,char *localname);
 static int compsub(struct ftpcli *ftp,char *localname,char *remotename);
-static void sendport(FILE *fp,struct sockaddr_in *socket);
+static void sendport(kFILE *fp,struct ksockaddr_in *ksocket);
 static int keychar(int c);
 
 static char Notsess[] = "Not an FTP session!\n";
@@ -89,15 +91,15 @@ void *p;
 {
 	struct session *sp;
 	struct ftpcli ftp;
-	struct sockaddr_in fsocket;
+	struct ksockaddr_in fsocket;
 	int resp,vsave;
 	char *bufsav,*cp;
-	FILE *control;
+	kFILE *control;
 	int s;
 
 	/* Allocate a session control block */
 	if((sp = newsession(Cmdline,FTP,1)) == NULL){
-		printf("Too many sessions\n");
+		kprintf("Too many sessions\n");
 		return 1;
 	}
 	sp->inproc = keychar;
@@ -108,42 +110,42 @@ void *p;
 	sp->cb.ftp = &ftp;	/* Downward link */
 	ftp.session = sp;	/* Upward link */
 
-	fsocket.sin_family = AF_INET;
+	fsocket.sin_family = kAF_INET;
 	if(argc < 3)
 		fsocket.sin_port = IPPORT_FTP;
 	else
 		fsocket.sin_port = atoi(argv[2]);
 
-	if(SETSIG(EABORT)){
+	if(SETSIG(kEABORT)){
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
 	}
-	printf("Resolving %s...\n",argv[1]);
+	kprintf("Resolving %s...\n",argv[1]);
 	if((fsocket.sin_addr.s_addr = resolve(argv[1])) == 0){
-		printf(Badhost,argv[1]);
+		kprintf(Badhost,argv[1]);
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
 	}
 	/* Open the control connection */
-	if((s = socket(AF_INET,SOCK_STREAM,0)) == -1){
-		printf("Can't create socket\n");
+	if((s = ksocket(kAF_INET,kSOCK_STREAM,0)) == -1){
+		kprintf("Can't create ksocket\n");
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
 	}
-	if(SETSIG(EABORT)){
+	if(SETSIG(kEABORT)){
 		goto quit;
 	}
-	sp->network = control = ftp.control = fdopen(s,"r+t");
+	sp->network = control = ftp.control = kfdopen(s,"r+t");
 	settos(s,LOW_DELAY);
-	printf("Trying %s...\n",psocket(&fsocket));
-	if(connect(s,(struct sockaddr *)&fsocket,sizeof(fsocket)) == -1){
-		perror("Connect failed");
+	kprintf("Trying %s...\n",psocket(&fsocket));
+	if(kconnect(s,(struct ksockaddr *)&fsocket,sizeof(fsocket)) == -1){
+		kperror("Connect failed");
 		goto quit;
 	}
-	printf("Connected\n");
+	kprintf("Connected\n");
 
 	/* Wait for greeting from server */
 	resp = getresp(&ftp,200);
@@ -152,7 +154,7 @@ void *p;
 		goto quit;
 	/* Now process responses and commands */
 
-	if(SETSIG(EABORT)){
+	if(SETSIG(kEABORT)){
 		/* Come back here after a ^C in command state */
 		resp = 200;
 	}
@@ -160,12 +162,12 @@ void *p;
 		switch(resp){
 		case 220:
 			/* Sign-on banner; prompt for and send USER command */
-			getline(sp,"Enter user name: ",ftp.buf,LINELEN);
+			ftgetline(sp,"Enter user name: ",ftp.buf,LINELEN);
 			/* Send the command only if the user response
 			 * was non-null
 			 */
 			if(ftp.buf[0] != '\n'){
-				fprintf(control,"USER %s",ftp.buf);
+				kfprintf(control,"USER %s",ftp.buf);
 				resp = getresp(&ftp,200);
 			} else
 				resp = 200;	/* dummy */
@@ -173,41 +175,41 @@ void *p;
 		case 331:
 			/* turn off echo */
 			sp->ttystate.echo = 0;
-			getline(sp,"Password: ",ftp.buf,LINELEN);
-			printf("\n");
+			ftgetline(sp,"Password: ",ftp.buf,LINELEN);
+			kprintf("\n");
 			/* Turn echo back on */
 			sp->ttystate.echo = 1;
 			/* Send the command only if the user response
 			 * was non-null
 			 */
 			if(ftp.buf[0] != '\n'){
-				fprintf(control,"PASS %s",ftp.buf);
+				kfprintf(control,"PASS %s",ftp.buf);
 				resp = getresp(&ftp,200);
 			} else
 				resp = 200;	/* dummy */
 			break;
 		case 230:	/* Successful login */
 			/* Find out what type of system we're talking to */
-			printf("ftp> syst\n");
-			fprintf(control,"SYST\n");
+			kprintf("ftp> syst\n");
+			kfprintf(control,"SYST\n");
 			resp = getresp(&ftp,200);
 			break;
 		case 215:
 			/* Response to SYST command */
 			cp = strchr(ftp.line,' ');
-			if(cp != NULL && strnicmp(cp+1,System,strlen(System)) == 0){
+			if(cp != NULL && STRNICMP(cp+1,System,strlen(System)) == 0){
 				ftp.type = IMAGE_TYPE;
-				printf("Defaulting to binary mode\n");
+				kprintf("Defaulting to binary mode\n");
 			}
 			resp = 200;	/* dummy */
 			break;
 		default:
 			/* Test the control channel first */
-			if(sockstate(fileno(control)) == NULL){
+			if(sockstate(kfileno(control)) == NULL){
 				resp = -1;
 				break;
 			}
-			getline(sp,"ftp> ",ftp.buf,LINELEN);
+			ftgetline(sp,"ftp> ",ftp.buf,LINELEN);
 
 			/* Copy because cmdparse modifies the original */
 			bufsav = strdup(ftp.buf);
@@ -216,7 +218,7 @@ void *p;
 				FREE(bufsav);
 			} else {
 				/* Not a local cmd, send to remote server */
-				fputs(bufsav,control);
+				kfputs(bufsav,control);
 				FREE(bufsav);
 
 				/* Enable display of server response */
@@ -227,15 +229,15 @@ void *p;
 			}
 		}
 	}
-quit:	cp = sockerr(fileno(control));
-	printf("Closed: %s\n",cp != NULL ? cp : "EOF");
+quit:	cp = sockerr(kfileno(control));
+	kprintf("Closed: %s\n",cp != NULL ? cp : "EOF");
 
-	if(ftp.fp != NULL && ftp.fp != stdout)
-		fclose(ftp.fp);
+	if(ftp.fp != NULL && ftp.fp != kstdout)
+		kfclose(ftp.fp);
 	if(ftp.data != NULL)
-		fclose(ftp.data);
+		kfclose(ftp.data);
 	if(ftp.control != NULL){
-		fclose(ftp.control);
+		kfclose(ftp.control);
 		ftp.control = NULL;
 		sp->network = NULL;
 	}
@@ -310,9 +312,9 @@ void *p;
 	ftp = (struct ftpcli *)p;
 	if(ftp == NULL)
 		return -1;
-	fprintf(ftp->control,"QUIT\n");
+	kfprintf(ftp->control,"QUIT\n");
 	getresp(ftp,200);	/* Get the closing message */
-	getresp(ftp,200);	/* Wait for the server to close */
+	getresp(ftp,200);	/* Wait for the server to kclose */
 	return -1;
 }
 
@@ -328,7 +330,7 @@ void *p;
 	ftp = (struct ftpcli *)p;
 	if(ftp == NULL)
 		return -1;
-	fprintf(ftp->control,"CWD %s\n",argv[1]);
+	kfprintf(ftp->control,"CWD %s\n",argv[1]);
 	return getresp(ftp,200);
 }
 /* Translate 'mkdir' to 'xmkd' for convenience */
@@ -343,7 +345,7 @@ void *p;
 	ftp = (struct ftpcli *)p;
 	if(ftp == NULL)
 		return -1;
-	fprintf(ftp->control,"XMKD %s\n",argv[1]);
+	kfprintf(ftp->control,"XMKD %s\n",argv[1]);
 	return getresp(ftp,200);
 }
 /* Translate 'rmdir' to 'xrmd' for convenience */
@@ -358,7 +360,7 @@ void *p;
 	ftp = (struct ftpcli *)p;
 	if(ftp == NULL)
 		return -1;
-	fprintf(ftp->control,"XRMD %s\n",argv[1]);
+	kfprintf(ftp->control,"XRMD %s\n",argv[1]);
 	return getresp(ftp,200);
 }
 static int
@@ -399,13 +401,13 @@ void *p;
 	if(argc < 2){
 		switch(ftp->type){
 		case IMAGE_TYPE:
-			printf("Image\n");
+			kprintf("Image\n");
 			break;
 		case ASCII_TYPE:
-			printf("Ascii\n");
+			kprintf("Ascii\n");
 			break;
 		case LOGICAL_TYPE:
-			printf("Logical bytesize %u\n",ftp->logbsize);
+			kprintf("Logical bytesize %u\n",ftp->logbsize);
 			break;
 		}
 		return 0;
@@ -427,7 +429,7 @@ void *p;
 		ftp->logbsize = atoi(argv[2]);
 		break;
 	default:
-		printf("Invalid type %s\n",argv[1]);
+		kprintf("Invalid type %s\n",argv[1]);
 		return 1;
 	}
 	return 0;
@@ -441,12 +443,12 @@ void *p;
 {
 	char *remotename,*localname;
 	struct ftpcli *ftp;
-	FILE *fp;
+	kFILE *fp;
 	char *mode;
 
 	ftp = (struct ftpcli *)p;
 	if(ftp == NULL){
-		printf(Notsess);
+		kprintf(Notsess);
 		return 1;
 	}
 	remotename = argv[1];
@@ -464,16 +466,16 @@ void *p;
 		mode = WRITE_TEXT;
 		break;
 	}
-	if((fp = fopen(localname,mode)) == NULL){
-		printf("Can't write %s",localname);
-		perror("");
+	if((fp = kfopen(localname,mode)) == NULL){
+		kprintf("Can't kwrite %s",localname);
+		kperror("");
 		return 1;
 	}
 	getsub(ftp,"RETR",remotename,fp);
-	fclose(fp);
+	kfclose(fp);
 	return 0;
 }
-/* Read file direct to screen. Syntax: read <remote name> */
+/* Read file direct to screen. Syntax: kread <remote name> */
 static int
 doread(argc,argv,p)
 int argc;
@@ -483,10 +485,10 @@ void *p;
 	struct ftpcli *ftp;
 
 	if((ftp = (struct ftpcli *)p) == NULL){
-		printf(Notsess);
+		kprintf(Notsess);
 		return 1;
 	}
-	getsub(ftp,"RETR",argv[1],stdout);
+	getsub(ftp,"RETR",argv[1],kstdout);
 	return 0;
 }
 /* Get a collection of files */
@@ -497,13 +499,13 @@ char *argv[];
 void *p;
 {
 	struct ftpcli *ftp;
-	FILE *files,*fp;
+	kFILE *files,*fp;
 	char *buf,*mode;
 	int i;
 	long r;
 
 	if((ftp = (struct ftpcli *)p) == NULL){
-		printf(Notsess);
+		kprintf(Notsess);
 		return 1;
 	}
 	switch(ftp->type){
@@ -518,39 +520,39 @@ void *p;
 	buf = mallocw(DIRBUF);
 	ftp->state = RECEIVING_STATE;
 	for(i=1;i<argc;i++){
-		files = tmpfile();
+		files = ktmpfile();
 		r = getsub(ftp,"NLST",argv[i],files);
 		if(ftp->abort)
 			break;	/* Aborted */
 		if(r == -1){
-			printf("Can't NLST %s\n",argv[i]);
+			kprintf("Can't NLST %s\n",argv[i]);
 			continue;
 		}
 		/* The tmp file now contains a list of the remote files, so
 		 * go get 'em. Break out if the user signals an abort.
 		 */
-		rewind(files);
-		while(fgets(buf,DIRBUF,files) != NULL){
+		krewind(files);
+		while(kfgets(buf,DIRBUF,files) != NULL){
 			rip(buf);
 			if(!ftp->update || compsub(ftp,buf,buf) != 0){
-				if((fp = fopen(buf,mode)) == NULL){
-					printf("Can't write %s",buf);
-					perror("");
+				if((fp = kfopen(buf,mode)) == NULL){
+					kprintf("Can't kwrite %s",buf);
+					kperror("");
 					continue;
 				}
 				getsub(ftp,"RETR",buf,fp);
-				fclose(fp);
+				kfclose(fp);
 			}
 			if(ftp->abort){
 				/* User abort */
 				ftp->abort = 0;
-				fclose(files);
+				kfclose(files);
 				free(buf);
 				ftp->state = COMMAND_STATE;
 				return 1;
 			}
 		}
-		fclose(files);
+		kfclose(files);
 	}
 	free(buf);
 	ftp->state = COMMAND_STATE;
@@ -565,23 +567,23 @@ char *argv[];
 void *p;
 {
 	struct ftpcli *ftp;
-	FILE *fp;
+	kFILE *fp;
 
 	ftp = (struct ftpcli *)p;
 	if(ftp == NULL){
-		printf(Notsess);
+		kprintf(Notsess);
 		return 1;
 	}
 
 	if(argc > 2)
-		fp = fopen(argv[2],WRITE_TEXT);
+		fp = kfopen(argv[2],WRITE_TEXT);
 
 	else
-		fp = stdout;
+		fp = kstdout;
 
 	if(fp == NULL){
-		printf("Can't write local file");
-		perror("");
+		kprintf("Can't kwrite local file");
+		kperror("");
 		return 1;
 	}
 
@@ -596,21 +598,21 @@ char *argv[];
 void *p;
 {
 	struct ftpcli *ftp;
-	FILE *fp;
+	kFILE *fp;
 
 	if((ftp = (struct ftpcli *)p) == NULL){
-		printf(Notsess);
+		kprintf(Notsess);
 		return 1;
 	}
 	if(argc > 2)
-		fp = fopen(argv[2],WRITE_TEXT);
+		fp = kfopen(argv[2],WRITE_TEXT);
 
 	else
-		fp = stdout;
+		fp = kstdout;
 
 	if(fp == NULL){
-		printf("Can't write local file");
-		perror("");
+		kprintf("Can't kwrite local file");
+		kperror("");
 		return 1;
 	}
 	getsub(ftp,"NLST",argv[1],fp);
@@ -624,13 +626,13 @@ void *p;
 {
 	char *remotename;
 	struct ftpcli *ftp;
-	FILE *control;
+	kFILE *control;
 	int resp;
 	int typewait = 0;
 
 	ftp = (struct ftpcli *)p;
 	if(ftp == NULL){
-		printf(Notsess);
+		kprintf(Notsess);
 		return 1;
 	}
 	control = ftp->control;
@@ -638,13 +640,13 @@ void *p;
 	if(ftp->typesent != ftp->type){
 		switch(ftp->type){
 		case ASCII_TYPE:
-			fprintf(control,"TYPE A\n");
+			kfprintf(control,"TYPE A\n");
 			break;
 		case IMAGE_TYPE:
-			fprintf(control,"TYPE I\n");
+			kfprintf(control,"TYPE I\n");
 			break;
 		case LOGICAL_TYPE:
-			fprintf(control,"TYPE L %d\n",ftp->logbsize);
+			kfprintf(control,"TYPE L %d\n",ftp->logbsize);
 			break;
 		}
 		ftp->typesent = ftp->type;
@@ -656,7 +658,7 @@ void *p;
 			typewait = 1;
 
 	}
-	fprintf(control,"XMD5 %s\n",remotename);
+	kfprintf(control,"XMD5 %s\n",remotename);
 	if(typewait)
 		(void)getresp(ftp,200);
 	(void)getresp(ftp,200);
@@ -674,7 +676,7 @@ void *p;
 
 	ftp = (struct ftpcli *)p;
 	if(ftp == NULL){
-		printf(Notsess);
+		kprintf(Notsess);
 		return 1;
 	}
 	remotename = argv[1];
@@ -684,9 +686,9 @@ void *p;
 		localname = remotename;
 
 	if(compsub(ftp,localname,remotename) == 0)
-		printf("Same\n");
+		kprintf("Same\n");
 	else
-		printf("Different\n");
+		kprintf("Different\n");
 	return 0;
 }
 /* Compare a collection of files */
@@ -697,47 +699,47 @@ char *argv[];
 void *p;
 {
 	struct ftpcli *ftp;
-	FILE *files;
+	kFILE *files;
 	char *buf;
 	int i;
 	long r;
 
 	if((ftp = (struct ftpcli *)p) == NULL){
-		printf(Notsess);
+		kprintf(Notsess);
 		return 1;
 	}
 	buf = mallocw(DIRBUF);
 	ftp->state = RECEIVING_STATE;
 	for(i=1;i<argc;i++){
-		files = tmpfile();
+		files = ktmpfile();
 		r = getsub(ftp,"NLST",argv[i],files);
 		if(ftp->abort)
 			break;	/* Aborted */
 		if(r == -1){
-			printf("Can't NLST %s\n",argv[i]);
+			kprintf("Can't NLST %s\n",argv[i]);
 			continue;
 		}
 		/* The tmp file now contains a list of the remote files, so
 		 * go get 'em. Break out if the user signals an abort.
 		 */
-		rewind(files);
-		while(fgets(buf,DIRBUF,files) != NULL){
+		krewind(files);
+		while(kfgets(buf,DIRBUF,files) != NULL){
 			rip(buf);
 			if(compsub(ftp,buf,buf) == 0)
-				printf("%s - Same\n",buf);
+				kprintf("%s - Same\n",buf);
 			else
-				printf("%s - Different\n",buf);
+				kprintf("%s - Different\n",buf);
 
 			if(ftp->abort){
 				/* User abort */
 				ftp->abort = 0;
-				fclose(files);
+				kfclose(files);
 				free(buf);
 				ftp->state = COMMAND_STATE;
 				return 1;
 			}
 		}
-		fclose(files);
+		kfclose(files);
 	}
 	free(buf);
 	ftp->state = COMMAND_STATE;
@@ -754,7 +756,7 @@ char *localname;
 char *remotename;
 {
 	char *mode,*cp;
-	FILE *control,*fp;
+	kFILE *control,*fp;
 	int resp,i;
 	int typewait = 0;
 	uint8 remhash[16];
@@ -771,20 +773,20 @@ char *remotename;
 		mode = READ_TEXT;
 		break;
 	}
-	if((fp = fopen(localname,mode)) == NULL){
-		printf("Can't read local file %s\n",localname);
+	if((fp = kfopen(localname,mode)) == NULL){
+		kprintf("Can't kread local file %s\n",localname);
 		return 1;
 	}
 	if(ftp->typesent != ftp->type){
 		switch(ftp->type){
 		case ASCII_TYPE:
-			fprintf(control,"TYPE A\n");
+			kfprintf(control,"TYPE A\n");
 			break;
 		case IMAGE_TYPE:
-			fprintf(control,"TYPE I\n");
+			kfprintf(control,"TYPE I\n");
 			break;
 		case LOGICAL_TYPE:
-			fprintf(control,"TYPE L %d\n",ftp->logbsize);
+			kfprintf(control,"TYPE L %d\n",ftp->logbsize);
 			break;
 		}
 		ftp->typesent = ftp->type;
@@ -795,10 +797,10 @@ char *remotename;
 		} else
 			typewait = 1;
 	}
-	fprintf(control,"XMD5 %s\n",remotename);
+	kfprintf(control,"XMD5 %s\n",remotename);
 	/* Try to overlap the two MD5 operations */
 	md5hash(fp,lochash,ftp->type == ASCII_TYPE);
-	fclose(fp);
+	kfclose(fp);
 	if(typewait && (resp = getresp(ftp,200)) > 299)
 		goto failure;
 	if((resp = getresp(ftp,200)) > 299){
@@ -807,16 +809,16 @@ char *remotename;
 		goto failure;
 	}	
 	if((cp = strchr(ftp->line,' ')) == NULL){
-		printf("Error in response\n");
+		kprintf("Error in response\n");
 		goto failure;
 	}
 	/* Convert ascii/hex back to binary */
 	readhex(remhash,cp,sizeof(remhash));
 	if(ftp->verbose > 1){
-		printf("Loc ");
+		kprintf("Loc ");
 		for(i=0;i<sizeof(lochash);i++)
-			printf("%02x",lochash[i]);
-		printf(" %s\n",localname);
+			kprintf("%02x",lochash[i]);
+		kprintf(" %s\n",localname);
 	}
 	if(memcmp(lochash,remhash,sizeof(remhash)) == 0)
 		return 0;
@@ -835,13 +837,13 @@ static long
 getsub(ftp,command,remotename,fp)
 struct ftpcli *ftp;
 char *command,*remotename;
-FILE *fp;
+kFILE *fp;
 {
 	unsigned long total;
-	FILE *control;
+	kFILE *control;
 	int cnt,resp,i,savmode;
-	struct sockaddr_in lsocket;
-	struct sockaddr_in lcsocket;
+	struct ksockaddr_in lsocket;
+	struct ksockaddr_in lcsocket;
 	int32 startclk,rate;
 	int vsave;
 	int typewait = 0;
@@ -854,16 +856,16 @@ FILE *fp;
 	control = ftp->control;
 
 	/* Open the data connection */
-	d = socket(AF_INET,SOCK_STREAM,0);
-	listen(d,0);	/* Accept only one connection */
+	d = ksocket(kAF_INET,kSOCK_STREAM,0);
+	klisten(d,0);	/* Accept only one connection */
 
 	switch(ftp->type){
 	case IMAGE_TYPE:
 	case LOGICAL_TYPE:
-		ftp->data = fdopen(d,"r+b");
+		ftp->data = kfdopen(d,"r+b");
 		break;
 	case ASCII_TYPE:
-		ftp->data = fdopen(d,"r+t");
+		ftp->data = kfdopen(d,"r+t");
 		break;
 	}
 	prevstate = ftp->state;
@@ -877,13 +879,13 @@ FILE *fp;
 	if(ftp->typesent != ftp->type){
 		switch(ftp->type){
 		case ASCII_TYPE:
-			fprintf(control,"TYPE A\n");
+			kfprintf(control,"TYPE A\n");
 			break;
 		case IMAGE_TYPE:
-			fprintf(control,"TYPE I\n");
+			kfprintf(control,"TYPE I\n");
 			break;
 		case LOGICAL_TYPE:
-			fprintf(control,"TYPE L %d\n",ftp->logbsize);
+			kfprintf(control,"TYPE L %d\n",ftp->logbsize);
 			break;
 		}
 		ftp->typesent = ftp->type;
@@ -898,9 +900,9 @@ FILE *fp;
 	 * on the local end of our control connection.
 	 */
 	i = SOCKSIZE;
-	getsockname(d,(struct sockaddr *)&lsocket,&i); /* Get port number */
+	getsockname(d,(struct ksockaddr *)&lsocket,&i); /* Get port number */
 	i = SOCKSIZE;
-	getsockname(fileno(ftp->control),(struct sockaddr *)&lcsocket,&i);
+	getsockname(kfileno(ftp->control),(struct ksockaddr *)&lcsocket,&i);
 	lsocket.sin_addr.s_addr = lcsocket.sin_addr.s_addr;
 	sendport(control,&lsocket);
 	if(!ftp->batch){
@@ -912,9 +914,9 @@ FILE *fp;
 
 	/* Generate the command to start the transfer */
 	if(remotename != NULL)
-		fprintf(control,"%s %s\n",command,remotename);
+		kfprintf(control,"%s %s\n",command,remotename);
 	else
-		fprintf(control,"%s\n",command);
+		kfprintf(control,"%s\n",command);
 
 	if(ftp->batch){
 		/* Get response to TYPE command, if sent */
@@ -933,31 +935,31 @@ FILE *fp;
 	if(resp == -1 || resp >= 400)
 		goto failure;
 
-	/* Wait for the server to open the data connection */
+	/* Wait for the server to kopen the data connection */
 	cnt = 0;
-	d = accept(d,NULL,&cnt);
+	d = kaccept(d,NULL,&cnt);
 	startclk = msclock();
 
 	/* If output is to the screen, temporarily disable hash marking */
 	vsave = ftp->verbose;
 	if(vsave >= V_HASH && fp == NULL)
 		ftp->verbose = V_NORMAL;
-	total = recvfile(fp,ftp->data,ftp->type,ftp->verbose);
-	/* Immediately close the data connection; some servers (e.g., TOPS-10)
-	 * wait for the data connection to close completely before returning
+	total = krecvfile(fp,ftp->data,ftp->type,ftp->verbose);
+	/* Immediately kclose the data connection; some servers (e.g., TOPS-10)
+	 * wait for the data connection to kclose completely before returning
 	 * the completion message on the control channel
 	 */
-	fclose(ftp->data);
+	kfclose(ftp->data);
 	ftp->data = NULL;
 
 #ifdef	CPM
 	if(fp != NULL && ftp->type == ASCII_TYPE)
-		putc(CTLZ,fp);
+		kputc(CTLZ,fp);
 #endif
 	if(remotename == NULL)
 		remotename = "";
 	if(total == -1){
-		printf("%s %s: Error/abort during data transfer\n",command,remotename);
+		kprintf("%s %s: Error/abort during data transfer\n",command,remotename);
 	} else if(ftp->verbose >= V_SHORT){
 		startclk = msclock() - startclk;
 		rate = 0;
@@ -968,7 +970,7 @@ FILE *fp;
 				rate = total/(startclk/1000);
 			}
 		}
-		printf("%s %s: %lu bytes in %lu sec (%lu/sec)\n",
+		kprintf("%s %s: %lu bytes in %lu sec (%lu/sec)\n",
 		 command,remotename, total,startclk/1000,rate);
 	}
 	/* Get the "Sent" message */
@@ -981,9 +983,9 @@ FILE *fp;
 
 failure:
 	/* Error, quit */
-	if(fp != NULL && fp != stdout)
-		fclose(fp);
-	fclose(ftp->data);
+	if(fp != NULL && fp != kstdout)
+		kfclose(fp);
+	kfclose(ftp->data);
 	ftp->data = NULL;
 	ftp->state = prevstate;
 	ftp->type = savmode;
@@ -1000,7 +1002,7 @@ void *p;
 	char *remotename,*localname;
 
 	if((ftp = (struct ftpcli *)p) == NULL){
-		printf(Notsess);
+		kprintf(Notsess);
 		return 1;
 	}
 	localname = argv[1];
@@ -1020,32 +1022,32 @@ char *argv[];
 void *p;
 {
 	struct ftpcli *ftp;
-	FILE *files;
+	kFILE *files;
 	int i;
 	char *buf;
 
 	if((ftp = (struct ftpcli *)p) == NULL){
-		printf(Notsess);
+		kprintf(Notsess);
 		return 1;
 	}
-	if((files = tmpfile()) == NULL){
-		printf("Can't list local files\n");
+	if((files = ktmpfile()) == NULL){
+		kprintf("Can't list local files\n");
 		return 1;
 	}
 	for(i=1;i<argc;i++)
 		getdir(argv[i],0,files);
 
-	rewind(files);
+	krewind(files);
 	buf = mallocw(DIRBUF);
 	ftp->state = SENDING_STATE;
-	while(fgets(buf,DIRBUF,files) != NULL){
+	while(kfgets(buf,DIRBUF,files) != NULL){
 		rip(buf);
 		if(!ftp->update || compsub(ftp,buf,buf) != 0)
 			putsub(ftp,buf,buf);
 		if(ftp->abort)
 			break;		/* User abort */
 	}
-	fclose(files);
+	kfclose(files);
 	free(buf);
 	ftp->state = COMMAND_STATE;
 	ftp->abort = 0;
@@ -1063,8 +1065,8 @@ char *remotename,*localname;
 	char *mode;
 	int i,resp,d;
 	unsigned long total;
-	FILE *fp,*control;
-	struct sockaddr_in lsocket,lcsocket;
+	kFILE *fp,*control;
+	struct ksockaddr_in lsocket,lcsocket;
 	int32 startclk,rate;
 	int typewait = 0;
 	int prevstate;
@@ -1076,17 +1078,17 @@ char *remotename,*localname;
 		mode = READ_TEXT;
 
 	/* Open the file */
-	if((fp = fopen(localname,mode)) == NULL){
-		printf("Can't read %s: %s\n",localname,sys_errlist[errno]);
+	if((fp = kfopen(localname,mode)) == NULL){
+		kprintf("Can't kread %s: %s\n",localname,ksys_errlist[kerrno]);
 		return -1;
 	}
 	if(ftp->type == ASCII_TYPE && isbinary(fp)){
-		printf("Warning: type is ASCII and %s appears to be binary\n",localname);
+		kprintf("Warning: type is ASCII and %s appears to be binary\n",localname);
 	}
 	/* Open the data connection */
-	d = socket(AF_INET,SOCK_STREAM,0);
-	ftp->data = fdopen(d,"w+");
-	listen(d,0);
+	d = ksocket(kAF_INET,kSOCK_STREAM,0);
+	ftp->data = kfdopen(d,"w+");
+	klisten(d,0);
 	prevstate = ftp->state;
 	ftp->state = SENDING_STATE;
 
@@ -1094,13 +1096,13 @@ char *remotename,*localname;
 	if(ftp->typesent != ftp->type){
 		switch(ftp->type){
 		case ASCII_TYPE:
-			fprintf(control,"TYPE A\n");
+			kfprintf(control,"TYPE A\n");
 			break;
 		case IMAGE_TYPE:
-			fprintf(control,"TYPE I\n");
+			kfprintf(control,"TYPE I\n");
 			break;
 		case LOGICAL_TYPE:
-			fprintf(control,"TYPE L %d\n",ftp->logbsize);
+			kfprintf(control,"TYPE L %d\n",ftp->logbsize);
 			break;
 		}
 		ftp->typesent = ftp->type;
@@ -1118,9 +1120,9 @@ char *remotename,*localname;
 	 * on the local end of our control connection.
 	 */
 	i = SOCKSIZE;
-	getsockname(d,(struct sockaddr *)&lsocket,&i);
+	getsockname(d,(struct ksockaddr *)&lsocket,&i);
 	i = SOCKSIZE;
-	getsockname(fileno(ftp->control),(struct sockaddr *)&lcsocket,&i);
+	getsockname(kfileno(ftp->control),(struct ksockaddr *)&lcsocket,&i);
 	lsocket.sin_addr.s_addr = lcsocket.sin_addr.s_addr;
 	sendport(control,&lsocket);
 	if(!ftp->batch){
@@ -1131,7 +1133,7 @@ char *remotename,*localname;
 		}
 	}
 	/* Generate the command to start the transfer */
-	fprintf(control,"STOR %s\n",remotename);
+	kfprintf(control,"STOR %s\n",remotename);
 
 	if(ftp->batch){
 		/* Get response to TYPE command, if sent */
@@ -1153,28 +1155,28 @@ char *remotename,*localname;
 		goto failure;
 	}
 
-	/* Wait for the data connection to open. Otherwise the first
+	/* Wait for the data connection to kopen. Otherwise the first
 	 * block of data would go out with the SYN, and this may confuse
 	 * some other TCPs
 	 */
-	accept(d,NULL,(int *)NULL);
+	kaccept(d,NULL,(int *)NULL);
 
 	startclk = msclock();
 
-	total = sendfile(fp,ftp->data,ftp->type,ftp->verbose);
-	fflush(ftp->data);
-	shutdown(fileno(ftp->data),1);	/* Send EOF (FIN) */
-	fclose(fp);
+	total = ksendfile(fp,ftp->data,ftp->type,ftp->verbose);
+	kfflush(ftp->data);
+	kshutdown(kfileno(ftp->data),1);	/* Send kEOF (FIN) */
+	kfclose(fp);
 
 	/* Wait for control channel ack before calculating transfer time;
 	 * this accounts for transmitted data in the pipe
 	 */
 	getresp(ftp,200);
-	fclose(ftp->data);
+	kfclose(ftp->data);
 	ftp->data = NULL;
 
 	if(total == -1){
-		printf("STOR %s: Error/abort during data transfer\n",remotename);
+		kprintf("STOR %s: Error/abort during data transfer\n",remotename);
 	} else if(ftp->verbose >= V_SHORT){
 		startclk = msclock() - startclk;
 		rate = 0;
@@ -1185,7 +1187,7 @@ char *remotename,*localname;
 				rate = total/(startclk/1000);
 			}
 		}
-		printf("STOR %s: %lu bytes in %lu sec (%lu/sec)\n",
+		kprintf("STOR %s: %lu bytes in %lu sec (%lu/sec)\n",
 		 remotename,total,startclk/1000,rate);
 	}
 	ftp->state = prevstate;
@@ -1193,29 +1195,29 @@ char *remotename,*localname;
 
 failure:
 	/* Error, quit */
-	fclose(fp);
-	fclose(ftp->data);
+	kfclose(fp);
+	kfclose(ftp->data);
 	ftp->data = NULL;
 	ftp->state = prevstate;
 	return -1;
 }
 /* send PORT message */
 static void
-sendport(fp,socket)
-FILE *fp;
-struct sockaddr_in *socket;
+sendport(fp,ksocket)
+kFILE *fp;
+struct ksockaddr_in *ksocket;
 {
 	/* Send PORT a,a,a,a,p,p message */
-	fprintf(fp,"PORT %u,%u,%u,%u,%u,%u\n",
-		hibyte(hiword(socket->sin_addr.s_addr)),
-		lobyte(hiword(socket->sin_addr.s_addr)),
-		hibyte(loword(socket->sin_addr.s_addr)),
-		lobyte(loword(socket->sin_addr.s_addr)),
-		hibyte(socket->sin_port),
-		lobyte(socket->sin_port));
+	kfprintf(fp,"PORT %u,%u,%u,%u,%u,%u\n",
+		hibyte(hiword(ksocket->sin_addr.s_addr)),
+		lobyte(hiword(ksocket->sin_addr.s_addr)),
+		hibyte(loword(ksocket->sin_addr.s_addr)),
+		lobyte(loword(ksocket->sin_addr.s_addr)),
+		hibyte(ksocket->sin_port),
+		lobyte(ksocket->sin_port));
 }
 
-/* Wait for, read and display response from FTP server. Return the result code.
+/* Wait for, kread and display response from FTP server. Return the result code.
  */
 static int
 getresp(ftp,mincode)
@@ -1224,17 +1226,17 @@ int mincode;	/* Keep reading until at least this code comes back */
 {
 	int rval;
 
-	fflush(ftp->control);
+	kfflush(ftp->control);
 	for(;;){
 		/* Get line */
-		if(fgets(ftp->line,LINELEN,ftp->control) == NULL){
+		if(kfgets(ftp->line,LINELEN,ftp->control) == NULL){
 			rval = -1;
 			break;
 		}
 		rip(ftp->line);		/* Remove cr/lf */
 		rval = atoi(ftp->line);
 		if(rval >= 400 || ftp->verbose >= V_NORMAL)
-			printf("%s\n",ftp->line);	/* Display to user */
+			kprintf("%s\n",ftp->line);	/* Display to user */
 
 		/* Messages with dashes are continued */
 		if(ftp->line[3] != '-' && rval >= mincode)
@@ -1243,17 +1245,17 @@ int mincode;	/* Keep reading until at least this code comes back */
 	return rval;
 }
 
-/* Issue a prompt and read a line from the user */
+/* Issue a prompt and kread a line from the user */
 static int
-getline(sp,prompt,buf,n)
+ftgetline(sp,prompt,buf,n)
 struct session *sp;
 char *prompt;
 char *buf;
 int n;
 {
-	printf(prompt);
-	fflush(stdout);
-	fgets(buf,n,stdin);
+	kprintf(prompt);
+	kfflush(kstdout);
+	kfgets(buf,n,kstdin);
 	return strlen(buf);
 }
 static int
@@ -1265,24 +1267,24 @@ int c;
 	if(c != CTLC)
 		return 1;	/* Ignore all but ^C */
 
-	fprintf(Current->output,"^C\n");
+	kfprintf(Current->output,"^C\n");
 	ftp = Current->cb.ftp;
 	switch(ftp->state){
 	case COMMAND_STATE:
-		alert(Current->proc,EABORT);
+		alert(Current->proc,kEABORT);
 		break;
 	case SENDING_STATE:
-		/* Send a premature EOF.
+		/* Send a premature kEOF.
 		 * Unfortunately we can't just reset the connection
 		 * since the remote side might end up waiting forever
 		 * for us to send something.
 		 */
-		shutdown(fileno(ftp->data),1);	/* Note fall-thru */
+		kshutdown(kfileno(ftp->data),1);	/* Note fall-thru */
 		ftp->abort = 1;
 		break;
 	case RECEIVING_STATE:
-		/* Just blow away the receive socket */
-		shutdown(fileno(ftp->data),2);	/* Note fall-thru */
+		/* Just blow away the receive ksocket */
+		kshutdown(kfileno(ftp->data),2);	/* Note fall-thru */
 		ftp->abort = 1;
 		break;
 	}

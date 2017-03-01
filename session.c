@@ -1,8 +1,10 @@
 /* NOS User Session control
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
-#include <errno.h>
+#include "top.h"
+
+#include "stdio.h"
+#include "errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "proc.h"
@@ -71,7 +73,7 @@ char *argv[];
 void *p;
 {
 	struct session *sp;
-	struct sockaddr fsocket;
+	struct ksockaddr fsocket;
 	int i,k,s,ses;
 	int t;
 	char *cp;
@@ -82,10 +84,10 @@ void *p;
 		if((sp = sessptr(argv[1])) != NULL){
 			go(0,NULL,sp);
 		} else
-			printf("Session %s not active\n",argv[1]);
+			kprintf("Session %s not active\n",argv[1]);
 		return 0;
 	}
-	printf(" #  S#  Snd-Q State     Remote socket         Command\n");
+	kprintf(" #  S#  Snd-Q State     Remote ksocket         Command\n");
 	for(ses=0;ses<Nsessions;ses++){
 		sp = Sessions[ses];
 		if(sp == NULL || sp->type == COMMAND)
@@ -93,9 +95,9 @@ void *p;
 
 		t = 0;
 		cp = NULL;
-		if(sp->network != NULL && (s = fileno(sp->network)) != -1){
+		if(sp->network != NULL && (s = kfileno(sp->network)) != -1){
 			i = SOCKSIZE;
-			k = getpeername(s,&fsocket,&i);
+			k = kgetpeername(s,&fsocket,&i);
 			t += socklen(s,1);
 			cp = sockstate(s);
 		} else {
@@ -103,27 +105,27 @@ void *p;
 			t = 0;
 			cp = NULL;
 		}
-		printf("%c", (Lastcurr == sp)? '*':' ');
-		printf("%-3u",sp->index);
-		printf("%-4d%5d %-10s",s,t,(cp != NULL) ? cp : "");
-		printf("%-22s",(k == 0) ? psocket(&fsocket) : "");
+		kprintf("%c", (Lastcurr == sp)? '*':' ');
+		kprintf("%-3u",sp->index);
+		kprintf("%-4d%5d %-10s",s,t,(cp != NULL) ? cp : "");
+		kprintf("%-22s",(k == 0) ? psocket(&fsocket) : "");
 		if(sp->name != NULL)
-			printf("%s",sp->name);
-		printf("\n");
+			kprintf("%s",sp->name);
+		kprintf("\n");
 
 		/* Display FTP data channel, if any */
-		if(sp->type == FTP && (s = fileno(sp->cb.ftp->data)) != -1){
+		if(sp->type == FTP && (s = kfileno(sp->cb.ftp->data)) != -1){
 			i = SOCKSIZE;
-			k = getpeername(s,&fsocket,&i);
+			k = kgetpeername(s,&fsocket,&i);
 			t += socklen(s,1);
 			cp = sockstate(s);
-			printf("    %-4d%5d %-10s",s,t,(cp != NULL) ? cp : "");
-			printf("%-22s\n",(k == 0) ? psocket(&fsocket) : "");
+			kprintf("    %-4d%5d %-10s",s,t,(cp != NULL) ? cp : "");
+			kprintf("%-22s\n",(k == 0) ? psocket(&fsocket) : "");
 		}
 		if(sp->record != NULL)
-			printf("    Record: %s\n",fpname(sp->record));
+			kprintf("    Record: %s\n",kfpname(sp->record));
 		if(sp->upload != NULL)
-			printf("    Upload: %s\n",fpname(sp->upload));
+			kprintf("    Upload: %s\n",kfpname(sp->upload));
 	}
 	return 0;
 }
@@ -158,10 +160,10 @@ void *p;
 		sp = sessptr(argv[1]);
 
 	if(sp == NULL){
-		printf(Badsess);
+		kprintf(Badsess);
 		return -1;
 	}
-	shutdown(fileno(sp->network),1);
+	kshutdown(kfileno(sp->network),1);
 	return 0;
 }
 int
@@ -177,14 +179,14 @@ void *p;
 		sp = sessptr(argv[1]);
 
 	if(sp == NULL){
-		printf(Badsess);
+		kprintf(Badsess);
 		return -1;
 	}
 	/* Unwedge anyone waiting for a domain resolution, etc */
-	alert(sp->proc,EABORT);
-	shutdown(fileno(sp->network),2);
+	alert(sp->proc,kEABORT);
+	kshutdown(kfileno(sp->network),2);
 	if(sp->type == FTP)
-		shutdown(fileno(sp->cb.ftp->data),2);
+		kshutdown(kfileno(sp->cb.ftp->data),2);
 	return 0;
 }
 int
@@ -200,12 +202,12 @@ void *p;
 		sp = sessptr(argv[1]);
 
 	if(sp == NULL){
-		printf(Badsess);
+		kprintf(Badsess);
 		return -1;
 	}
-	sockkick(fileno(sp->network));
+	sockkick(kfileno(sp->network));
 	if(sp->type == FTP)
-		sockkick(fileno(sp->cb.ftp->data));
+		sockkick(kfileno(sp->cb.ftp->data));
 	return 0;
 }
 
@@ -243,11 +245,11 @@ int makecur;
 	/* Create standard input and output sockets. Output is
 	 * in text mode by default
 	 */
-	fclose(stdin);
-	stdin =  sp->input = pipeopen();
-	setvbuf(stdin,NULL,_IONBF,0);
-	fclose(stdout);
-	stdout = sp->output = displayopen("wt",0,Sfsize);
+	kfclose(kstdin);
+	kstdin =  sp->input = pipeopen();
+	ksetvbuf(kstdin,NULL,_kIONBF,0);
+	kfclose(kstdout);
+	kstdout = sp->output = displayopen("wt",0,Sfsize);
 
 	/* on by default */
 	sp->ttystate.crnl = sp->ttystate.edit = sp->ttystate.echo = 1;
@@ -282,13 +284,13 @@ struct session **spp;
 
 	free(sp->ttystate.line);
 	if(sp->network != NULL)
-		fclose(sp->network);
+		kfclose(sp->network);
 
 	if(sp->record != NULL)
-		fclose(sp->record);
+		kfclose(sp->record);
 
 	if(sp->upload != NULL)
-		fclose(sp->upload);
+		kfclose(sp->upload);
 
 	free(sp->name);
 
@@ -313,31 +315,31 @@ void *p;
 
 	sp = (struct session *)p;
 	if(sp == NULL){
-		printf("No current session\n");
+		kprintf("No current session\n");
 		return 1;
 	}
 	if(argc > 1){
 		if(sp->record != NULL){
-			fclose(sp->record);
+			kfclose(sp->record);
 			sp->record = NULL;
 		}
 		/* Open new record file, unless file name is "off", which means
 		 * disable recording
 		 */
 		if(strcmp(argv[1],"off") != 0){
-			if(fmode(sp->output,-1) == STREAM_ASCII)
+			if(kfmode(sp->output,-1) == STREAM_ASCII)
 				mode = APPEND_TEXT;
 			else
 				mode = APPEND_BINARY;
 
-			if((sp->record = fopen(argv[1],mode)) == NULL)
-				printf("Can't open %s: %s\n",argv[1],sys_errlist[errno]);
+			if((sp->record = kfopen(argv[1],mode)) == NULL)
+				kprintf("Can't kopen %s: %s\n",argv[1],ksys_errlist[kerrno]);
 		}
 	}
 	if(sp->record != NULL)
-		printf("Recording into %s\n",fpname(sp->record));
+		kprintf("Recording into %s\n",kfpname(sp->record));
 	else
-		printf("Recording off\n");
+		kprintf("Recording off\n");
 	return 0;
 }
 /* Control file transmission */
@@ -351,26 +353,26 @@ void *p;
 
 	sp = (struct session *)p;
 	if(sp == NULL){
-		printf("No current session\n");
+		kprintf("No current session\n");
 		return 1;
 	}
 	if(argc < 2){
 		if(sp->upload != NULL)
-			printf("Uploading %s\n",fpname(sp->upload));
+			kprintf("Uploading %s\n",kfpname(sp->upload));
 		else
-			printf("Uploading off\n");
+			kprintf("Uploading off\n");
 		return 0;
 	}
 	if(strcmp(argv[1],"stop") == 0 && sp->upload != NULL){
 		/* Abort upload */
-		fclose(sp->upload);
+		kfclose(sp->upload);
 		sp->upload = NULL;
 		killproc(&sp->proc2);
 		return 0;
 	}
 	/* Open upload file */
-	if((sp->upload = fopen(argv[1],READ_TEXT)) == NULL){
-		printf("Can't read %s: %s\n",argv[1],sys_errlist[errno]);
+	if((sp->upload = kfopen(argv[1],READ_TEXT)) == NULL){
+		kprintf("Can't kread %s: %s\n",argv[1],ksys_errlist[kerrno]);
 		return 1;
 	}
 	/* All set, invoke the upload process */
@@ -389,19 +391,19 @@ void *p;
 
 	sp = (struct session *)sp1;
 
-	buf = mallocw(BUFSIZ);
-	while(fgets(buf,BUFSIZ,sp->upload) != NULL)
-		if(fputs(buf,sp->network) == EOF)
+	buf = mallocw(kBUFSIZ);
+	while(kfgets(buf,kBUFSIZ,sp->upload) != NULL)
+		if(kfputs(buf,sp->network) == kEOF)
 			break;
 
 	free(buf);
-	fflush(sp->network);
-	fclose(sp->upload);
+	kfflush(sp->network);
+	kfclose(sp->upload);
 	sp->upload = NULL;
 	sp->proc2 = NULL;
 }
 
-/* Print prompt and read one character */
+/* Print prompt and kread one character */
 int
 keywait(prompt,flush)
 char *prompt;	/* Optional prompt */
@@ -412,17 +414,17 @@ int flush;	/* Flush queued input? */
 
 	if(prompt == NULL)
 		prompt = "Hit enter to continue"; 
-	printf(prompt);
-	fflush(stdout);
-	c = _fgetc(stdin);
+	kprintf(prompt);
+	kfflush(kstdout);
+	c = _kfgetc(kstdin);
 	/* Get rid of the prompt */
 	for(i=strlen(prompt);i != 0;i--)
-		putchar('\b');
+		kputchar('\b');
 	for(i=strlen(prompt);i != 0;i--)
-		putchar(' ');
+		kputchar(' ');
 	for(i=strlen(prompt);i != 0;i--)
-		putchar('\b');
-	fflush(stdout);
+		kputchar('\b');
+	kfflush(kstdout);
 	return (int)c;
 }
 
@@ -431,5 +433,5 @@ void
 sesflush(void)
 {
 	if(Current != NULL)
-		fflush(Current->output);
+		kfflush(Current->output);
 }

@@ -11,6 +11,10 @@
 #include "timer.h"
 #endif
 
+#ifdef UNIX
+#include <pthread.h>
+#endif
+
 #define	SIGQSIZE	200	/* Entries in ksignal queue */
 
 /* Kernel process control block */
@@ -25,18 +29,32 @@ struct proc {
 		unsigned int istate:1;		/* Process has interrupts enabled */
 		unsigned int sset:1;		/* Process has set sig */
 		unsigned int freeargs:1;	/* Free args on termination */
+#ifdef UNIX
+		unsigned int run:1;		/* Process to run when awake */
+#endif
 	} flags;
+	int perrno;		/* Last error encountered */
+#ifdef UNIX
+	pthread_t thread;       /* The POSIX thread handle for this process */
+	pthread_cond_t cond;	/* Semaphore for waking this process */
+#else
 	jmp_buf env;		/* Process register state */
+#endif
 	jmp_buf sig;		/* State for alert signal */
 	int signo;		/* Arg to alert to cause signal */
 	void *event;		/* Wait event */
+#ifndef UNIX
 	void *stack;		/* Process stack */
+#endif
 	unsigned stksize;	/* Size of same */
 	char *name;		/* Arbitrary user-assigned name */
 	int retval;		/* Return value from next kwait() */
 	struct timer alarm;	/* Alarm clock timer */
-	FILE *input;		/* Process stdin */
-	FILE *output;		/* Process stdout */
+	kFILE *input;		/* Process kstdin */
+	kFILE *output;		/* Process kstdout */
+#ifdef UNIX
+	void (*pc)(int, void *, void *);
+#endif
 	int iarg;		/* Copy of iarg */
 	void *parg1;		/* Copy of parg1 */
 	void *parg2;		/* Copy of parg2 */

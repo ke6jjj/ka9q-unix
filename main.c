@@ -5,13 +5,20 @@
  *
  * Copyright 1986-1996 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
 #include <time.h>
 #include <ctype.h>
+/* Including system stdio for rename() */
+#include <stdio.h>
 #if	defined(__TURBOC__) && defined(MSDOS)
 #include <io.h>
 #include <conio.h>
 #endif
+#ifdef UNIX
+#include <unistd.h>
+#endif
+#include "stdio.h"
 #include "global.h"
 #include <stdarg.h>
 #include "mbuf.h"
@@ -41,10 +48,9 @@
 #include "main.h"
 #include "trace.h"
 #include "display.h"
+#include "errno.h"
 
-extern struct cmds Cmds[],Startcmds[],Stopcmds[],Attab[];
-
-#ifndef	MSDOS			/* PC uses F-10 key always */
+#if	!defined(MSDOS) && !defined(UNIX) /* PC and CURSES use F-10 key */
 static char Escape = 0x1d;	/* default escape character is ^] */
 #endif
 
@@ -57,7 +63,7 @@ char *Cmdline;				/* Copy of most recent command line */
 int main_exit = FALSE;			/* from main program (flag) */
 
 static char Prompt[] = "net> ";
-static FILE *Logfp;
+static kFILE *Logfp;
 static time_t StartTime;		/* time that NOS was started */
 static int Verbose;
 
@@ -69,7 +75,7 @@ static void helpsub(struct cmds *cmds);
 int
 main(int argc,char *argv[])
 {
-	FILE *fp;
+	kFILE *fp;
 	struct daemon *tp;
 	int c;
 	char cmdbuf[256];
@@ -78,19 +84,19 @@ main(int argc,char *argv[])
 
 	StartTime = time(&StartTime);
 
-	while((c = getopt(argc,argv,"f:s:d:bvh:")) != EOF){
+	while((c = kgetopt(argc,argv,"f:s:d:bvh:")) != kEOF){
 		switch(c){
 		case 'h':	/* Heap initialization */
-			hinit = atol(optarg);
+			hinit = atol(koptarg);
 			break;
 		case 'f':	/* Number of files */
-			Nfiles = atoi(optarg);
+			Nfiles = atoi(koptarg);
 			break;
 		case 's':	/* Number of sockets */
-			Nsock = atoi(optarg);
+			Nsock = atoi(koptarg);
 			break;
 		case 'd':	/* Root directory for various files */
-			initroot(optarg);
+			initroot(koptarg);
 			break;
 #ifdef	__TURBOC__
 		case 'b':	/* Use BIOS for screen output */
@@ -102,6 +108,10 @@ main(int argc,char *argv[])
 			break;
 		}
 	}
+
+	printf("waiting gdb...\n");
+	fgets(cmdbuf, sizeof(cmdbuf)-1, stdin);
+
 	kinit();
 	ioinit(hinit);
 	sockinit();
@@ -110,15 +120,17 @@ main(int argc,char *argv[])
 	Sessions = (struct session **)callocw(Nsessions,sizeof(struct session *));
 	Command = Lastcurr = newsession("command interpreter",COMMAND,1);
 	Display = newproc("display",350,display,0,NULL,NULL,0);
-	printf("KA9Q NOS version %s\n",Version);
+	kprintf("KA9Q NOS version %s\n",Version);
 #ifdef	CPU386
-	printf("Compiled for 386/486 CPU\n");
+	kprintf("Compiled for 386/486 CPU\n");
 #endif
-	printf("Copyright 1986-1996 by Phil Karn, KA9Q\n");
+	kprintf("Copyright 1986-1996 by Phil Karn, KA9Q\n");
+#if defined(MSDOS) || defined(CPU386)
 	if(Verbose){
-		printf("cs = %lx ds = %lx ss = %lx\n",_go32_my_cs(),_go32_my_ds(),
+		kprintf("cs = %lx ds = %lx ss = %lx\n",_go32_my_cs(),_go32_my_ds(),
 		  _go32_my_ss());
 	}
+#endif
 	usercvt();
 	/* Start background Daemons */
 	for(tp=Daemons;;tp++){
@@ -127,33 +139,33 @@ main(int argc,char *argv[])
 		newproc(tp->name,tp->stksize,tp->fp,0,NULL,NULL,0);
 	}
 	Encap.txproc = newproc("encap tx",512,if_tx,0,&Encap,NULL,0);
-	if(optind < argc){
+	if(koptind < argc){
 		/* Read startup file named on command line */
-		if((fp = fopen(argv[optind],READ_TEXT)) == NULL){
-			printf("Can't read config file %s",argv[optind]);
-			perror("");
+		if((fp = kfopen(argv[koptind],READ_TEXT)) == NULL){
+			kprintf("Can't kread config file %s",argv[koptind]);
+			kperror("");
 		}
 	} else {
-		fp = fopen(Startup,READ_TEXT);
+		fp = kfopen(Startup,READ_TEXT);
 	}
 	if(fp != NULL){
-		while(fgets(cmdbuf,sizeof(cmdbuf),fp) != NULL){
+		while(kfgets(cmdbuf,sizeof(cmdbuf),fp) != NULL){
 			rip(cmdbuf);
 			Cmdline = strdup(cmdbuf);
 			if(Verbose)
-				printf("%s\n",Cmdline);
+				kprintf("%s\n",Cmdline);
 			if(cmdparse(Cmds,cmdbuf,NULL) != 0){
-				printf("input line: %s\n",Cmdline);
+				kprintf("input line: %s\n",Cmdline);
 			}
 			FREE(Cmdline);
 		}
-		fclose(fp);
+		kfclose(fp);
 	}
 	/* Now loop forever, processing commands */
 	for(;;){
-		printf(Prompt);
-		fflush(stdout);
-		if(fgets(cmdbuf,sizeof(cmdbuf),stdin) != NULL){
+		kprintf(Prompt);
+		kfflush(kstdout);
+		if(kfgets(cmdbuf,sizeof(cmdbuf),kstdin) != NULL){
 			rip(cmdbuf);
 			FREE(Cmdline);
 			Cmdline = strdup(cmdbuf);
@@ -174,7 +186,7 @@ void *v2
 	/* Keyboard process loop */
 loop:
 	c = kbread();
-#ifdef	MSDOS
+#if	defined(MSDOS) || defined(UNIX)
 	if(c >= 256){
 		/* Pass all special characters to app upcall */
 		if(Current->ctlproc != NULL && (c = (*Current->ctlproc)(c)) == 0)
@@ -280,6 +292,7 @@ loop:
 			if(Current != NULL)
 				dokick(0,NULL,Current);
 			break;
+#ifdef	MSDOS
 		case AF1:
 		case AF2:
 		case AF3:
@@ -290,7 +303,7 @@ loop:
 		case AF8:
 		case AF9:
 		case AF10:	/* Alt-F1 thru Alt-F10 */
-			c -= 103;
+			c -= AF1;
 			if(c < Nsessions && Sessions[c] != NULL){
 				Current = Sessions[c];
 				alert(Display,1);
@@ -298,12 +311,13 @@ loop:
 			break;
 		case AF11:	/* Alt-F11 or Alt-F12 */
 		case AF12:
-			c -= 128;
+			c -= (AF11 - 11);
 			if(c < Nsessions && Sessions[c] != NULL){
 				Current = Sessions[c];
 				alert(Display,1);
 			}
 			break;
+#endif
 		default:		/* else ignore */
 			break;
 		}
@@ -342,8 +356,8 @@ passchar(int c)
 	/* Ordinary ASCII character, hand to tty editor */
 	if((cnt = ttydriv(Current,(char)c)) != 0){
 		/* Input ready to hand to process */
-		fwrite(Current->ttystate.line,1,cnt,Current->input);
-		fflush(Current->input);
+		kfwrite(Current->ttystate.line,1,cnt,Current->input);
+		kfflush(Current->input);
 	}
 }
 /* Standard commands called from main */
@@ -365,18 +379,18 @@ void *p
 		interval = MSPTICK;
 	}
 	if((sp = newsession(Cmdline,REPEAT,1)) == NULL){
-		printf("Too many sessions\n");
+		kprintf("Too many sessions\n");
 		return 1;
 	}
 	sp->inproc = keychar;	/* Intercept ^C */
 	/* Set enough buffering to handle an entire screen so it'll get
 	 * displayed in one quick update when we flush
 	 */
-	setvbuf(sp->output,NULL,_IOFBF,2048);
+	ksetvbuf(sp->output,NULL,_kIOFBF,2048);
 	while(sp->inproc == keychar){	/* ^C will clear sp->inproc */
-		printf("%c[2J",ESC);	/* Clear screen */
+		kprintf("%c[2J",ESC);	/* Clear screen */
 		ret = subcmd(Cmds,argc,argv,p);
-		fflush(sp->output);
+		kfflush(sp->output);
 		if(ret != 0 || ppause(interval) == -1)
 			break;
 	}
@@ -390,8 +404,8 @@ keychar(int c)
 	if(c != CTLC)
 		return 1;	/* Ignore all but ^C */
 
-	fprintf(Current->output,"^C\n");
-	alert(Current->proc,EABORT);
+	kfprintf(Current->output,"^C\n");
+	alert(Current->proc,kEABORT);
 	Current->inproc = NULL;
 	return 0;
 }
@@ -406,8 +420,8 @@ void *p
 
 	for(i=1;i < argc; i++){
 		if(unlink(argv[i]) == -1){
-			printf("Can't delete %s",argv[i]);
-			perror("");
+			kprintf("Can't delete %s",argv[i]);
+			kperror("");
 		}
 	}
 	return 0;
@@ -419,8 +433,8 @@ char *argv[],
 void *p
 ){
 	if(rename(argv[1],argv[2]) == -1){
-		printf("Can't rename %s",argv[1]);
-		perror("");
+		kprintf("Can't rename %s",argv[1]);
+		kperror("");
 	}
 	return 0;
 }
@@ -440,9 +454,9 @@ void *p
 	for(i=0;i<Nsessions;i++){
 		if((sp = Sessions[i]) == NULL)
 			continue;
-		alert(sp->proc,EABORT);
-		alert(sp->proc1,EABORT);
-		alert(sp->proc2,EABORT);
+		alert(sp->proc,kEABORT);
+		alert(sp->proc1,kEABORT);
+		alert(sp->proc2,kEABORT);
 	}
 	reset_all();
 	if(Dfile_updater != NULL)
@@ -452,10 +466,12 @@ void *p
 	shuttrace();
 	logmsg(-1,"NOS was stopped at %s", ctime(&StopTime));
 	if(Logfp){
-		fclose(Logfp);
+		kfclose(Logfp);
 		Logfp = NULL;
 	}
+#if defined(__TURBOC__)
 	clrscr();
+#endif
 	iostop();
 	exit(0);
 	return 0;	/* To satisfy lint */
@@ -483,14 +499,14 @@ char *argv[],
 void *p
 ){
 	if(argc < 2)
-		printf("%s\n",Hostname);
+		kprintf("%s\n",Hostname);
 	else {
 		struct iface *ifp;
 		char *name;
 
 		if((ifp = if_lookup(argv[1])) != NULL){
 			if((name = resolve_a(ifp->addr, FALSE)) == NULL){
-				printf("Interface address not resolved\n");
+				kprintf("Interface address not resolved\n");
 				return 1;
 			} else {
 				FREE(Hostname);
@@ -500,7 +516,7 @@ void *p
 				if ( Hostname[strlen(Hostname)] == '.' ) {
 					Hostname[strlen(Hostname)] = '\0';
 				}
-				printf("Hostname set to %s\n", name );
+				kprintf("Hostname set to %s\n", name );
 			}
 		} else {
 			FREE(Hostname);
@@ -519,20 +535,20 @@ void *p
 
 	if(argc < 2){
 		if(Logfp)
-			printf("Logging to %s\n",logname);
+			kprintf("Logging to %s\n",logname);
 		else
-			printf("Logging off\n");
+			kprintf("Logging off\n");
 		return 0;
 	}
 	if(Logfp){
 		logmsg(-1,"NOS log closed");
-		fclose(Logfp);
+		kfclose(Logfp);
 		Logfp = NULL;
 		FREE(logname);
 	}
 	if(strcmp(argv[1],"stop") != 0){
 		logname = strdup(argv[1]);
-		Logfp = fopen(logname,APPEND_TEXT);
+		Logfp = kfopen(logname,APPEND_TEXT);
 		logmsg(-1,"NOS was started at %s", ctime(&StartTime));
 	}
 	return 0;
@@ -563,21 +579,21 @@ helpsub(struct cmds *cmds)
 	int i;
 	char buf[66];
 
-	printf("Main commands:\n");
+	kprintf("Main commands:\n");
 	memset(buf,' ',sizeof(buf));
 	buf[64] = '\n';
 	buf[65] = '\0';
 	for(i=0,cmdp = cmds;cmdp->name != NULL;cmdp++,i = (i+1)%4){
 		strncpy(&buf[i*16],cmdp->name,strlen(cmdp->name));
 		if(i == 3){
-			printf(buf);
+			kprintf(buf);
 			memset(buf,' ',sizeof(buf));
 			buf[64] = '\n';
 			buf[65] = '\0';
 		}
 	}
 	if(i != 0)
-		printf(buf);
+		kprintf(buf);
 }
 
 /* Attach an interface
@@ -603,32 +619,32 @@ void *p
 	int32 val;
 
 	if((ifp = if_lookup(argv[1])) == NULL){
-		printf("Interface \"%s\" unknown\n",argv[1]);
+		kprintf("Interface \"%s\" unknown\n",argv[1]);
 		return 1;
 	}
 	if(ifp->ioctl == NULL){
-		printf("Not supported\n");
+		kprintf("Not supported\n");
 		return 1;
 	}
 	if(argc < 3){
 		for(param=1;param<=16;param++){
 			val = (*ifp->ioctl)(ifp,param,FALSE,0L);
 			if(val != -1)
-				printf("%s: %ld\n",parmname(param),val);
+				kprintf("%s: %ld\n",parmname(param),val);
 		}
 		return 0;
 	}
 	if((param = devparam(argv[2])) == -1){
-		printf("Unknown parameter %s\n",argv[2]);
+		kprintf("Unknown parameter %s\n",argv[2]);
 		return 1;
 	}
 	if(argc < 4){
 		/* Read specific parameter */
 		val = (*ifp->ioctl)(ifp,param,FALSE,0L);
 		if(val == -1){
-			printf("Parameter %s not supported\n",argv[2]);
+			kprintf("Parameter %s not supported\n",argv[2]);
 		} else {
-			printf("%s: %ld\n",parmname(param),val);
+			kprintf("%s: %ld\n",parmname(param),val);
 		}
 		return 0;
 	}
@@ -637,7 +653,7 @@ void *p
 	return 0;
 }
 
-#ifndef	MSDOS
+#if	!defined(MSDOS) && !defined(UNIX)
 int
 doescape(
 int argc,
@@ -645,13 +661,14 @@ char *argv[],
 void *p
 ){
 	if(argc < 2)
-		printf("0x%x\n",Escape);
+		kprintf("0x%x\n",Escape);
 	else
 		Escape = *argv[1];
 	return 0;
 }
-#endif	MSDOS
+#endif	/* MSDOS */
 
+#if	!defined(UNIX)
 /* Execute a command with output piped to more */
 int
 dopage(
@@ -659,17 +676,18 @@ int argc,
 char *argv[],
 void *p
 ){
-	FILE *fp;
-	FILE *outsav;
+	kFILE *fp;
+	kFILE *outsav;
 
-	fp = tmpfile();
-	outsav = stdout;
-	stdout = fp;
+	fp = ktmpfile();
+	outsav = kstdout;
+	kstdout = fp;
 	subcmd(Cmds,argc,argv,p);
-	stdout = outsav;
+	kstdout = outsav;
 	newproc("view",512,view,0,(void *)fp,NULL,0);	/* View closes fp */
 	return 0;
 }
+#endif
 
 /* Set kernel process debug flag */
 int
@@ -681,7 +699,7 @@ void *p
 	setbool(&Kdebug,"kernel debug",argc,argv);
 	return 0;
 }
-/* Set temp file wipe-on-close flag */
+/* Set temp file wipe-on-kclose flag */
 int
 dowipe(
 int argc,
@@ -703,7 +721,7 @@ void *p
 }
 
 /* Log messages of the form
- * Tue Jan 31 00:00:00 1987 44.64.0.7:1003 open FTP
+ * Tue Jan 31 00:00:00 1987 44.64.0.7:1003 kopen FTP
  */
 void
 logmsg(int s,char *fmt, ...)
@@ -712,7 +730,7 @@ logmsg(int s,char *fmt, ...)
 	char *cp;
 	time_t t;
 	int i;
-	struct sockaddr fsocket;
+	struct ksockaddr fsocket;
 #ifdef	MSDOS
 	int fd;
 #endif
@@ -724,21 +742,21 @@ logmsg(int s,char *fmt, ...)
 	cp = ctime(&t);
 	rip(cp);
 	i = SOCKSIZE;
-	fprintf(Logfp,"%s",cp);
-	if(getpeername(s,&fsocket,&i) != -1)
-		fprintf(Logfp," %s",psocket(&fsocket));
+	kfprintf(Logfp,"%s",cp);
+	if(kgetpeername(s,&fsocket,&i) != -1)
+		kfprintf(Logfp," %s",psocket(&fsocket));
 
-	fprintf(Logfp," - ");
+	kfprintf(Logfp," - ");
 	va_start(ap,fmt);
-	vfprintf(Logfp,fmt,ap);
+	kvfprintf(Logfp,fmt,ap);
 	va_end(ap);
-	fprintf(Logfp,"\n");
-	fflush(Logfp);
+	kfprintf(Logfp,"\n");
+	kfflush(Logfp);
 #ifdef	MSDOS
 	/* MS-DOS doesn't really flush files until they're closed */
-	fd = fileno(Logfp);
+	fd = kfileno(Logfp);
 	if((fd = dup(fd)) != -1)
-		close(fd);
+		kclose(fd);
 #endif
 }
 

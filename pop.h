@@ -20,7 +20,7 @@
 /* POP server control block */
 
 struct pop_scb {
-	FILE *network;		/* Network stream for this connection */
+	kFILE *network;		/* Network stream for this connection */
 	char	state;		/* server state */
 #define 		   LSTN		0
 #define 		   AUTH		1
@@ -31,7 +31,7 @@ struct pop_scb {
 	char	buf[BUF_LEN],	/* input line buffer */
 		count,		/* line buffer length */
 		username[64];	/* user/folder name */
-	FILE	*wf;		/* work folder file pointer */
+	kFILE	*wf;		/* work folder file pointer */
 	int	folder_len,	/* number of msgs in current folder */
 		msg_num;	/* current msg number */
 	long	msg_len;	/* length of current msg */

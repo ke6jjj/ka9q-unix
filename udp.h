@@ -46,11 +46,11 @@ struct udp {
 
 /* User Datagram Protocol control block
  * Each entry on the receive queue consists of the
- * remote socket structure, followed by any data
+ * remote ksocket structure, followed by any data
  */
 struct udp_cb {
 	struct udp_cb *next;
-	struct socket socket;	/* Local port accepting datagrams */
+	struct ksocket socket;	/* Local port accepting datagrams */
 	void (*r_upcall)(struct iface *iface,struct udp_cb *,int);
 				/* Function to call when one arrives */
 	struct mbuf *rcvq;	/* Queue of pending datagrams */
@@ -63,10 +63,10 @@ extern struct udp_cb *Udps;	/* Hash table for UDP structures */
 
 /* In udp.c: */
 int del_udp(struct udp_cb **up);
-struct udp_cb *open_udp(struct socket *lsocket,
+struct udp_cb *open_udp(struct ksocket *lsocket,
 	void (*r_upcall)(struct iface *iface,struct udp_cb *,int));
-int recv_udp(struct udp_cb *up,struct socket *fsocket,struct mbuf **bp);
-int send_udp(struct socket *lsocket,struct socket *fsocket,char tos,
+int recv_udp(struct udp_cb *up,struct ksocket *fsocket,struct mbuf **bp);
+int send_udp(struct ksocket *lsocket,struct ksocket *fsocket,char tos,
 	char ttl,struct mbuf **data,uint length,uint id,char df);
 void udp_input(struct iface *iface,struct ip *ip,struct mbuf **bp,
 	int rxbroadcast,int32 said);

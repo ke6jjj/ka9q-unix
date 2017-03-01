@@ -1,6 +1,8 @@
 /* LAPB (AX25) timer recovery routines
  * Copyright 1991 Phil Karn, KA9Q
  */
+#include "top.h"
+
 #include "global.h"
 #include "mbuf.h"
 #include "ax25.h"
@@ -55,6 +57,8 @@ recover(void *p)
 			lapbstate(axp,LAPB_RECOVERY);
 		}
 		break;
+	default:
+		break;
 	}
 }
 
@@ -73,6 +77,8 @@ pollthem(void *p)
 		axp->retries = 0;
 		tx_enq(axp);
 		lapbstate(axp,LAPB_RECOVERY);
+		break;
+	default:
 		break;
 	}
 }

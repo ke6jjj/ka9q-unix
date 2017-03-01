@@ -1,4 +1,6 @@
-#include <errno.h>
+#include "top.h"
+
+#include "errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "ip.h"
@@ -34,25 +36,25 @@ int
 so_ip_recv(up,bpp,from,fromlen)
 struct usock *up;
 struct mbuf **bpp;
-struct sockaddr *from;
+struct ksockaddr *from;
 int *fromlen;
 {
 	struct raw_ip *rip;
-	struct sockaddr_in *remote;
+	struct ksockaddr_in *remote;
 	struct ip ip;
 	int cnt;
 
 	while((rip = up->cb.rip) != NULL && rip->rcvq == NULL){
 		if(up->noblock){
-			errno = EWOULDBLOCK;
+			kerrno = kEWOULDBLOCK;
 			return -1;
-		} else if((errno = kwait(up)) != 0){
+		} else if((kerrno = kwait(up)) != 0){
 			return -1;
 		}
 	}
 	if(rip == NULL){
 		/* Connection went away */
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}
 	*bpp = dequeue(&rip->rcvq);
@@ -60,8 +62,8 @@ int *fromlen;
 
 	cnt = len_p(*bpp);
 	if(from != NULL && fromlen != (int *)NULL && *fromlen >= SOCKSIZE){
-		remote = (struct sockaddr_in *)from;
-		remote->sin_family = AF_INET;
+		remote = (struct ksockaddr_in *)from;
+		remote->sin_family = kAF_INET;
 		remote->sin_addr.s_addr = ip.source;
 		remote->sin_port = 0;
 		*fromlen = SOCKSIZE;
@@ -72,20 +74,20 @@ int
 so_ip_send(
 struct usock *up,
 struct mbuf **bpp,
-struct sockaddr *to
+struct ksockaddr *to
 ){
-	struct sockaddr_in *local,*remote;
+	struct ksockaddr_in *local,*remote;
 
 	if(up->name == NULL)
 		autobind(up);
-	local = (struct sockaddr_in *)up->name;
+	local = (struct ksockaddr_in *)up->name;
 	if(to != NULL){
-		remote = (struct sockaddr_in *)to;
+		remote = (struct ksockaddr_in *)to;
 	} else if(up->peername != NULL) {
-		remote = (struct sockaddr_in *)up->peername;
+		remote = (struct ksockaddr_in *)up->peername;
 	} else {
 		free_p(bpp);
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}	
 	ip_send(local->sin_addr.s_addr,remote->sin_addr.s_addr,
@@ -118,13 +120,13 @@ struct usock *up;
 }
 int
 checkipaddr(name,namelen)
-struct sockaddr *name;
+struct ksockaddr *name;
 int namelen;
 {
-	struct sockaddr_in *sock;
+	struct ksockaddr_in *sock;
 
-	sock = (struct sockaddr_in *)name;
-	if(sock->sin_family != AF_INET || namelen != sizeof(struct sockaddr_in))
+	sock = (struct ksockaddr_in *)name;
+	if(sock->sin_family != kAF_INET || namelen != sizeof(struct ksockaddr_in))
 		return -1;
 	return 0;
 }
@@ -142,24 +144,24 @@ static void
 autobind(up)
 struct usock *up;
 {
-	struct sockaddr_in local;
+	struct ksockaddr_in local;
 	int s;
 
 	s = up->index;
-	local.sin_family = AF_INET;
-	local.sin_addr.s_addr = INADDR_ANY;
+	local.sin_family = kAF_INET;
+	local.sin_addr.s_addr = kINADDR_ANY;
 	local.sin_port = Lport++;
-	bind(s,(struct sockaddr *)&local,sizeof(struct sockaddr_in));
+	kbind(s,(struct ksockaddr *)&local,sizeof(struct ksockaddr_in));
 }
 char *
 ippsocket(p)
-struct sockaddr *p;
+struct ksockaddr *p;
 {
-	struct sockaddr_in *sp;
-	struct socket socket;
+	struct ksockaddr_in *sp;
+	struct ksocket socket;
 	static char buf[30];
 
-	sp = (struct sockaddr_in *)p;
+	sp = (struct ksockaddr_in *)p;
 	socket.address = sp->sin_addr.s_addr;
 	socket.port = sp->sin_port;
 	strcpy(buf,pinet(&socket));

@@ -9,9 +9,11 @@
  * Sep '91      All control signals reorganized by Bill Simpson
  * Apr '92	Control signals redone again by Phil Karn
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <dos.h>
-#include <errno.h>
+#include "errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "proc.h"
@@ -292,11 +294,11 @@ asy_open(char *name)
 	int dev;
 
 	if((ifp = if_lookup(name)) == NULL){
-		errno = ENODEV;
+		kerrno = ENODEV;
 		return -1;
 	}
 	if((dev = ifp->dev) >= ASY_MAX || Asy[dev].iface != ifp){
-		errno = EINVAL;
+		kerrno = kEINVAL;
 		return -1;
 	}
 	/* Suspend the packet drivers */
@@ -314,12 +316,12 @@ asy_close(int dev)
 	struct iface *ifp;
 
 	if(dev < 0 || dev >= ASY_MAX){
-		errno = EINVAL;
+		kerrno = kEINVAL;
 		return -1;
 	}
 	/* Resume the packet drivers */
 	if((ifp = Asy[dev].iface) == NULL){
-		errno = EINVAL;
+		kerrno = kEINVAL;
 		return -1;
 	}
 	resume(ifp->rxproc);
@@ -385,7 +387,7 @@ unsigned short cnt
 
 /* Read data from asynch line
  * Blocks until at least 1 byte of data is available.
- * returns number of bytes read, up to 'cnt' max
+ * returns number of bytes kread, up to 'cnt' max
  */
 int
 asy_read(
@@ -401,13 +403,13 @@ unsigned short cnt
 		return 0;
 
 	if(dev < 0 || dev >= ASY_MAX){
-		errno = EINVAL;
+		kerrno = kEINVAL;
 		return -1;
 	}
 	fp = &Asy[dev].fifo;
 	obp = (uint8 *)buf;
 	for(;;){
-		/* Atomic read of and subtract from fp->cnt */
+		/* Atomic kread of and subtract from fp->cnt */
 		i_state = disable();
 		tmp = fp->cnt;
 		if(tmp != 0){
@@ -418,7 +420,7 @@ unsigned short cnt
 			break;
 		}
 		restore(i_state);
-		if((errno = kwait(fp)) != 0)
+		if((kerrno = kwait(fp)) != 0)
 			return -1;
 	}		
 	tmp = cnt;
@@ -431,7 +433,7 @@ unsigned short cnt
 	}
 	return cnt;
 }
-/* Blocking read from asynch line
+/* Blocking kread from asynch line
  * Returns character or -1 if aborting
  */
 int
@@ -702,7 +704,7 @@ void *p;
 	}
 	for(i=1;i<argc;i++){
 		if((ifp = if_lookup(argv[i])) == NULL){
-			printf("Interface %s unknown\n",argv[i]);
+			kprintf("Interface %s unknown\n",argv[i]);
 			continue;
 		}
 		for(asyp = Asy;asyp < &Asy[ASY_MAX];asyp++){
@@ -712,7 +714,7 @@ void *p;
 			}
 		}
 		if(asyp == &Asy[ASY_MAX])
-			printf("Interface %s not asy\n",argv[i]);
+			kprintf("Interface %s not asy\n",argv[i]);
 	}
 
 	return 0;
@@ -723,20 +725,20 @@ pasy(struct asy *asyp)
 {
 	int mcr;
 
-	printf("%s:",asyp->iface->name);
+	kprintf("%s:",asyp->iface->name);
 	if(asyp->is_16550a)
-		printf(" [NS16550A]");
+		kprintf(" [NS16550A]");
 	if(asyp->trigchar != -1)
-		printf(" [trigger 0x%02x]",asyp->trigchar);
+		kprintf(" [trigger 0x%02x]",asyp->trigchar);
 	if(asyp->cts)
-		printf(" [cts flow control]");
+		kprintf(" [cts flow control]");
 	if(asyp->rlsd)
-		printf(" [rlsd line control]");
+		kprintf(" [rlsd line control]");
 
-	printf(" %lu bps\n",asyp->speed);
+	kprintf(" %lu bps\n",asyp->speed);
 
 	mcr = inportb(asyp->addr+MCR);
-	printf(" MC: int %lu DTR %s  RTS %s  CTS %s  DSR %s  RI %s  CD %s\n",
+	kprintf(" MC: int %lu DTR %s  RTS %s  CTS %s  DSR %s  RI %s  CD %s\n",
 	 asyp->msint_count,
 	 (mcr & MCR_DTR) ? "On" : "Off",
 	 (mcr & MCR_RTS) ? "On" : "Off",
@@ -745,16 +747,16 @@ pasy(struct asy *asyp)
 	 (asyp->msr & MSR_RI) ? "On" : "Off",
 	 (asyp->msr & MSR_RLSD) ? "On" : "Off");
 	
-	printf(" RX: int %lu chars %lu hw over %lu hw hi %lu",
+	kprintf(" RX: int %lu chars %lu hw over %lu hw hi %lu",
 	 asyp->rxints,asyp->rxchar,asyp->overrun,asyp->rxhiwat);
 	asyp->rxhiwat = 0;
 	if(asyp->is_16550a)
-		printf(" fifo TO %lu",asyp->fifotimeouts);
-	printf(" sw over %lu sw hi %u\n",
+		kprintf(" fifo TO %lu",asyp->fifotimeouts);
+	kprintf(" sw over %lu sw hi %u\n",
 	 asyp->fifo.overrun,asyp->fifo.hiwat);
 	asyp->fifo.hiwat = 0;
 
-	printf(" TX: int %lu chars %lu THRE TO %lu%s\n",
+	kprintf(" TX: int %lu chars %lu THRE TO %lu%s\n",
 	 asyp->txints,asyp->txchar,asyp->txto,
 	 asyp->dma.busy ? " BUSY" : "");
 }
@@ -795,7 +797,7 @@ void *p;
 			break;
 	}
 	if(i == FPORT_MAX){
-		printf("Too many 4port devices\n");
+		kprintf("Too many 4port devices\n");
 		return 1;
 	}
 	fp = &Fport[i];

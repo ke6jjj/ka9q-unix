@@ -1,7 +1,7 @@
 #ifndef	_MBUF_H
 #define	_MBUF_H
 
-#include <stdio.h>
+#include "stdio.h"
 
 #ifndef _GLOBAL_H
 #include "global.h"
@@ -9,8 +9,6 @@
 
 extern unsigned Ibufsize;	/* Size of interrupt buffers to allocate */
 extern int Nibufs;		/* Number of interrupt buffers to allocate */
-extern long Pushdowns;		/* Total calls to pushdown() */
-extern long Pushalloc;		/* Calls to pushdown that call malloc() */
 
 /* Basic message buffer structure */
 struct mbuf {
@@ -38,7 +36,7 @@ uint extract(struct mbuf *bp,uint offset,void *buf,uint len);
 struct mbuf *free_p(struct mbuf **bpp);
 uint len_p(struct mbuf *bp);
 void trim_mbuf(struct mbuf **bpp,uint length);
-int write_p(FILE *fp,struct mbuf *bp);
+int write_p(kFILE *fp,struct mbuf *bp);
 
 struct mbuf *dequeue(struct mbuf **q);
 void enqueue(struct mbuf **q,struct mbuf **bpp);

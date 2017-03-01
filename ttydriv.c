@@ -1,8 +1,12 @@
 /* TTY input line editing
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
+#ifdef MSDOS
 #include <conio.h>
+#endif
 #include "global.h"
 #include "mbuf.h"
 #include "session.h"
@@ -21,12 +25,13 @@
  * recording (if enabled) of locally typed info to be done by the session
  * itself so that edited output instead of raw input is recorded.
  *
- * Returns the number of cooked characters ready to be read from the buffer.
+ * Returns the number of cooked characters ready to be kread from the buffer.
  */
 int
-ttydriv(sp,c)
-struct session *sp;
-uint8 c;
+ttydriv(
+  struct session *sp,
+  uint8 c
+)
 {
 	int rval;
 	register struct ttystate *ttyp = &sp->ttystate;
@@ -42,7 +47,7 @@ uint8 c;
 		 */
 		*ttyp->lp++ = c;
 		if(ttyp->echo)
-			fputc(c,Current->output);
+			kfputc(c,Current->output);
 		rval = ttyp->lp - ttyp->line;
 		ttyp->lp = ttyp->line;
 		return rval;
@@ -56,7 +61,7 @@ uint8 c;
 			else
 				*ttyp->lp++ = c;
 			if(ttyp->echo)
-				putc('\n',Current->output);
+				kputc('\n',Current->output);
 			rval = ttyp->lp - ttyp->line;
 			ttyp->lp = ttyp->line;
 			return rval;
@@ -65,19 +70,19 @@ uint8 c;
 			if(ttyp->lp != ttyp->line){
 				ttyp->lp--;
 				if(ttyp->echo)
-					fputs("\b \b",Current->output);
+					kfputs("\b \b",Current->output);
 			}
 			break;
 		case CTLR:	/* print line buffer */
 			if(ttyp->echo){
-				fprintf(Current->output,"^R\n");
-				fwrite(ttyp->line,1,ttyp->lp-ttyp->line,
+				kfprintf(Current->output,"^R\n");
+				kfwrite(ttyp->line,1,ttyp->lp-ttyp->line,
 				 Current->output);
 			}
 			break;
 		case CTLU:	/* Line kill */
 			while(ttyp->echo && ttyp->lp-- != ttyp->line){
-				fputs("\b \b",Current->output);
+				kfputs("\b \b",Current->output);
 			}
 			ttyp->lp = ttyp->line;
 			break;
@@ -93,10 +98,10 @@ uint8 c;
 			 c != CTLZ &&
 #endif
 			 ttyp->lp - ttyp->line < LINESIZE-1){
-				putc(c,Current->output);
+				kputc(c,Current->output);
 
 			} else if(ttyp->lp - ttyp->line >= LINESIZE-1){
-				putc('\007',Current->output);	/* Beep */
+				kputc('\007',Current->output);	/* Beep */
 				ttyp->lp--;
 			}
 			break;

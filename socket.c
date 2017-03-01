@@ -3,11 +3,13 @@
  *
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #ifdef	__STDC__
 #include <stdarg.h>
 #endif
-#include <errno.h>
+#include "errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "netuser.h"
@@ -46,7 +48,7 @@ char *Sock_errlist[] = {
 char Badsocket[] = "Bad socket";
 struct usock **Usock;		/* Socket entry array */
 
-/* Initialize user socket array */
+/* Initialize user ksocket array */
 void
 sockinit(void)
 {
@@ -55,7 +57,7 @@ sockinit(void)
 	Usock = (struct usock **)callocw(Nsock,sizeof(struct usock *));
 }
 
-/* Create a user socket, return socket index
+/* Create a user ksocket, return ksocket index
  * The mapping to actual protocols is as follows:
  *		
  *		
@@ -67,7 +69,7 @@ sockinit(void)
  * AF_LOCAL		stream loopback	packet loopback
  */
 int
-socket(
+ksocket(
 int af,		/* Address family */
 int type,	/* Stream or datagram */
 int protocol	/* Used for raw IP sockets */
@@ -80,7 +82,7 @@ int protocol	/* Used for raw IP sockets */
 		if(Usock[s] == NULL)
 			break;
 	if(s == Nsock){
-		errno = EMFILE;
+		kerrno = kEMFILE;
 		return -1;
 	}
 	Usock[s] = up = (struct usock *)calloc(1,sizeof(struct usock));
@@ -88,67 +90,67 @@ int protocol	/* Used for raw IP sockets */
 	s =_mk_fd(s,_FL_SOCK);
 	up->index = s;
 	up->refcnt = 1;
-	errno = 0;
+	kerrno = 0;
 	up->rdysock = -1;
 	up->owner = Curproc;
 	switch(af){
-	case AF_LOCAL:
+	case kAF_LOCAL:
 		switch(type){
-		case SOCK_STREAM:
+		case kSOCK_STREAM:
 			up->type = TYPE_LOCAL_STREAM;
 			break;
-		case SOCK_DGRAM:
+		case kSOCK_DGRAM:
 			up->type = TYPE_LOCAL_DGRAM;
 			break;
 		default:
-			errno = ESOCKTNOSUPPORT;
+			kerrno = kESOCKTNOSUPPORT;
 			break;
 		}
 		break;
-	case AF_AX25:
+	case kAF_AX25:
 		switch(type){
-		case SOCK_STREAM:
+		case kSOCK_STREAM:
 			up->type = TYPE_AX25I;
 			break;
-		case SOCK_DGRAM:
+		case kSOCK_DGRAM:
 			up->type = TYPE_AX25UI;
 			break;
 		default:
-			errno = ESOCKTNOSUPPORT;
+			kerrno = kESOCKTNOSUPPORT;
 			break;
 		}
 		break;
-	case AF_NETROM:
+	case kAF_NETROM:
 		switch(type){
-		case SOCK_RAW:
+		case kSOCK_RAW:
 			up->type = TYPE_NETROML3;
 			break;
-		case SOCK_SEQPACKET:
+		case kSOCK_SEQPACKET:
 			up->type = TYPE_NETROML4;
 			break;
 		default:
-			errno = ESOCKTNOSUPPORT;
+			kerrno = kESOCKTNOSUPPORT;
 			break;
 		}
 		break;
-	case AF_INET:
+	case kAF_INET:
 		switch(type){
-		case SOCK_STREAM:
+		case kSOCK_STREAM:
 			up->type = TYPE_TCP;
 			break;
-		case SOCK_DGRAM:
+		case kSOCK_DGRAM:
 			up->type = TYPE_UDP;
 			break;
-		case SOCK_RAW:
+		case kSOCK_RAW:
 			up->type = TYPE_RAW;
 			break;
 		default:
-			errno = ESOCKTNOSUPPORT;
+			kerrno = kESOCKTNOSUPPORT;
 			break;
 		}
 		break;
 	default:
-		errno = EAFNOSUPPORT;
+		kerrno = kEAFNOSUPPORT;
 		break;
 	}
 	/* Look for entry in protocol table */
@@ -157,43 +159,43 @@ int protocol	/* Used for raw IP sockets */
 			break;
 	}
 	up->sp = sp;
-	if(sp->type == -1 || sp->socket == NULL
-	  ||(*sp->socket)(up,protocol) == -1){
-		errno = ESOCKTNOSUPPORT;
+	if(sp->type == -1 || sp->ksocket == NULL
+	  ||(*sp->ksocket)(up,protocol) == -1){
+		kerrno = kESOCKTNOSUPPORT;
 		return -1;
 	}
 	return s;
 }
 
-/* Attach a local address/port to a socket. If not issued before a connect
- * or listen, will be issued automatically
+/* Attach a local address/port to a ksocket. If not issued before a kconnect
+ * or klisten, will be issued automatically
  */
 int
-bind(
+kbind(
 int s,			/* Socket index */
-struct sockaddr *name,	/* Local name */
+struct ksockaddr *name,	/* Local name */
 int namelen		/* Length of name */
 ){
 	register struct usock *up;
 	struct socklink *sp;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	if(name == NULL){
-		errno = EFAULT;
+		kerrno = kEFAULT;
 		return -1;
 	}
 	if(up->name != NULL){
 		/* Bind has already been issued */
-		errno = EINVAL;
+		kerrno = kEINVAL;
 		return -1;
 	}
 	sp = up->sp;
 	if(sp->check != NULL && (*sp->check)(name,namelen) == -1){
 		/* Incorrect length or family for chosen protocol */
-		errno = EAFNOSUPPORT;
+		kerrno = kEAFNOSUPPORT;
 		return -1;	
 	}
 	/* Stash name in an allocated block */
@@ -203,14 +205,14 @@ int namelen		/* Length of name */
 
 	/* a bind routine is optional - don't fail if it isn't present */
 	if(sp->bind != NULL && (*sp->bind)(up) == -1){
-		errno = EOPNOTSUPP;
+		kerrno = kEOPNOTSUPP;
 		return -1;
 	}
 	return 0;
 }
-/* Post a listen on a socket */
+/* Post a klisten on a ksocket */
 int
-listen(
+klisten(
 int s,		/* Socket index */
 int backlog	/* 0 for a single connection, !=0 for multiple connections */
 ){
@@ -218,44 +220,44 @@ int backlog	/* 0 for a single connection, !=0 for multiple connections */
 	struct socklink *sp;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	if(up->cb.p != NULL){
-		errno = EISCONN;
+		kerrno = kEISCONN;
 		return -1;
 	}
 	sp = up->sp;
-	/* Fail if listen routine isn't present */
-	if(sp->listen == NULL || (*sp->listen)(up,backlog) == -1){
-		errno = EOPNOTSUPP;
+	/* Fail if klisten routine isn't present */
+	if(sp->klisten == NULL || (*sp->klisten)(up,backlog) == -1){
+		kerrno = kEOPNOTSUPP;
 		return -1;
 	}
 	return 0;
 }
-/* Initiate active open. For datagram sockets, merely bind the remote address. */
+/* Initiate active kopen. For datagram sockets, merely bind the remote address. */
 int
-connect(
+kconnect(
 int s,			/* Socket index */
-struct sockaddr *peername,		/* Peer name */
+struct ksockaddr *peername,		/* Peer name */
 int peernamelen		/* Length of peer name */
 ){
 	register struct usock *up;
 	struct socklink *sp;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	if(peername == NULL){
 		/* Connect must specify a remote address */
-		errno = EFAULT;
+		kerrno = kEFAULT;
 		return -1;
 	}
 	sp = up->sp;
 	/* Check name format, if checking routine is available */
 	if(sp->check != NULL && (*sp->check)(peername,peernamelen) == -1){
-		errno = EAFNOSUPPORT;
+		kerrno = kEAFNOSUPPORT;
 		return -1;
 	}
 	if(up->peername != NULL)
@@ -264,17 +266,17 @@ int peernamelen		/* Length of peer name */
 	memcpy(up->peername,peername,peernamelen);
 	up->peernamelen = peernamelen;
 
-	/* a connect routine is optional - don't fail if it isn't present */
-	if(sp->connect != NULL && (*sp->connect)(up) == -1){
+	/* a kconnect routine is optional - don't fail if it isn't present */
+	if(sp->kconnect != NULL && (*sp->kconnect)(up) == -1){
 		return -1;
 	}
 	return 0;
 }
 /* Wait for a connection. Valid only for connection-oriented sockets. */
 int
-accept(
+kaccept(
 int s,			/* Socket index */
-struct sockaddr *peername,		/* Peer name */
+struct ksockaddr *peername,		/* Peer name */
 int *peernamelen	/* Length of peer name */
 ){
 	int i;
@@ -282,31 +284,31 @@ int *peernamelen	/* Length of peer name */
 	struct socklink *sp;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	if(up->cb.p == NULL){
-		errno = EOPNOTSUPP;
+		kerrno = kEOPNOTSUPP;
 		return -1;
 	}
 	sp = up->sp;
-	/* Fail if accept flag isn't set */
-	if(sp->accept == FALSE){
-		errno = EOPNOTSUPP;
+	/* Fail if kaccept flag isn't set */
+	if(sp->kaccept == FALSE){
+		kerrno = kEOPNOTSUPP;
 		return -1;
 	}
 	/* Wait for the state-change upcall routine to signal us */
 	while(up->cb.p != NULL && up->rdysock == -1){
 		if(up->noblock){
-			errno = EWOULDBLOCK;
+			kerrno = kEWOULDBLOCK;
 			return -1;
-		} else if((errno = kwait(up)) != 0){
+		} else if((kerrno = kwait(up)) != 0){
 			return -1;
 		}
 	}
 	if(up->cb.p == NULL){
 		/* Blown away */
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	i = up->rdysock;
@@ -328,20 +330,20 @@ recv_mbuf(
 int s,			/* Socket index */
 struct mbuf **bpp,	/* Place to stash receive buffer */
 int flags,		/* Unused; will control out-of-band data, etc */
-struct sockaddr *from,		/* Peer address (only for datagrams) */
+struct ksockaddr *from,		/* Peer address (only for datagrams) */
 int *fromlen		/* Length of peer address */
 ){
 	register struct usock *up;
 	struct socklink *sp;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	sp = up->sp;
 	/* Fail if recv routine isn't present */
 	if(sp->recv == NULL){
-		errno = EOPNOTSUPP;
+		kerrno = kEOPNOTSUPP;
 		return -1;
 	}
 	return (*sp->recv)(up,bpp,from,fromlen);
@@ -358,7 +360,7 @@ send_mbuf(
 int s,			/* Socket index */
 struct mbuf **bpp,	/* Buffer to send */
 int flags,		/* not currently used */
-struct sockaddr *to,		/* Destination, only for datagrams */
+struct ksockaddr *to,		/* Destination, only for datagrams */
 int tolen		/* Length of destination */
 ){
 	register struct usock *up;
@@ -367,7 +369,7 @@ int tolen		/* Length of destination */
 
 	if((up = itop(s)) == NULL){
 		free_p(bpp);
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	sp = up->sp;
@@ -380,14 +382,14 @@ int tolen		/* Length of destination */
 	if(to != NULL && (sp->check != NULL)
 	 && (*sp->check)(to,tolen) == -1){
 		free_p(bpp);
-		errno = EAFNOSUPPORT;
+		kerrno = kEAFNOSUPPORT;
 		return -1;
 	}
 	/* The proto send routine is expected to free the buffer
 	 * we pass it even if the send fails
 	 */
 	if((cnt = (*sp->send)(up,bpp,to)) == -1){
-		errno = EOPNOTSUPP;
+		kerrno = kEOPNOTSUPP;
 		return -1;
 	}
 	return cnt;
@@ -396,17 +398,17 @@ int tolen		/* Length of destination */
 int
 getsockname(
 int s,		/* Socket index */
-struct sockaddr *name,	/* Place to stash name */
+struct ksockaddr *name,	/* Place to stash name */
 int *namelen	/* Length of same */
 ){
 	register struct usock *up;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	if(name == NULL || namelen == (int *)NULL){
-		errno = EFAULT;
+		kerrno = kEFAULT;
 		return -1;
 	}
 	if(up->name == NULL){
@@ -420,25 +422,25 @@ int *namelen	/* Length of same */
 	}
 	return 0;
 }
-/* Get remote name, returning result of earlier connect() call. */
+/* Get remote name, returning result of earlier kconnect() call. */
 int
-getpeername(
+kgetpeername(
 int s,			/* Socket index */
-struct sockaddr *peername,		/* Place to stash name */
+struct ksockaddr *peername,		/* Place to stash name */
 int *peernamelen	/* Length of same */
 ){
 	register struct usock *up;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	if(up->peername == NULL){
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}
 	if(peername == NULL || peernamelen == (int *)NULL){
-		errno = EFAULT;
+		kerrno = kEFAULT;
 		return -1;
 	}
 	*peernamelen = min(*peernamelen,up->peernamelen);
@@ -456,21 +458,21 @@ int rtx		/* 0 = receive queue, 1 = transmit queue */
 	int len = -1;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	if(up->cb.p == NULL){
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}
 	if(rtx < 0 || rtx > 1){
-		errno = EINVAL;
+		kerrno = kEINVAL;
 		return -1;
 	}
 	sp = up->sp;
 	/* Fail if qlen routine isn't present */
 	if(sp->qlen == NULL || (len = (*sp->qlen)(up,rtx)) == -1){
-		errno = EOPNOTSUPP;
+		kerrno = kEOPNOTSUPP;
 		return -1;
 	}
 	return len;
@@ -484,13 +486,13 @@ int s	/* Socket index */
 	struct socklink *sp;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	sp = up->sp;
 	/* Fail if kick routine isn't present */
 	if(sp->kick == NULL){
-		errno = EOPNOTSUPP;
+		kerrno = kEOPNOTSUPP;
 		return -1;
 	}
  	if((*sp->kick)(up) == -1)
@@ -498,7 +500,7 @@ int s	/* Socket index */
 	return 0;
 }
 
-/* Change owner of socket, return previous owner */
+/* Change owner of ksocket, return previous owner */
 struct proc *
 sockowner(
 int s,			/* Socket index */
@@ -508,7 +510,7 @@ struct proc *newowner	/* Process table address of new owner */
 	struct proc *pp;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return NULL;
 	}
 	pp = up->owner;
@@ -516,14 +518,14 @@ struct proc *newowner	/* Process table address of new owner */
 		up->owner = newowner;
 	return pp;
 }
-/* Close down a socket three ways. Type 0 means "no more receives"; this
+/* Close down a ksocket three ways. Type 0 means "no more receives"; this
  * replaces the incoming data upcall with a routine that discards further
  * data. Type 1 means "no more sends", and obviously corresponds to sending
  * a TCP FIN. Type 2 means "no more receives or sends". This I interpret
  * as "abort the connection".
  */
 int
-shutdown(
+kshutdown(
 int s,		/* Socket index */
 int how		/* (see above) */
 ){
@@ -531,15 +533,15 @@ int how		/* (see above) */
 	struct socklink *sp;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	if(up->cb.p == NULL){
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}
 	sp = up->sp;
-	/* Just close the socket if special shutdown routine not present */
+	/* Just kclose the ksocket if special kshutdown routine not present */
 	if(sp->shut == NULL){
 		close_s(s);
 	} else if((*sp->shut)(up,how) == -1){
@@ -548,8 +550,8 @@ int how		/* (see above) */
 	ksignal(up,0);
 	return 0;
 }
-/* Close a socket, freeing it for reuse. Try to do a graceful close on a
- * TCP socket, if possible
+/* Close a ksocket, freeing it for reuse. Try to do a graceful kclose on a
+ * TCP ksocket, if possible
  */
 int
 close_s(
@@ -559,31 +561,31 @@ int s		/* Socket index */
 	struct socklink *sp;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	if(--up->refcnt > 0)
 		return 0;	/* Others are still using it */
-	/* Call proto-specific close routine if there is one */
-	if((sp = up->sp) != NULL && sp->close != NULL)
-		(*sp->close)(up);
+	/* Call proto-specific kclose routine if there is one */
+	if((sp = up->sp) != NULL && sp->kclose != NULL)
+		(*sp->kclose)(up);
 
 	free(up->name);
 	free(up->peername);
 
-	ksignal(up,0);	/* Wake up anybody doing an accept() or recv() */
+	ksignal(up,0);	/* Wake up anybody doing an kaccept() or recv() */
 	Usock[_fd_seq(up->index)] = NULL;
 	free(up);
 	return 0;
 }
-/* Increment reference count for specified socket */
+/* Increment reference count for specified ksocket */
 int
 usesock(int s)
 {
 	struct usock *up;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	up->refcnt++;
@@ -599,7 +601,7 @@ freesock(struct proc *pp)
 	for(i=0;i < Nsock;i++){
 		up = Usock[i];
 		if(up != NULL && up->type != NOTUSED && up->owner == pp)
-			shutdown(i,2);
+			kshutdown(i,2);
 	}
 }
 /* Set Internet type-of-service to be used */
@@ -609,7 +611,7 @@ settos(int s, int tos)
 	struct usock *up;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	up->tos = tos;
@@ -626,20 +628,20 @@ int sv[]
 ){
 	struct usock *up0, *up1;
 	if(sv == NULL){
-		errno = EFAULT;
+		kerrno = kEFAULT;
 		return -1;
 	}
-	if(af != AF_LOCAL){
-		errno = EAFNOSUPPORT;
+	if(af != kAF_LOCAL){
+		kerrno = kEAFNOSUPPORT;
 		return -1;
 	}
-	if(type != SOCK_STREAM && type != SOCK_DGRAM){
-		errno = ESOCKTNOSUPPORT;
+	if(type != kSOCK_STREAM && type != kSOCK_DGRAM){
+		kerrno = kESOCKTNOSUPPORT;
 		return -1;
 	}
-	if((sv[0] = socket(af,type,protocol)) == -1)
+	if((sv[0] = ksocket(af,type,protocol)) == -1)
 		return -1;
-	if((sv[1] = socket(af,type,protocol)) == -1){
+	if((sv[1] = ksocket(af,type,protocol)) == -1){
 		close_s(sv[0]);
 		return -1;
 	}
@@ -649,14 +651,14 @@ int sv[]
 	up1->cb.local->peer = up0;
 	return sv[1];
 }
-/* Return end-of-line convention for socket */
+/* Return end-of-line convention for ksocket */
 char *
 eolseq(int s)
 {
 	struct usock *up;
 
 	if((up = itop(s)) == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return NULL;
 	}
 	return up->sp->eol;

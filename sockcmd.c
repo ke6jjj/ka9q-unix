@@ -1,7 +1,9 @@
 /* Socket status display code
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "proc.h"
@@ -19,12 +21,12 @@ void *p;
 {
 	register struct usock *up;
 	int s,i,n;
-	struct sockaddr fsock;
+	struct ksockaddr fsock;
 	struct socklink *sp;
 	char *cp;
 
 	if(argc < 2){
-		printf("S#   Type    PCB       Remote socket         Owner\n");
+		kprintf("S#   Type    PCB       Remote ksocket         Owner\n");
 		for(n=0;n<Nsock;n++){
 			s = _mk_fd(n,_FL_SOCK);
 			up = itop(s);
@@ -32,12 +34,12 @@ void *p;
 				continue;
 
 			i = sizeof(fsock);
-			if(getpeername(s,&fsock,&i) == 0 && i != 0)
+			if(kgetpeername(s,&fsock,&i) == 0 && i != 0)
 				cp = psocket(&fsock);
 			else
 				cp = "";
 
-			printf("%4d %-8s%-9p %-22s%-9p %-10s\n",
+			kprintf("%4d %-8s%-9p %-22s%-9p %-10s\n",
 			 s,Socktypes[up->type],up->cb.p,cp,
 			 up->owner,up->owner->name);
 		}
@@ -45,16 +47,16 @@ void *p;
 	}
 	s = atoi(argv[1]);
 	if(_fd_type(s) != _FL_SOCK){
-		printf("Not a valid socket\n");
+		kprintf("Not a valid ksocket\n");
 		return 1;
 	}
 	up = itop(s);
 	if(up == NULL){
-		printf("Socket not in use\n");
+		kprintf("Socket not in use\n");
 		return 1;
 	}
 	sp = up->sp;
-	printf("%s %p\n",Socktypes[up->type],up->cb.p);
+	kprintf("%s %p\n",Socktypes[up->type],up->cb.p);
 	if(up->cb.p == NULL)
 		return 0;
 	if(sp->status != NULL)

@@ -1,6 +1,8 @@
 /* RIP packet tracing
  * Copyright 1991 Phil Karn, KA9Q
  */
+#include "top.h"
+
 #include "global.h"
 #include "mbuf.h"
 #include "netuser.h"
@@ -10,7 +12,7 @@
 
 void
 rip_dump(fp,bpp)
-FILE *fp;
+kFILE *fp;
 struct mbuf **bpp;
 {
 	struct rip_route entry;
@@ -18,25 +20,25 @@ struct mbuf **bpp;
 	int cmd,version;
 	uint len;
 	
-	fprintf(fp,"RIP: ");
+	kfprintf(fp,"RIP: ");
 	cmd = PULLCHAR(bpp);
 	version = PULLCHAR(bpp);
 	switch(cmd){
 	case RIPCMD_REQUEST:
-		fprintf(fp,"REQUEST");
+		kfprintf(fp,"REQUEST");
 		break;
 	case RIPCMD_RESPONSE:
-		fprintf(fp,"RESPONSE");
+		kfprintf(fp,"RESPONSE");
 		break;
 	default:
-		fprintf(fp," cmd %u",cmd);
+		kfprintf(fp," cmd %u",cmd);
 		break;
 	}
 
 	pull16(bpp);	/* remove one word of padding */
 
 	len = len_p(*bpp);
-	fprintf(fp," vers %u entries %u:\n",version,len / RIPROUTE);
+	kfprintf(fp," vers %u entries %u:\n",version,len / RIPROUTE);
 
 	i = 0;
 	while(len >= RIPROUTE){
@@ -48,11 +50,11 @@ struct mbuf **bpp;
 			/* Skip non-IP addresses */
 			continue;
 		}
-		fprintf(fp,"%-16s%-3u ",inet_ntoa(entry.target),entry.metric);
+		kfprintf(fp,"%-16s%-3u ",inet_ntoa(entry.target),entry.metric);
 		if((++i % 3) == 0){
-			putc('\n',fp);
+			kputc('\n',fp);
 		}
 	}
 	if((i % 3) != 0)
-		putc('\n',fp);
+		kputc('\n',fp);
 }

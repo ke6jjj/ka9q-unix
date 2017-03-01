@@ -8,8 +8,9 @@
  *
  *	Acknowledgements and correction history may be found in PPP.C
  */
+#include "top.h"
 
-#include <stdio.h>
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "proc.h"
@@ -24,6 +25,7 @@
 #include "files.h"
 #include "trace.h"
 #include "main.h"
+#include "errno.h"
 
 static int dopap_user(int argc, char *argv[], void *p);
 
@@ -109,7 +111,7 @@ void *p;
 	struct pap_s *pap_p = fsm_p->pdv;
 
 	if (argc < 2) {
-		printf("%s\n",
+		kprintf("%s\n",
 			(pap_p->username == NULL) ? "None" : pap_p->username);
 		return 0;
 	}
@@ -118,7 +120,7 @@ void *p;
 	free(pap_p->password);
 	pap_p->password = NULL;
 
-	if (stricmp(argv[1],"none") != 0) {
+	if (STRICMP(argv[1],"none") != 0) {
 		pap_p->username = strdup(argv[1]);
 		if (argc > 2) {
 			pap_p->password = strdup(argv[2]);
@@ -149,25 +151,25 @@ void *v2;
 
 	/* Allocate a session control block */
 	if((sp = newsession("PPP/PAP",PPPPASS,1)) == NULL){
-		printf("Too many sessions\n");
+		kprintf("Too many sessions\n");
 		return;
 	}
 
 	while ( !main_exit && wait_code == 0 ) {
 		/* get user name */
 		if (pap_p->username == NULL) {
-			printf ("%s: PPP/PAP  Username: ", iface->name);
-			fflush(sp->output);
-			if (fgets(buf,20,sp->input) != NULL) {
+			kprintf ("%s: PPP/PAP  Username: ", iface->name);
+			kfflush(sp->output);
+			if (kfgets(buf,20,sp->input) != NULL) {
 				rip(buf);
 				if (strlen(buf) > 0) {
 					pap_p->username = strdup(buf);
 				}
 			}
 		} else {
-			printf ("%s: PPP/PAP  Username: %s\n",
+			kprintf ("%s: PPP/PAP  Username: %s\n",
 				iface->name, pap_p->username);
-			fflush(sp->output);
+			kfflush(sp->output);
 		}
 
 		/* get pass word */
@@ -175,16 +177,16 @@ void *v2;
 		 && pap_p->password == NULL) {
 			/* turn off echo */
 			sp->ttystate.echo = 0;
-			printf("%s: PPP/PAP  Password: ",iface->name);
-			fflush(sp->output);
-			if (fgets(buf,20,sp->input) != NULL) {
+			kprintf("%s: PPP/PAP  Password: ",iface->name);
+			kfflush(sp->output);
+			if (kfgets(buf,20,sp->input) != NULL) {
 				rip(buf);
 				if ( strlen(buf) > 0 ) {
 					pap_p->password = strdup(buf);
 				}
 			}
-			printf("\n");
-			fflush(sp->output);
+			kprintf("\n");
+			kfflush(sp->output);
 			/* Turn echo back on */
 			sp->ttystate.echo = 1;
 		}
@@ -194,17 +196,17 @@ void *v2;
 		wait_code = kwait ( pap_p );
 
 		/* show ack/nak reply */
-		if ( wait_code != EABORT && pap_p->message != NULL ) {
-			printf ("%s: PPP/PAP  %s\n",
+		if ( wait_code != kEABORT && pap_p->message != NULL ) {
+			kprintf ("%s: PPP/PAP  %s\n",
 				iface->name, pap_p->message );
 		}
-		printf ( "\n" );
-		fflush(sp->output);
+		kprintf ( "\n" );
+		kfflush(sp->output);
 
 	}
 
 	/* clean up */
-	if ( wait_code != EABORT ) {
+	if ( wait_code != kEABORT ) {
 		ppause ( 10000L );
 	}
 	freesession(&sp);
@@ -320,7 +322,7 @@ struct fsm_s *fsm_p;
 
 /****************************************************************************/
 
-/* abandon PAP attempt; shutdown LCP layer */
+/* abandon PAP attempt; kshutdown LCP layer */
 static void
 pap_shutdown(fsm_p)
 struct fsm_s *fsm_p;
@@ -330,7 +332,7 @@ struct fsm_s *fsm_p;
 	PPP_DEBUG_ROUTINES("pap_shutdown()");
 
 	if (PPPtrace > 1)
-		fsm_log( fsm_p, "Failed; close connection" );
+		fsm_log( fsm_p, "Failed; kclose connection" );
 
 	fsm_close( &(ppp_p->fsm[Lcp]) );
 }
@@ -458,7 +460,7 @@ struct mbuf **data
 	/* ID field must match last request we sent */
 	if (hdr->id != fsm_p->lastid) {
 		PPP_DEBUG_CHECKS("PAP: wrong ID");
-		printf ("id mismatch hdrid=%d, lastid=%d\n",
+		kprintf ("id mismatch hdrid=%d, lastid=%d\n",
 			hdr->id, fsm_p->lastid);
 		free_p(data);
 		return -1;
@@ -612,7 +614,7 @@ struct fsm_s *fsm_p;
 	switch ( fsm_p->state ) {
 	case fsmREQ_Sent:
 		stop_timer(&(fsm_p->timer));
-		alert ( pap_p->pp, EABORT );
+		alert ( pap_p->pp, kEABORT );
 		/* fallthru */
 	case fsmOPENED:
 	case fsmLISTEN:

@@ -35,7 +35,7 @@ struct iftype {
 				/* Function that handles incoming packets */
 	int (*addrtest)(struct iface *,struct mbuf *);
 				/* Function that tests incoming addresses */
-	void (*trace)(FILE *,struct mbuf **,int);
+	void (*trace)(kFILE *,struct mbuf **,int);
 				/* Function that decodes protocol headers */
 	int (*dinit)(struct iface *,int32,int,char **);
 				/* Function to initialize demand dialing */
@@ -63,7 +63,7 @@ struct iface {
 #define	IF_TRACE_HEX	0x200	/* Dump packets in hex/ascii */
 #define	IF_TRACE_NOBC	0x1000	/* Suppress broadcasts */
 #define	IF_TRACE_RAW	0x2000	/* Raw dump, if supported */
-	FILE *trfp;		/* Stream to trace to */
+	kFILE *trfp;		/* Stream to trace to */
 
 	struct iface *forw;	/* Forwarding interface for output, if rx only */
 

@@ -1,4 +1,6 @@
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "internet.h"
@@ -26,7 +28,7 @@ struct mbuf **bpp;
 
 void
 vjcomp_dump(fp,bpp,unused)
-FILE *fp;
+kFILE *fp;
 struct mbuf **bpp;
 int unused;
 {
@@ -38,43 +40,43 @@ int unused;
 
 	/* Dump compressed TCP/IP header */
 	changes = pullchar(bpp);
-	fprintf(fp,"\tchanges: 0x%02x",changes);
+	kfprintf(fp,"\tchanges: 0x%02x",changes);
 	if (changes & NEW_C) {
 		pullup(bpp,tmpbuf,1);
-		fprintf(fp,"   connection: 0x%02x",tmpbuf[0]);
+		kfprintf(fp,"   connection: 0x%02x",tmpbuf[0]);
 	}
 	pullup(bpp,tmpbuf,2);
-	fprintf(fp,"   TCP checksum: 0x%04x",get16(tmpbuf));
+	kfprintf(fp,"   TCP checksum: 0x%04x",get16(tmpbuf));
 
 	if (changes & TCP_PUSH_BIT)
-		fprintf(fp,"   PUSH");
-	fprintf(fp,"\n");
+		kfprintf(fp,"   PUSH");
+	kfprintf(fp,"\n");
 
 	switch (changes & SPECIALS_MASK) {
 	case SPECIAL_I:
-		fprintf(fp,"\tdelta ACK and delta SEQ implied by length of data\n");
+		kfprintf(fp,"\tdelta ACK and delta SEQ implied by length of data\n");
 		break;
 
 	case SPECIAL_D:
-		fprintf(fp,"\tdelta SEQ implied by length of data\n");
+		kfprintf(fp,"\tdelta SEQ implied by length of data\n");
 		break;
 
 	default:
 		if (changes & NEW_U) {
-			fprintf(fp,"\tUrgent pointer: 0x%02x",decodeint(bpp));
+			kfprintf(fp,"\tUrgent pointer: 0x%02x",decodeint(bpp));
 		}
 		if (changes & NEW_W)
-			fprintf(fp,"\tdelta WINDOW: 0x%02x",decodeint(bpp));
+			kfprintf(fp,"\tdelta WINDOW: 0x%02x",decodeint(bpp));
 		if (changes & NEW_A)
-			fprintf(fp,"\tdelta ACK: 0x%02x",decodeint(bpp));
+			kfprintf(fp,"\tdelta ACK: 0x%02x",decodeint(bpp));
 		if (changes & NEW_S)
-			fprintf(fp,"\tdelta SEQ: 0x%02x",decodeint(bpp));
+			kfprintf(fp,"\tdelta SEQ: 0x%02x",decodeint(bpp));
 		break;
 	};
 	if (changes & NEW_I) {
-		fprintf(fp,"\tdelta ID: 0x%02x\n",decodeint(bpp));
+		kfprintf(fp,"\tdelta ID: 0x%02x\n",decodeint(bpp));
 	} else {
-		fprintf(fp,"\tincrement ID\n");
+		kfprintf(fp,"\tincrement ID\n");
 	}
 }
 
@@ -82,7 +84,7 @@ int unused;
 /* dump serial line IP packet; may have Van Jacobson TCP header compression */
 void
 sl_dump(fp,bpp,unused)
-FILE *fp;
+kFILE *fp;
 struct mbuf **bpp;
 int unused;
 {
@@ -93,17 +95,17 @@ int unused;
 	bp = *bpp;
 	c = bp->data[0];
 	if (c & SL_TYPE_COMPRESSED_TCP) {
-		fprintf(fp,"serial line VJ Compressed TCP: len %3u\n",
+		kfprintf(fp,"serial line VJ Compressed TCP: len %3u\n",
 			len_p(*bpp));
 		vjcomp_dump(fp,bpp,0);
 	} else if ( c >= SL_TYPE_UNCOMPRESSED_TCP ) {
-		fprintf(fp,"serial line VJ Uncompressed TCP: len %3u\n",
+		kfprintf(fp,"serial line VJ Uncompressed TCP: len %3u\n",
 			len = len_p(bp));
 		/* Get our own copy so we can mess with the data */
 		if ( (tbp = copy_p(bp, len)) == NULL )
 			return;
 
-		fprintf(fp,"\tconnection ID = %d\n",
+		kfprintf(fp,"\tconnection ID = %d\n",
 			tbp->data[9]);	/* FIX THIS! */
 		/* Restore the bytes used with Uncompressed TCP */
 		tbp->data[0] &= 0x4f;		/* FIX THIS! */
@@ -112,7 +114,7 @@ int unused;
 		ip_dump(fp,&tbp,1);
 		free_p(&tbp);
 	} else {
-		fprintf(fp,"serial line IP: len: %3u\n",len_p(*bpp));
+		kfprintf(fp,"serial line IP: len: %3u\n",len_p(*bpp));
 		ip_dump(fp,bpp,1);
 	}
 }

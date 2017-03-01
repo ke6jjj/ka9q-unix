@@ -4,11 +4,13 @@
  * Rewrote forwarding mechanism to use "X-Forwarded-To" paradigm instead of
  * "X-BBS-To", added timer support, etc.  Anders Klemets, SM0RGV, 901009.
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
-#include <errno.h>
+#include "errno.h"
 #include "global.h"
 #include "config.h"
 #include "bm.h"
@@ -79,7 +81,7 @@ int msgn;
 	char buf[LINELEN], tb[LINELEN], *cp;
 	int len, rec = 0;
 	long cnt;
-	fseek(m->mfile,m->mbox[msgn].start,0);
+	kfseek(m->mfile,m->mbox[msgn].start,0);
 	cnt = m->mbox[msgn].size;
 
 	/* If the data part of the message starts with "R:" the RFC-822
@@ -87,7 +89,7 @@ int msgn;
 	 * line of our own.
 	 */
 	for(;;) {
-		if(fgets(buf,sizeof(buf),m->mfile) == NULL)
+		if(kfgets(buf,sizeof(buf),m->mfile) == NULL)
 			break;
 		cnt -= strlen(buf);
 		if(rec == 1) {	/* look at the line following Received: */
@@ -102,26 +104,26 @@ int msgn;
 		     ++rec;
 		if(*buf == '\n') {
 		     if(rec == 3 && cnt > 1) {
-			  fread(buf,1,2,m->mfile);
+			  kfread(buf,1,2,m->mfile);
 			  cnt -= 2;
 			  if(strncmp(buf,"R:",2) == 0) {
 			       pax25(buf,Mycall);
 			       if((cp = strchr(buf,'-')) != NULL)
 				    *cp = '\0';	/* remove SSID */
-			       fprintf(m->user,"R:%s @%s %s (%s)\nR:",
+			       kfprintf(m->user,"R:%s @%s %s (%s)\nR:",
 					mbxtime(tb),buf,Hostname,Version);
 			       break;
 			  }
 		     }
 		     /* Start over, forwarding the RFC-822 headers */
-		     fseek(m->mfile,m->mbox[msgn].start,0);
+		     kfseek(m->mfile,m->mbox[msgn].start,0);
 		     cnt = m->mbox[msgn].size;
 		     rec = 0;
 		     break;
 		}
 	   }
 	while(rec != 3) {	/* Forward the RFC-822 headers */
-		if(fgets(buf,sizeof(buf),m->mfile) == NULL)
+		if(kfgets(buf,sizeof(buf),m->mfile) == NULL)
 			break;
 		cnt -= strlen(buf);
 		switch(htype(buf)) {
@@ -129,18 +131,18 @@ int msgn;
 		case STATUS:   /* Don't forward the "Status:" line either */
 		     break;
 		default:
-		     fputs(buf,m->user);
+		     kfputs(buf,m->user);
 		}
 		if(*buf == '\n')	/* last header line */
 			break;
 	}
 	do {	/* the rest of the message is treated below */
 		len = min(cnt,sizeof(buf)-1);
-		if(fread(buf,1,len,m->mfile) != len)
+		if(kfread(buf,1,len,m->mfile) != len)
 			break;
 		cnt -= len;
 		buf[len] = '\0';
-		fputs(buf,m->user);
+		kfputs(buf,m->user);
 	} while(cnt);
 }
 
@@ -169,13 +171,13 @@ char *line;
 	  ++cp;
      ++cp;
      for(i=0; i < 12; ++i)
-	  if(strnicmp(Months[i],cp,3) == 0)
+	  if(STRNICMP(Months[i],cp,3) == 0)
 	       break;
      if(i == 12)
 	  return NULL;
      sprintf(buf,"%02d%02d%02d/%02d%02d%c",atoi(cp + 4),i+1,day,atoi(cp + 7),
-	     atoi(cp + 10), (strnicmp(cp + 16,"GMT",3) &&
-			     strnicmp(cp + 16,"UTC",3)) ? ' ' : 'z');
+	     atoi(cp + 10), (STRNICMP(cp + 16,"GMT",3) &&
+			     STRNICMP(cp + 16,"UTC",3)) ? ' ' : 'z');
      return buf;
 }
      
@@ -204,13 +206,13 @@ int bulletin;		/* True if message is in public message area */
    if(m->mfile == NULL)
 	return -1;
    if(!bulletin && (m->mbox[msgn].status & BM_READ))
-	return -1;	/* the message was already read */
-   fseek(m->mfile,m->mbox[msgn].start,0);
+	return -1;	/* the message was already kread */
+   kfseek(m->mfile,m->mbox[msgn].start,0);
    *bid = *to = *atbbs = *from = '\0';
    if(subj != NULL)
 	*subj = '\0';
    m->stype = bulletin ? 'B' : 'P';	/* default to SB or SP */
-   while (fgets(buf,sizeof(buf),m->mfile) != NULL) {
+   while (kfgets(buf,sizeof(buf),m->mfile) != NULL) {
       if (buf[0] == '\n')
          break; /* envelope finished */
       switch (htype(buf)) {
@@ -278,7 +280,7 @@ int bulletin;		/* True if message is in public message area */
 	    /* A trailing ".bbs" indicates that the Message-ID was generated
 	     * from a BBS style message, and not a RFC-822 message.
 	     */
-	    if(cp != NULL && stricmp(&bid[strlen(bid) - 4], ".bbs") == 0)
+	    if(cp != NULL && STRICMP(&bid[strlen(bid) - 4], ".bbs") == 0)
 		*cp = '\0';
 	    else
 		*cp = '_';
@@ -297,7 +299,7 @@ int bulletin;		/* True if message is in public message area */
       case XFORWARD:
 	    if((cp = getaddress(buf,0)) == NULL)
 		 break;
-	    if(stricmp(m->name,cp) == 0)
+	    if(STRICMP(m->name,cp) == 0)
 		/* This message has already been forwarded, abort */
 		return -1;
 	    break;
@@ -343,20 +345,20 @@ int bulletin;
    char line[64], subj[256];
    if(makecl(m, msgn, dest, line, subj, bulletin) == -1)
 	return 0;	/* do not forward this particular message */
-   fputs(line,stdout);		 /* Send mail offer to bbs */
+   kfputs(line,kstdout);		 /* Send mail offer to bbs */
    rip(line);
-   fflush(m->user);
-   if (fgets(m->line, MBXLINE,m->user) != NULL ) {
+   kfflush(m->user);
+   if (kfgets(m->line, MBXLINE,m->user) != NULL ) {
       if (m->line[0] == 'O' || m->line[0] == 'o' || (m->sid & MBX_SID) == 0) {
 	 /* Got 'OK' or any line if the bbs is unsofisticated */
-         printf("%s\n", subj);
+         kprintf("%s\n", subj);
 	 sendmsg(m,msgn);	/* send the message */
-         puts("/EX"); /* was 0x1a */
-         fflush(m->user);
+         kputs("/EX"); /* was 0x1a */
+         kfflush(m->user);
       	 /* get F> for a good deliver */
-      	 while (fgets(m->line, MBXLINE,m->user) != NULL )
+      	 while (kfgets(m->line, MBXLINE,m->user) != NULL )
 		if (ISPROMPT(m->line)) {
-			logmsg(fileno(m->user),"MBOX bbs mail sent: %s ", line);
+			logmsg(kfileno(m->user),"MBOX bbs mail sent: %s ", line);
 			if(bulletin)
 				m->mbox[msgn].status |= BM_FORWARDED;
 			else
@@ -368,7 +370,7 @@ int bulletin;
       }
       else { /* OK response not received from bbs */
 	   if (m->line[0] == 'N' || m->line[0] == 'n') { /* 'NO' respone */
-          	logmsg(fileno(m->user),"MBOX bbs mail refused: %s\n     %s",line,m->line);
+          	logmsg(kfileno(m->user),"MBOX bbs mail refused: %s\n     %s",line,m->line);
 		/* Mark refused message as forwarded if it is a bulletin.
 		 * The message was probably a duplicate. Non-bulletin
 		 * messages are sent without BID, so they cannot be dected
@@ -381,7 +383,7 @@ int bulletin;
 		}
           }
       	  /* should get a F> here */
-          while (fgets(m->line, MBXLINE,m->user) != NULL )
+          while (kfgets(m->line, MBXLINE,m->user) != NULL )
       		if (ISPROMPT(m->line)) {
       			result = 0;
 			break;
@@ -404,7 +406,7 @@ void *p;
 	struct mbx *m;
 	int i, bulletin, err = 0;
 	m = (struct mbx *)p;
-	logmsg(fileno(m->user),"MBOX forwarding mail to: %s ", m->name);
+	logmsg(kfileno(m->user),"MBOX forwarding mail to: %s ", m->name);
 	/* indicate we are doing reverse forwarding, if we are not already
 	 * doing normal forwarding.
 	 */
@@ -412,7 +414,7 @@ void *p;
 		m->state = MBX_REVFWD;
 	if(fwdinit(m) != -1) {
 		strcpy(oldarea,m->area);
-		while(!err && fgets(m->line,MBXLINE,m->tfile) != NULL) {
+		while(!err && kfgets(m->line,MBXLINE,m->tfile) != NULL) {
 			if(*m->line == '-')	/* end of record reached */
 				break;
 			rip(m->line);		/* adds extra null at end */
@@ -437,14 +439,14 @@ void *p;
 					break;
 				}
 		}
-		fclose(m->tfile);
+		kfclose(m->tfile);
 		m->tfile = NULL;
 		if(*oldarea != '\0')
 			changearea(m,oldarea);
 	}
 	if(m->state == MBX_FORWARD)
 		return 0;
-	printf("*** Done\n");
+	kprintf("*** Done\n");
 	if((m->sid & MBX_RLI_SID))	/* disconnect if it is a W0RLI bbs */
 		return domboxbye(0,NULL,m);
 	return 0;
@@ -460,9 +462,9 @@ struct mbx *m;
 {
 	char host[80];
 	int start = 1;
-	if((m->tfile = fopen(Forwardfile,READ_TEXT)) == NULL)
+	if((m->tfile = kfopen(Forwardfile,READ_TEXT)) == NULL)
 		return -1;
-	while(fgets(m->line,MBXLINE,m->tfile) != NULL) {
+	while(kfgets(m->line,MBXLINE,m->tfile) != NULL) {
 		if(*m->line == '\n')
 			continue;
 		/* lines starting with '-' separate the forwarding records */
@@ -474,16 +476,16 @@ struct mbx *m;
 			start = 0;
 			/* get the name of this forwarding record */
 			findident(m->line,1,host);
-			if(stricmp(m->name,host) == 0) {
+			if(STRICMP(m->name,host) == 0) {
 				if(!timeok(m->line))
 					break;
-				/* eat the connect command line */
-				fgets(m->line,MBXLINE,m->tfile);
+				/* eat the kconnect command line */
+				kfgets(m->line,MBXLINE,m->tfile);
 				return 0;
 			}
 		}
 	}
-	fclose(m->tfile);
+	kfclose(m->tfile);
 	m->tfile = NULL;
 	return -1;
 }
@@ -498,10 +500,10 @@ struct mbx *m;
 {
 	char host[80];
 	int start = 1;
-	if(m->tfile == NULL && (m->tfile = fopen(Forwardfile,READ_TEXT))
+	if(m->tfile == NULL && (m->tfile = kfopen(Forwardfile,READ_TEXT))
 					== NULL)
 		return NULL;
-	while(fgets(m->line,MBXLINE,m->tfile) != NULL) {
+	while(kfgets(m->line,MBXLINE,m->tfile) != NULL) {
 		if(*m->line == '\n')
 			continue;
 		/* lines starting with '-' separate the forwarding records */
@@ -516,12 +518,12 @@ struct mbx *m;
 			strcpy(m->name,host);
 			if(!timeok(m->line))
 				continue;	/* too late or too early */
-			/* get the connect command line */
-			fgets(m->line,MBXLINE,m->tfile);
+			/* get the kconnect command line */
+			kfgets(m->line,MBXLINE,m->tfile);
 			return strdup(m->line);
 		}
 	}
-	fclose(m->tfile);
+	kfclose(m->tfile);
 	m->tfile = NULL;
 	return NULL;
 }
@@ -559,7 +561,7 @@ char *argv[];
 void *p;
 {
 	if(argc < 2){
-		printf("Forwarding timer: %lu/%lu\n",
+		kprintf("Forwarding timer: %lu/%lu\n",
 		read_timer(&fwdtimer)/1000L,
 		dur_timer(&fwdtimer)/1000L);
 		return 0;
@@ -593,12 +595,12 @@ void *v;
 	start_timer(&fwdtimer);
 	if((m = newmbx()) == NULL)
 		return;
-	m->user = stdout;
+	m->user = kstdout;
 	m->state = MBX_TRYING;
 	while((cc = fwdanybbs(m)) != NULL) {
 		if(isconnbbs(m)) /* already connected to this BBS, skip it */
 			skip = 1;
-		while(fgets(m->line,MBXLINE,m->tfile) != NULL) {
+		while(kfgets(m->line,MBXLINE,m->tfile) != NULL) {
 			if(*m->line == '-') {	/* end of record reached */
 				skip = 0;
 				break;
@@ -639,7 +641,7 @@ struct mbx *m;
 	int i;
 	for(i = 0; i < NUMMBX; ++i)
 		if(Mbox[i] != NULL && Mbox[i] != m &&
-			stricmp(m->name,Mbox[i]->name) == 0)
+			STRICMP(m->name,Mbox[i]->name) == 0)
 				return 1;
 	return 0;
 }
@@ -675,7 +677,7 @@ void *v1, *v2;
 	strcpy(m->name,(char *)v2);
 	free(v2);
 	m->state = MBX_TRYING;
-	/* open the connection, m->user will be the new stream */
+	/* kopen the connection, m->user will be the new stream */
 	if(cmdparse(cfwdcmds,cc,(void *)m) == -1) {
 		free(cc);
 		exitbbs(m);
@@ -683,31 +685,31 @@ void *v1, *v2;
 	}
 	free(cc);
 	m->state = MBX_FORWARD;
-	sockowner(fileno(m->user),Curproc);
+	sockowner(kfileno(m->user),Curproc);
 	
 	/* m->user will be closed automatically when this process exits */
-	stdin = stdout = m->user;
+	kstdin = kstdout = m->user;
 
 	if(fwdinit(m) == -1) {
 		/* it is probably not the right time to forward anymore */
 		exitbbs(m);
 		return;
 	}
-	/* read the connect script. Lines starting with a dot will be sent
+	/* kread the kconnect script. Lines starting with a dot will be sent
 	 * to the remote BBS.
 	 */
-	while(fgets(m->line,MBXLINE,m->tfile) != NULL)
+	while(kfgets(m->line,MBXLINE,m->tfile) != NULL)
 		if(*m->line == '.')
-			fputs(m->line + 1,stdout);
+			kfputs(m->line + 1,kstdout);
 		else
 			break;
-	fflush(m->user);
-	fclose(m->tfile);
+	kfflush(m->user);
+	kfclose(m->tfile);
 	m->tfile = NULL;
 
-	/* read the initial output from the bbs, looking for the SID */
+	/* kread the initial output from the bbs, looking for the SID */
 	for(;;) {
-		if(fgets(m->line,MBXLINE,m->user) == NULL) {
+		if(kfgets(m->line,MBXLINE,m->user) == NULL) {
 			exitbbs(m);
 			return;
 		}
@@ -720,15 +722,15 @@ void *v1, *v2;
 		}
 	}
 	/* Now sync the two ends as telnet password messes them up */
-	if(socklen(fileno(m->user),0))		/* discard any remaining input */
-		recv_mbuf(fileno(m->user),NULL,0,NULL,0);
+	if(socklen(kfileno(m->user),0))		/* discard any remaining input */
+		recv_mbuf(kfileno(m->user),NULL,0,NULL,0);
 
 	/* send our SID if the peer announced its SID */
 	if(m->sid & MBX_SID) {
-		puts("[NET-HMR$]");
-		fflush(m->user);
+		kputs("[NET-HMR$]");
+		kfflush(m->user);
 		for(;;) {
-			if(fgets(m->line,MBXLINE,m->user) == NULL) {
+			if(kfgets(m->line,MBXLINE,m->user) == NULL) {
 				exitbbs(m);
 				return;
 			}
@@ -739,29 +741,29 @@ void *v1, *v2;
 	/* start the actual forwarding */
 	dorevfwd(0,NULL,(void *)m);
 	/* ask for reverse forwarding or just disconnect */
-	if(((m->sid & MBX_SID) && puts("F>") == -1) ||
+	if(((m->sid & MBX_SID) && kputs("F>") == -1) ||
 	   (m->sid & MBX_SID) == 0) {
 		exitbbs(m);
-		fclose(stdout);
+		kfclose(kstdout);
 		return;
 	}
-	fflush(m->user);
+	kfflush(m->user);
 	/* parse the commands that are are received during reverse
 	 * forwarding.
 	 */
-	while(fgets(m->line,MBXLINE,m->user) != NULL) {
+	while(kfgets(m->line,MBXLINE,m->user) != NULL) {
 		rip(m->line);
 		if(mbx_parse(m) == 2)	/* got the "*** Done" command */
 			break;
-		puts("F>");
-		fflush(m->user);
+		kputs("F>");
+		kfflush(m->user);
 	}
 	exitbbs(m);
-	fclose(stdout);
+	kfclose(kstdout);
 }
 
-/* open a network connection based upon information in the cc line.
- * m->user is set to the socket number.
+/* kopen a network connection based upon information in the cc line.
+ * m->user is set to the ksocket number.
  */
 static int
 openconn(argc,argv,p)
@@ -770,7 +772,7 @@ char *argv[];
 void *p;
 {
 	struct mbx *m;
-	struct sockaddr sock;
+	struct ksockaddr sock;
 	uint8 *np;
 	char alias[AXBUF];
 	union sp sp;
@@ -783,7 +785,7 @@ void *p;
 		return -1;
 	switch(*argv[0]) {
 	case 't':
-		sp.in->sin_family = AF_INET;
+		sp.in->sin_family = kAF_INET;
 		if((sp.in->sin_addr.s_addr = resolve(argv[1])) == 0)
 			return -1;
 		/* get the optional port number */
@@ -791,36 +793,36 @@ void *p;
 			sp.in->sin_port = atoi(argv[2]);
 		else
 			sp.in->sin_port = IPPORT_TELNET;
-		if((s = socket(AF_INET,SOCK_STREAM,0)) == -1)
+		if((s = ksocket(kAF_INET,kSOCK_STREAM,0)) == -1)
 			return -1;
-		m->user = fdopen(s,"r+t");
+		m->user = kfdopen(s,"r+t");
 		len = sizeof(*sp.in);
 		break;
 #ifdef AX25
 	case 'a':
-	case 'c':	/* allow 'c' for 'connect' as well */
+	case 'c':	/* allow 'c' for 'kconnect' as well */
 		if(argc < 3)
 			return -1;
-		sp.ax->sax_family = AF_AX25;
+		sp.ax->sax_family = kAF_AX25;
 		strncpy(sp.ax->iface,argv[1],ILEN); /* the interface name */
 		setcall(sp.ax->ax25_addr,argv[2]); /* the remote callsign */
 		/* no digipeaters for now, use the "ax25 route add" command */
-		if((s = socket(AF_AX25,SOCK_STREAM,0)) == -1)
+		if((s = ksocket(kAF_AX25,kSOCK_STREAM,0)) == -1)
 			return -1;
-		m->user = fdopen(s,"r+t");
+		m->user = kfdopen(s,"r+t");
 		len = sizeof(*sp.ax);
 		break;
 #endif /* AX25 */
 #ifdef NETROM
 	case 'n':
-		sp.nr->nr_family = AF_NETROM;
+		sp.nr->nr_family = kAF_NETROM;
 		len = sizeof(*sp.nr);
-		if((s = socket(AF_NETROM,SOCK_SEQPACKET,0)) == -1)
+		if((s = ksocket(kAF_NETROM,kSOCK_SEQPACKET,0)) == -1)
 			return -1;
-		m->user = fdopen(s,"r+t");
+		m->user = kfdopen(s,"r+t");
 		memcpy(sp.nr->nr_addr.user,Nr4user,AXALEN);
 		memcpy(sp.nr->nr_addr.node,Mycall,AXALEN);
-		bind(s,sp.sa,len);
+		kbind(s,sp.sa,len);
 		/* See if the requested destination could be an alias, and
 		 * use it if it is.  Otherwise assume it is an AX.25
 		 * address.
@@ -842,10 +844,10 @@ void *p;
 	default:
 		return -1;
 	}
-	if(connect(fileno(m->user),sp.sa,len) == -1) {
-		logmsg(fileno(m->user),"MBOX forward failed: %s errno %d",
-				sockerr(fileno(m->user)),errno);
-		fclose(m->user);
+	if(kconnect(kfileno(m->user),sp.sa,len) == -1) {
+		logmsg(kfileno(m->user),"MBOX forward failed: %s kerrno %d",
+				sockerr(kfileno(m->user)),kerrno);
+		kfclose(m->user);
 		return -1;
 	}
 	return 0;

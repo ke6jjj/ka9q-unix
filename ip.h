@@ -122,7 +122,6 @@ struct rt_cache {
 	int32 target;
 	struct route *route;
 };
-extern struct rt_cache Rt_cache[];
 extern int32 Rtlookups;	/* Count of calls to rt_lookup() */
 extern int32 Rtchits;		/* Count of cache hits in rt_lookup() */
 
@@ -161,14 +160,12 @@ struct raw_ip {
 	int user;		/* User linkage */
 };
 
-extern struct raw_ip *Raw_ip;
-
 /* Transport protocol link table */
 struct iplink {
 	char proto;
 	char *name;
 	void (*funct)(struct iface *,struct ip *,struct mbuf **,int,int32);
-	void (*dump)(FILE *,struct mbuf **,int32,int32,int);
+	void (*dump)(kFILE *,struct mbuf **,int32,int32,int);
 };
 extern struct iplink Iplink[];
 

@@ -2,8 +2,10 @@
 #define	RXBUF	8192
 #define	SAMPRATE 8000U
 
+#include "top.h"
+
 #include "global.h"
-#include <stdio.h>
+#include "stdio.h"
 #include <dos.h>
 #include "mbuf.h"
 #include "dma.h"
@@ -106,24 +108,24 @@ void *p;
 {
 	int i;
 
-	printf("Samp rate: %lu Hz",Sb.samprate);
+	kprintf("Samp rate: %lu Hz",Sb.samprate);
 	if(Sb.stereo)
-		printf(" Stereo;");
+		kprintf(" Stereo;");
 	else
-		printf(" Mono;");
-	printf(" Interrupts: %lu",Sb.interrupts);
+		kprintf(" Mono;");
+	kprintf(" Interrupts: %lu",Sb.interrupts);
 	switch(Sb.state){
 	case IDLE:
-		printf(" Idle\n");
+		kprintf(" Idle\n");
 		break;
 	case ADC:
-		printf(" A/D\n");
+		kprintf(" A/D\n");
 		break;
 	case DAC:
-		printf(" D/A: %d bytes; ",Sb.bufcnt);
+		kprintf(" D/A: %d bytes; ",Sb.bufcnt);
 		if(Sb.pause)
-			printf(" Paused");
-		printf("\n");
+			kprintf(" Paused");
+		kprintf("\n");
 		break;
 	}
 	return 0;
@@ -149,7 +151,7 @@ void *p;
 
 	if(strcmp(argv[1],"sb16") == 0){
 		if(Sb.base != 0){
-			printf("Only one sound card currently supported\n");
+			kprintf("Only one sound card currently supported\n");
 			return 1;
 		}
 		Sb.base = htoi(argv[2]);
@@ -157,16 +159,16 @@ void *p;
 		Sb.dma8 = atoi(argv[4]);
 		Sb.dma16 = atoi(argv[5]);
 		if(sb_setup(Sb.base,Sb.irq,Sb.dma8,Sb.dma16) == -1){
-			printf("setup failed\n");
+			kprintf("setup failed\n");
 			return 0;
 		}
 		sb_write_byte(Sb.base,0xe1);
 		major = sb_read_data(Sb.base);
 		minor = sb_read_data(Sb.base);
-		printf("SoundBlaster DSP version %d.%d\n",major,minor);
+		kprintf("SoundBlaster DSP version %d.%d\n",major,minor);
 		Sb.state = IDLE;
 	} else {
-		printf("Only sb16 currently supported\n");
+		kprintf("Only sb16 currently supported\n");
 		return -1;
 	}
 	return 0;
@@ -190,7 +192,7 @@ sbshut(void)
 	Sb.base = 0;
 	__dpmi_free_dos_memory(Sb.selector);
 	Sb.dmabuf = 0;
-	shutdown(S,2);	/* Blow it away */
+	kshutdown(S,2);	/* Blow it away */
 	S = -1;
 }
 dosamprate(argc,argv,p)
@@ -225,10 +227,10 @@ void *p;
 			break;
 	}
 	if(gp->name == NULL){
-		printf("Valid parameters:");
+		kprintf("Valid parameters:");
 		for(gp = Gaintab;gp->name != NULL;gp++)
-			printf(" %s",gp->name);
-		printf("\n");
+			kprintf(" %s",gp->name);
+		kprintf("\n");
 		return 1;
 	}
 	if(argc == 2){
@@ -265,13 +267,13 @@ struct gain *gp;
 
 	l = sb_read_mix(base,gp->regl);
 	r = sb_read_mix(base,gp->regr);
-	printf("%s ",gp->name);
+	kprintf("%s ",gp->name);
 	if(l != r){
-		printf("left %.0f right %.0f dB\n",
+		kprintf("left %.0f right %.0f dB\n",
 		 l / gp->scale + gp->offset,
 		 r / gp->scale + gp->offset);
 	} else {
-		printf("%.0f dB\n",l / gp->scale + gp->offset);
+		kprintf("%.0f dB\n",l / gp->scale + gp->offset);
 	}
 }
 void
@@ -283,7 +285,7 @@ void *p1,*p2;
 
 	while(recv_mbuf(s,&bp,0,NULL,NULL) > 0)
 		sb_send(&bp);
-	close(s);
+	kclose(s);
 }
 
 dostcplisten(argc,argv,p)
@@ -301,22 +303,22 @@ int argc;
 char *argv[];
 void *p;
 {
-	struct sockaddr_in sock;
+	struct ksockaddr_in sock;
 	int s;
 	int32 seq = 0;
 	struct mbuf *bp;
 
-	s = socket(AF_INET,SOCK_DGRAM,0);
-	sock.sin_family = AF_INET;
+	s = ksocket(kAF_INET,kSOCK_DGRAM,0);
+	sock.sin_family = kAF_INET;
 	sock.sin_port = (argc > 2) ? atoi(argv[2]) : 2010;
 	sock.sin_addr.s_addr = resolve(argv[1]);
-	if(connect(s,(struct sockaddr *)&sock,sizeof(sock)) == -1){
-		printf("Connect failed\n");
-		close(s);
+	if(kconnect(s,(struct ksockaddr *)&sock,sizeof(sock)) == -1){
+		kprintf("Connect failed\n");
+		kclose(s);
 		return -1;
 	}
 	if(sb_adc(Sb.samprate,Sb.stereo,TXBUF) == -1){
-		close(s);
+		kclose(s);
 		return 1;
 	}
 	for(;;){
@@ -339,12 +341,12 @@ int dma16;
 	int dma;
 
 	if(sb_reset(base) == -1){
-		printf("Soundblaster reset failed\n");
+		kprintf("Soundblaster reset failed\n");
 		return -1;
 	}
 	/* Set new interrupt vector */
 	if(setvect(irq,0,sbhandle,0) == -1){
-		printf("IRQ %u out of range\n",irq);
+		kprintf("IRQ %u out of range\n",irq);
 		return -1;
 	}
 	switch(irq){
@@ -362,16 +364,16 @@ int dma16;
 		sb_write_mix(base,0x80,8);
 		break;
 	default:
-		printf("invalid irq %d\n",irq);
+		kprintf("invalid irq %d\n",irq);
 		return -1;
 	}
 	maskon(irq);
 	if(dma8 < 0 || dma8 > 3 || dma8 == 2){
-		printf("dma8 invalid\n");
+		kprintf("dma8 invalid\n");
 		return -1;
 	}
 	if(dma16 < 5 || dma16 > 7){
-		printf("dma16 invalid\n");
+		kprintf("dma16 invalid\n");
 		return -1;
 	}
 	dis_dmaxl(dma16);
@@ -389,16 +391,16 @@ int stereo;	/* 1 = stereo, 0 = mono */
 int bufsiz;	/* Size of mbufs to be generated (1/2 DMA buffer) */
 {
 	if(Sb.base == 0){
-		printf("No SB16 card attached\n");
+		kprintf("No SB16 card attached\n");
 		return -1;
 	}
 	if(Sb.state != IDLE){
-		printf("SB16 not idle\n");
+		kprintf("SB16 not idle\n");
 		return -1;
 	}
 	/* Allocate DMA buffer */
 	if((Sb.ioptr = Sb.dmabuf = dma_malloc(&Sb.selector,2*bufsiz,1)) == NULL){
-		printf("Can't alloc dma buffer\n");
+		kprintf("Can't alloc dma buffer\n");
 		return -1;
 	}
 	Sb.state = ADC;
@@ -426,16 +428,16 @@ int stereo;	/* 1 = stereo, 0 = mono */
 int bufsiz;	/* Size of buffer unit (1/2 DMA buffer) */
 {
 	if(Sb.base == 0){
-		printf("No SB16 card attached\n");
+		kprintf("No SB16 card attached\n");
 		return -1;
 	}
 	if(Sb.state != IDLE){
-		printf("SB16 not idle\n");
+		kprintf("SB16 not idle\n");
 		return -1;
 	}
 	/* Allocate DMA buffer */
 	if((Sb.ioptr = Sb.dmabuf = dma_malloc(&Sb.selector,2*bufsiz,1)) == 0){
-		printf("Can't alloc dma buffer\n");
+		kprintf("Can't alloc dma buffer\n");
 		return -1;
 	}
 	Sb.state = DAC;
@@ -525,7 +527,7 @@ sb_send(struct mbuf **bpp)
 		return -1;
 
 	while(*bpp != NULL){
-		/* Wait for space to open up in DMA buffer */
+		/* Wait for space to kopen up in DMA buffer */
 		disable();
 		while(Sb.bufcnt >= Sb.dmasize)
 			kwait(&Sb);
@@ -608,7 +610,7 @@ sb_reset(int base)
 		return -1;
 	return 0;
 }
-/* Wait for read data to become available, then read it. Return -1 on timeout */
+/* Wait for kread data to become available, then kread it. Return -1 on timeout */
 static int
 sb_read_data(int base)
 {
@@ -721,7 +723,7 @@ sb_calibrate(long rate)
 
 	leftavg /= samples;
 	rightavg /= samples;
-	printf("Left channel avg: %ld Right channel avg: %ld\n",
+	kprintf("Left channel avg: %ld Right channel avg: %ld\n",
 	 leftavg,rightavg);
 
 	return 0;

@@ -1,7 +1,9 @@
 /* Packet tracing - top level and generic routines, including hex/ascii
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <ctype.h>
 #include <time.h>
 #include "global.h"
@@ -12,10 +14,10 @@
 #include "trace.h"
 #include "session.h"
 
-static void ascii_dump(FILE *fp,struct mbuf **bpp);
+static void ascii_dump(kFILE *fp,struct mbuf **bpp);
 static void ctohex(char *buf,uint c);
-static void fmtline(FILE *fp,uint addr,uint8 *buf,uint len);
-void hex_dump(FILE *fp,struct mbuf **bpp);
+static void fmtline(kFILE *fp,uint addr,uint8 *buf,uint len);
+void hex_dump(kFILE *fp,struct mbuf **bpp);
 static void showtrace(struct iface *ifp);
 
 /* Redefined here so that programs calling dump in the library won't pull
@@ -52,7 +54,7 @@ struct mbuf *bp
 	time_t timer;
 	char *cp;
 	struct iftype *ift;
-	FILE *fp;
+	kFILE *fp;
 
 	if(ifp == NULL || (ifp->trace & direction) == 0
 	 || (fp = ifp->trfp) == NULL)
@@ -69,22 +71,22 @@ struct mbuf *bp
 		time(&timer);
 		cp = ctime(&timer);
 		cp[24] = '\0';
-		fprintf(fp,"\n%s - %s recv:\n",cp,ifp->name);
+		kfprintf(fp,"\n%s - %s recv:\n",cp,ifp->name);
 		break;
 	case IF_TRACE_OUT:
 		time(&timer);
 		cp = ctime(&timer);
 		cp[24] = '\0';
-		fprintf(fp,"\n%s - %s sent:\n",cp,ifp->name);
+		kfprintf(fp,"\n%s - %s sent:\n",cp,ifp->name);
 		break;
 	}
 	if(bp == NULL || (size = len_p(bp)) == 0){
-		fprintf(fp,"empty packet!!\n");
+		kfprintf(fp,"empty packet!!\n");
 		return;
 	}
 	dup_p(&tbp,bp,0,size);
 	if(tbp == NULL){
-		fprintf(fp,nospace);
+		kfprintf(fp,nospace);
 		return;
 	}
 	if(ift != NULL && ift->trace != NULL)
@@ -99,7 +101,7 @@ struct mbuf *bp
 		if(tbp != NULL)
 			hex_dump(fp,&tbp);
 		else
-			fprintf(fp,nospace);
+			kfprintf(fp,nospace);
 	}
 	free_p(&tbp);
 }
@@ -112,25 +114,25 @@ int direction;
 struct mbuf *bp;
 {
 	struct mbuf *tbp;
-	FILE *fp;
+	kFILE *fp;
 
 	if((fp = ifp->trfp) == NULL)
 		return;
-	fprintf(fp,"\n******* raw packet dump (%s)\n",
+	kfprintf(fp,"\n******* raw packet dump (%s)\n",
 	 ((direction & IF_TRACE_OUT) ? "send" : "recv"));
 	dup_p(&tbp,bp,0,len_p(bp));
 	if(tbp != NULL)
 		hex_dump(fp,&tbp);
 	else
-		fprintf(fp,nospace);
-	fprintf(fp,"*******\n");
+		kfprintf(fp,nospace);
+	kfprintf(fp,"*******\n");
 	free_p(&tbp);
 }
 
 /* Dump an mbuf in hex */
 void
 hex_dump(fp,bpp)
-FILE *fp;
+kFILE *fp;
 struct mbuf **bpp;
 {
 	uint n;
@@ -149,7 +151,7 @@ struct mbuf **bpp;
 /* Dump an mbuf in ascii */
 static void
 ascii_dump(fp,bpp)
-FILE *fp;
+kFILE *fp;
 struct mbuf **bpp;
 {
 	int c;
@@ -161,13 +163,13 @@ struct mbuf **bpp;
 	tot = 0;
 	while((c = PULLCHAR(bpp)) != -1){
 		if((tot % 64) == 0)
-			fprintf(fp,"%04x  ",tot);
-		putc(isprint(c) ? c : '.',fp);
+			kfprintf(fp,"%04x  ",tot);
+		kputc(isprint(c) ? c : '.',fp);
 		if((++tot % 64) == 0)
-			fprintf(fp,"\n");
+			kfprintf(fp,"\n");
 	}
 	if((tot % 64) != 0)
-		fprintf(fp,"\n");
+		kfprintf(fp,"\n");
 }
 /* Print a buffer up to 16 bytes long in formatted hex with ascii
  * translation, e.g.,
@@ -175,7 +177,7 @@ struct mbuf **bpp;
  */
 static void
 fmtline(fp,addr,buf,len)
-FILE *fp;
+kFILE *fp;
 uint addr;
 uint8 *buf;
 uint len;
@@ -196,7 +198,7 @@ uint len;
 		*cptr++ = isprint(c) ? c : '.';
 	}
 	*cptr++ = '\n';
-	fwrite(line,1,(unsigned)(cptr-line),fp);
+	kfwrite(line,1,(unsigned)(cptr-line),fp);
 }
 /* Convert byte to two ascii-hex characters */
 static void
@@ -227,7 +229,7 @@ void *p;
 		return 0;
 	}
 	if((ifp = if_lookup(argv[1])) == NULL){
-		printf("Interface %s unknown\n",argv[1]);
+		kprintf("Interface %s unknown\n",argv[1]);
 		return 1;
 	}
 	if(argc == 2){
@@ -246,12 +248,12 @@ void *p;
 	}
 	if(ifp->trfp != NULL){
 		/* Close existing trace file */
-		fclose(ifp->trfp);
+		kfclose(ifp->trfp);
 		ifp->trfp = NULL;
 	}
 	if(argc >= 4){
-		if((ifp->trfp = fopen(argv[3],APPEND_TEXT)) == NULL){
-			printf("Can't write to %s\n",argv[3]);
+		if((ifp->trfp = kfopen(argv[3],APPEND_TEXT)) == NULL){
+			kprintf("Can't kwrite to %s\n",argv[3]);
 		}
 	} else if(ifp->trace != 0){
 		/* Create trace session */
@@ -260,7 +262,7 @@ void *p;
 		sp->proc = sp->proc1 = sp->proc2 = NULL;
 		ifp->trfp = sp->output;
 		showtrace(ifp);
-		getchar();	/* Wait for the user to hit something */
+		kgetchar();	/* Wait for the user to hit something */
 		ifp->trace = 0;
 		ifp->trfp = NULL;
 		freesession(&sp);
@@ -275,31 +277,31 @@ showtrace(struct iface *ifp)
 
 	if(ifp == NULL)
 		return;
-	printf("%s:",ifp->name);
+	kprintf("%s:",ifp->name);
 	if(ifp->trace & (IF_TRACE_IN | IF_TRACE_OUT | IF_TRACE_RAW)){
 		if(ifp->trace & IF_TRACE_IN)
-			printf(" input");
+			kprintf(" input");
 		if(ifp->trace & IF_TRACE_OUT)
-			printf(" output");
+			kprintf(" output");
 
 		if(ifp->trace & IF_TRACE_NOBC)
-			printf(" - no broadcasts");
+			kprintf(" - no broadcasts");
 
 		if(ifp->trace & IF_TRACE_HEX)
-			printf(" (Hex/ASCII dump)");
+			kprintf(" (Hex/ASCII dump)");
 		else if(ifp->trace & IF_TRACE_ASCII)
-			printf(" (ASCII dump)");
+			kprintf(" (ASCII dump)");
 		else
-			printf(" (headers only)");
+			kprintf(" (headers only)");
 
 		if(ifp->trace & IF_TRACE_RAW)
-			printf(" Raw output");
+			kprintf(" Raw output");
 
-		if(ifp->trfp != NULL && (cp = fpname(ifp->trfp)) != NULL)
-			printf(" trace file: %s",cp);
-		printf("\n");
+		if(ifp->trfp != NULL && (cp = kfpname(ifp->trfp)) != NULL)
+			kprintf(" trace file: %s",cp);
+		kprintf("\n");
 	} else
-		printf(" tracing off\n");
+		kprintf(" tracing off\n");
 }
 
 /* shut down all trace files */
@@ -309,13 +311,13 @@ shuttrace()
 	struct iface *ifp;
 
 	for(ifp = Ifaces; ifp != NULL; ifp = ifp->next){
-		fclose(ifp->trfp);
+		kfclose(ifp->trfp);
 		ifp->trfp = NULL;
 	}
 }
 
 /* Log messages of the form
- * Tue Jan 31 00:00:00 1987 44.64.0.7:1003 open FTP
+ * Tue Jan 31 00:00:00 1987 44.64.0.7:1003 kopen FTP
  */
 void
 trace_log(struct iface *ifp,char *fmt, ...)
@@ -323,18 +325,18 @@ trace_log(struct iface *ifp,char *fmt, ...)
 	va_list ap;
 	char *cp;
 	time_t t;
-	FILE *fp;
+	kFILE *fp;
 
 	if((fp = ifp->trfp) == NULL)
 		return;
 	time(&t);
 	cp = ctime(&t);
 	rip(cp);
-	fprintf(fp,"%s - ",cp);
+	kfprintf(fp,"%s - ",cp);
 	va_start(ap,fmt);
-	vfprintf(fp,fmt,ap);
+	kvfprintf(fp,fmt,ap);
 	va_end(ap);
-	fprintf(fp,"\n");
+	kfprintf(fp,"\n");
 }
 int
 tprintf(struct iface *ifp,char *fmt, ...)
@@ -345,7 +347,7 @@ tprintf(struct iface *ifp,char *fmt, ...)
 	if(ifp->trfp == NULL)
 		return -1; 
 	va_start(ap,fmt);
-	ret = vfprintf(ifp->trfp,fmt,ap);
+	ret = kvfprintf(ifp->trfp,fmt,ap);
 	va_end(ap);
 	return ret;
 }

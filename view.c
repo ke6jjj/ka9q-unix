@@ -1,8 +1,9 @@
 /* Random access file viewer. PC specific */
+#include "top.h"
 
-#include <stdio.h>
+#include "stdio.h"
 #include <conio.h>
-#include <errno.h>
+#include "errno.h"
 #include "global.h"
 #include "session.h"
 #include "tty.h"
@@ -11,7 +12,7 @@
 
 #include <dos.h>
 
-static long lineseek(FILE *fp,long offset,int nlines,int width);
+static long lineseek(kFILE *fp,long offset,int nlines,int width);
 static int ctlproc(int c);
 
 int
@@ -20,28 +21,28 @@ int argc;
 char *argv[];
 void *p;
 {
-	FILE *fp;
+	kFILE *fp;
 
-	if((fp = fopen(argv[1],READ_TEXT)) == NULL){
-		printf("Can't read %s\n",argv[1]);
+	if((fp = kfopen(argv[1],READ_TEXT)) == NULL){
+		kprintf("Can't kread %s\n",argv[1]);
 		return 1;
 	}
 	newproc("view",512,view,0,(void *)fp,strdup(Cmdline),0);
 	return 0;	
 }
-/* Random-access file display program. Used both to read local
+/* Random-access file display program. Used both to kread local
  * files with the "view" command, and by the FTP client to view
- * directory listings, temporary copies of read files, etc.
+ * directory listings, temporary copies of kread files, etc.
  *
  */
 void
 view(s,p1,p2)
 int s;		/* If non-zero, poll interval for a changing file */
-void *p1;	/* Open file pointer to read from */
+void *p1;	/* Open file pointer to kread from */
 void *p2;	/* If non-null, name to give to session. We free it */
 {
 	struct session *sp;
-	FILE *fp;
+	kFILE *fp;
 	char *name;
 	int c;
 	long offset = 0;
@@ -55,11 +56,11 @@ void *p2;	/* If non-null, name to give to session. We free it */
 	cols = text_info.screenwidth;
 	rows = text_info.screenheight-1;	/* Allow for status line */
 
-	fp = (FILE *)p1;
+	fp = (kFILE *)p1;
 	if(p2 != NULL)
 		name = (char *)p2;
 	else
-		name = fpname(fp);
+		name = kfpname(fp);
 
 	if((sp = newsession(name,VIEW,1)) == NULL)
 		return;
@@ -73,13 +74,13 @@ void *p2;	/* If non-null, name to give to session. We free it */
 	/* Put tty into raw mode so single-char responses will work */
 	sp->ttystate.echo = sp->ttystate.edit = 0;
 	for(;;){
-		fseek(fp,offset,SEEK_SET);
-		putchar(FF);	/* Clear screen */
+		kfseek(fp,offset,kSEEK_SET);
+		kputchar(FF);	/* Clear screen */
 		/* Display a screen's worth of data, keeping track of
 		 * cursor location so we know when the screen is full
 		 */
 		col = row = 0;
-		while((c = getc(fp)),c != EOF){
+		while((c = kgetc(fp)),c != kEOF){
 			switch(c){
 			case '\n':
 				row++;
@@ -100,10 +101,10 @@ void *p2;	/* If non-null, name to give to session. We free it */
 			}
 			if(row >= rows)
 				break;	/* Screen now full */
-			putchar(c);
+			kputchar(c);
 		}
 #ifdef	notdef
-		if(feof(fp) && offset != 0){
+		if(kfeof(fp) && offset != 0){
 			/* Hit end of file. Back up proper number of
 			 * lines and try again.
 			 */
@@ -111,26 +112,26 @@ void *p2;	/* If non-null, name to give to session. We free it */
 			continue;
 		}
 #endif
-		fflush(stdout);
+		kfflush(kstdout);
 		/* If we hit the end of the file and the file may be
-		 * growing, then set an alarm to time out the getchar()
+		 * growing, then set an alarm to time out the kgetchar()
 		 */
 		do {
-			if(feof(fp) && polldelay != 0){
+			if(kfeof(fp) && polldelay != 0){
 				kalarm(polldelay);
 			}
-			c = getchar();	/* Wait for user keystroke */
+			c = kgetchar();	/* Wait for user keystroke */
 			kalarm(0L);	/* Cancel alarm */
-			if(c != -1 || errno != EALARM)
+			if(c != -1 || kerrno != kEALARM)
 				break;	/* User hit key */
 			/* Alarm timeout; see if more data arrived by
-			 * clearing the EOF flag, trying to read
-			 * another byte, and then testing EOF again
+			 * clearing the kEOF flag, trying to kread
+			 * another byte, and then testing kEOF again
 			 */
-			clearerr(fp);
-			(void)getc(fp);
+			kclearerr(fp);
+			(void)kgetc(fp);
 			c = ' ';	/* Simulate a no-op keypress */
-		} while(feof(fp));
+		} while(kfeof(fp));
 		switch(c){
 		case 'h':	/* Home */
 		case 'H':
@@ -139,11 +140,11 @@ void *p2;	/* If non-null, name to give to session. We free it */
 			break;
 		case 'e':	/* End */
 		case '>':	/* For emacs users */
-			fseek(fp,0L,SEEK_END);
-			offset = lineseek(fp,ftell(fp),-rows,cols);
+			kfseek(fp,0L,kSEEK_END);
+			offset = lineseek(fp,kftell(fp),-rows,cols);
 			break;
 		case CTLD:	/* Down one half screen (for VI users) */
-			if(!feof(fp))
+			if(!kfeof(fp))
 				offset = lineseek(fp,offset,rows/2,cols);
 			break;
 		case CTLU:	/* Up one half screen (for VI users) */
@@ -152,12 +153,12 @@ void *p2;	/* If non-null, name to give to session. We free it */
 		case 'd':	/* down line */
 		case CTLN:	/* For emacs users */
 		case 'j':	/* For vi users */
-			if(!feof(fp))
+			if(!kfeof(fp))
 				offset = lineseek(fp,offset,1,cols);
 			break;
 		case 'D':	/* Down page */
 		case CTLV:	/* For emacs users */
-			if(!feof(fp))
+			if(!kfeof(fp))
 				offset = lineseek(fp,offset,rows,cols);
 			break;
 		case 'u':	/* up line */
@@ -178,16 +179,16 @@ void *p2;	/* If non-null, name to give to session. We free it */
 			break;	/* Redisplay screen */
 		}
 	}
-done:	fclose(fp);
+done:	kfclose(fp);
 	freesession(&sp);
 }
-/* Given a starting offset into an open file stream, scan forwards
+/* Given a starting offset into an kopen file stream, scan forwards
  * or backwards the specified number of lines and return a pointer to the
  * new offset.
  */
 static long
 lineseek(fp,start,nlines,width)
-FILE *fp;	/* Open file stream */
+kFILE *fp;	/* Open file stream */
 long start;	/* Offset to start searching backwards from */
 int nlines;	/* Number of lines to move forward (+) or back (-) */
 int width;	/* Screen width (max line size) */
@@ -202,9 +203,9 @@ int width;	/* Screen width (max line size) */
 		return start;	/* Nothing to do */
 
 	if(nlines > 0){		/* Look forward requested # of lines */
-		fseek(fp,start,SEEK_SET);
+		kfseek(fp,start,kSEEK_SET);
 		col = 0;
-		while((c = getc(fp)),c != EOF){
+		while((c = kgetc(fp)),c != kEOF){
 			switch(c){
 			case '\n':
 				newlines++;
@@ -226,7 +227,7 @@ int width;	/* Screen width (max line size) */
 			if(newlines >= nlines)
 				break;	/* Found requested count */
 		}
-		return ftell(fp);	/* Could be EOF */
+		return kftell(fp);	/* Could be kEOF */
 	}
 	/* Backwards scan (the hardest)
 	 * Start back up at most (width + 2) chars/line from the start.
@@ -239,7 +240,7 @@ int width;	/* Screen width (max line size) */
 		offset = 0;	/* Go to the start of the file */
 	else
 		offset = start - offset;
-	fseek(fp,offset,SEEK_SET);
+	kfseek(fp,offset,kSEEK_SET);
 
 	/* Keep a circular list of the last 'nlines' worth of offsets to
 	 * each line, starting with the first
@@ -252,13 +253,13 @@ int width;	/* Screen width (max line size) */
 	 */
 	col = 0;
 	for(;;){
-		c = getc(fp);
+		c = kgetc(fp);
 		switch(c){
-		case EOF:
+		case kEOF:
 			goto done;
 		case '\n':
 			col = 0;
-			offset = ftell(fp);
+			offset = kftell(fp);
 			if(offset >= start)
 				goto done;
 			pointers[newlines++ % nlines] = offset;
@@ -274,7 +275,7 @@ int width;	/* Screen width (max line size) */
 		if(col >= width){
 			/* Virtual newline caused by wraparound */
 			col = 0;
-			offset = ftell(fp);
+			offset = kftell(fp);
 			if(offset >= start)
 				goto done;
 			pointers[newlines++ % nlines] = offset;
@@ -300,28 +301,28 @@ ctlproc(c)
 int c;
 {
 	switch(c){
-	case 256 + 71:	/* HOME */
-		putc('h',Current->input);
+	case 256 + CURSHOM:	/* HOME */
+		kputc('h',Current->input);
 		break;
-	case 256 + 72:	/* Cursor up */
-		putc('u',Current->input);
+	case 256 + CURSUP:	/* Cursor up */
+		kputc('u',Current->input);
 		break;
-	case 256 + 73:	/* Page up */
-		putc('U',Current->input);
+	case 256 + PAGEUP:	/* Page up */
+		kputc('U',Current->input);
 		break;
-	case 256 + 79:	/* End */
-		putc('e',Current->input);
+	case 256 + CURSEND:	/* End */
+		kputc('e',Current->input);
 		break;
-	case 256 + 80:	/* Cursor down */
-		putc('d',Current->input);
+	case 256 + CURSDWN:	/* Cursor down */
+		kputc('d',Current->input);
 		break;
-	case 256 + 81:	/* Page down */
-		putc('D',Current->input);
+	case 256 + PAGEDWN:	/* Page down */
+		kputc('D',Current->input);
 		break;
 	default:
 		return c;
 	}
-	fflush(Current->input);
+	kfflush(Current->input);
 	return 0;
 }
 

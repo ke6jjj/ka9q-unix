@@ -4,6 +4,8 @@
  *	May '91	Bill Simpson
  *		move to separate file for compilation & linking
  */
+#include "top.h"
+
 #include <ctype.h>
 #include "global.h"
 #include "proc.h"
@@ -32,15 +34,15 @@ void *p;
 
 	ksignal(Curproc,0);	/* Don't keep the parser waiting */
 	chname(Curproc,"NETROM listener");
-	Nrsocket = socket(AF_NETROM,SOCK_SEQPACKET,0);
+	Nrsocket = ksocket(kAF_NETROM,kSOCK_SEQPACKET,0);
 	/* bind() is done automatically */
-	if (listen(Nrsocket,1) == -1) {
+	if (klisten(Nrsocket,1) == -1) {
 		close_s(Nrsocket);
 		Nrsocket = -1;
 		return -1;
 	}
 	for(;;){
-		if((s = accept(Nrsocket,NULL,NULL)) == -1)
+		if((s = kaccept(Nrsocket,NULL,NULL)) == -1)
 			break;	/* Service is shutting down */
 
 		type = NRSESSION;
@@ -87,13 +89,13 @@ void *p;
 	char *cp;
 
 	if(Nrifaces[0].iface == NULL){
-		printf("NET/ROM not activated.\n");
+		kprintf("NET/ROM not activated.\n");
 		return 0;
 	}
 	m = (struct mbx *) p;
 	sprintf(mbnrid,"%s:%s",Nrifaces[0].alias,
 	  pax25(m->line,Nrifaces[0].iface->hwaddr));
-	printf("Connected to %s	",mbnrid);
+	kprintf("Connected to %s	",mbnrid);
 	dombescape(1,NULL,p);
 
 	while(mbxrecvline(m->user,m->line,MBXLINE,m->escape) >= 0) {
@@ -101,7 +103,7 @@ void *p;
 			if(isupper(*cp))
 				*cp = tolower(*cp);
 		if(cmdparse(Mbnrcmds,m->line,(void *)m) == -1)
-			printf("%s> Invalid command (CONNECT IDENT NODES USERS)\n",
+			kprintf("%s> Invalid command (CONNECT IDENT NODES USERS)\n",
 			  mbnrid);
 	}
 	return 0;
@@ -113,7 +115,7 @@ int argc;
 char *argv[];
 void *p;
 {
-	printf("%s> %s (%s)\n",mbnrid,Hostname,Version);
+	kprintf("%s> %s (%s)\n",mbnrid,Hostname,Version);
 	return 0;
 }
 
@@ -138,19 +140,19 @@ void *p;
 	uint8 *np;
 	char buf[7];
 	int s;
-	struct sockaddr_nr lsocket, fsocket;
+	struct ksockaddr_nr lsocket, fsocket;
 	char alias[AXBUF];
 
 	m = (struct mbx *) p;
 	if(!(m->privs & NETROM_CMD)){
-		printf(Noperm);
+		kprintf(Noperm);
 		return 0;
 	}
-	if((s = socket(AF_NETROM,SOCK_SEQPACKET,0)) == -1){
-		printf(Nosock);
+	if((s = ksocket(kAF_NETROM,kSOCK_SEQPACKET,0)) == -1){
+		kprintf(Nosock);
 		return 0;
 	}
-	lsocket.nr_family = AF_NETROM;
+	lsocket.nr_family = kAF_NETROM;
 	/* Set up our local username, bind would use Mycall instead */
 	if(strlen(m->name) > 6)
 		strncpy(buf,m->name,6);
@@ -162,7 +164,7 @@ void *p;
 
 	/* Putting anything else than Mycall here will not work */
 	memcpy(lsocket.nr_addr.node,Mycall,AXALEN);
-	bind(s,(struct sockaddr *)&lsocket,sizeof(struct sockaddr_nr));
+	kbind(s,(struct ksockaddr *)&lsocket,sizeof(struct ksockaddr_nr));
 
 	/* See if the requested destination could be an alias, and
 	 * find and use it if it is.  Otherwise assume it is an ax.25
@@ -178,7 +180,7 @@ void *p;
 		setcall(fsocket.nr_addr.user,argv[1]);
 		setcall(fsocket.nr_addr.node,argv[1]);
 	}
-	fsocket.nr_family = AF_NETROM;
-	return gw_connect(m,s,(struct sockaddr *)&fsocket, sizeof(struct sockaddr_nr));
+	fsocket.nr_family = kAF_NETROM;
+	return gw_connect(m,s,(struct ksockaddr *)&fsocket, sizeof(struct ksockaddr_nr));
 }
 

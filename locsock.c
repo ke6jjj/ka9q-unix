@@ -1,4 +1,6 @@
-#include <errno.h>
+#include "top.h"
+
+#include "errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "socket.h"
@@ -8,7 +10,7 @@ int
 so_los(struct usock *up,int protocol)
 {
 	up->cb.local = (struct loc *) callocw(1,sizeof(struct loc));
-	up->cb.local->peer = up;	/* connect to self */
+	up->cb.local->peer = up;	/* kconnect to self */
 	up->type = TYPE_LOCAL_STREAM;
 	up->cb.local->hiwat = LOCSFLOW;
 	return 0;
@@ -17,7 +19,7 @@ int
 so_lod(struct usock *up,int protocol)
 {
 	up->cb.local = (struct loc *) callocw(1,sizeof(struct loc));
-	up->cb.local->peer = up;	/* connect to self */
+	up->cb.local->peer = up;	/* kconnect to self */
 	up->type = TYPE_LOCAL_DGRAM;
 	up->cb.local->hiwat = LOCDFLOW;
 	return 0;
@@ -26,7 +28,7 @@ int
 so_lo_recv(
 struct usock *up,
 struct mbuf **bpp,
-struct sockaddr *from,
+struct ksockaddr *from,
 int *fromlen
 ){
 	int s;
@@ -34,20 +36,20 @@ int *fromlen
 	while(up->cb.local != NULL && up->cb.local->q == NULL
 	  && up->cb.local->peer != NULL){
 		if(up->noblock){
-			errno = EWOULDBLOCK;
+			kerrno = kEWOULDBLOCK;
 			return -1;
-		} else if((errno = kwait(up)) != 0){
+		} else if((kerrno = kwait(up)) != 0){
 			return -1;
 		}
 	}
 	if(up->cb.local == NULL){
 		/* Socket went away */
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	if(up->cb.local->q == NULL &&
 	   up->cb.local->peer == NULL){
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}
 	/* For datagram sockets, this will return the
@@ -66,11 +68,11 @@ int
 so_los_send(
 struct usock *up,
 struct mbuf **bpp,
-struct sockaddr *to
+struct ksockaddr *to
 ){
 	if(up->cb.local->peer == NULL){
 		free_p(bpp);
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}
 	append(&up->cb.local->peer->cb.local->q,bpp);
@@ -80,14 +82,14 @@ struct sockaddr *to
 	      len_p(up->cb.local->peer->cb.local->q) >=
 	      up->cb.local->peer->cb.local->hiwat){
 		if(up->noblock){
-			errno = EWOULDBLOCK;
+			kerrno = kEWOULDBLOCK;
 			return -1;
-		} else if((errno = kwait(up->cb.local->peer)) != 0){
+		} else if((kerrno = kwait(up->cb.local->peer)) != 0){
 			return -1;
 		}
 	}
 	if(up->cb.local->peer == NULL){
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}
 	return 0;
@@ -96,11 +98,11 @@ int
 so_lod_send(
 struct usock *up,
 struct mbuf **bpp,
-struct sockaddr *to
+struct ksockaddr *to
 ){
 	if(up->cb.local->peer == NULL){
 		free_p(bpp);
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}
 	enqueue(&up->cb.local->peer->cb.local->q,bpp);
@@ -110,14 +112,14 @@ struct sockaddr *to
 	      len_q(up->cb.local->peer->cb.local->q) >=
 	      up->cb.local->peer->cb.local->hiwat){
 		if(up->noblock){
-			errno = EWOULDBLOCK;
+			kerrno = kEWOULDBLOCK;
 			return -1;
-		} else if((errno = kwait(up->cb.local->peer)) != 0){
+		} else if((kerrno = kwait(up->cb.local->peer)) != 0){
 			return -1;
 		}
 	}
 	if(up->cb.local->peer == NULL){
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}
 	return 0;
@@ -179,17 +181,18 @@ so_loc_close(struct usock *up)
 	return 0;
 }
 char *
-lopsocket(struct sockaddr *p)
+lopsocket(struct ksockaddr *p)
 {
 	return "";
 }
+int
 so_loc_stat(struct usock *up)
 {
 	int s;
 
 	s = up->index;
 
-	printf("Inqlen: %d packets\n",socklen(s,0));
-	printf("Outqlen: %d packets\n",socklen(s,1));
+	kprintf("Inqlen: %d packets\n",socklen(s,0));
+	kprintf("Outqlen: %d packets\n",socklen(s,1));
 	return 0;
 }

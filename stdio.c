@@ -2,13 +2,24 @@
  * Replaces those in Borland C++ library
  * Copyright 1992 Phil Karn, KA9Q
  */
+#include "top.h"
+
 #include <string.h>
 #include <stdarg.h>
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <errno.h>
+#if	defined(__TURBOC__) && defined(MSDOS)
 #define __IN_OPEN	1	/* Less stringent open() proto in io.h */
 #include <io.h>
+#endif
+#ifdef UNIX
+#include <unistd.h>
+#endif
+#ifdef HAVE_FUNOPEN
+#include <stdio.h>
+#endif
+#include <assert.h>
 #include "global.h"
 #include "stdio.h"
 #include "mbuf.h"
@@ -18,32 +29,44 @@
 #include "display.h"
 #include "sb.h"
 #include "asy.h"
+#include "errno.h"
 
 #define	_CREAT(a,b)	creat((a),(b))
+#ifdef UNIX
+#define _OPEN(a,b)	open((a),(b))
+#define	_CLOSE(a)	close((a))
+#define	_READ(a,b,c)	read((a),(b),(c))
+#define	_WRITE(a,b,c)	write((a),(b),(c))
+#else
 #define _OPEN(a,b)	_open((a),(b))
 #define	_CLOSE(a)	_close((a))
 #define	_READ(a,b,c)	_read((a),(b),(c))
 #define	_WRITE(a,b,c)	_write((a),(b),(c))
+#endif
 #define	_LSEEK(a,b,c)	lseek((a),(b),(c))
 #define	_DUP(a)		dup((a))
 
-static void _fclose(FILE *fp);
-static struct mbuf *_fillbuf(FILE *fp,int cnt);
-static FILE *_fcreat(void);
+static void _fclose(kFILE *fp);
+static struct mbuf *_fillbuf(kFILE *fp,int cnt);
+static kFILE *_fcreat(void);
 
-FILE *_Files;
+kFILE *_Files;
 int _clrtmp = 1;
 extern unsigned *Refcnt;
 
+#ifndef HAVE_FUNOPEN
 /* Defined in format.c */
 int _format(void putter(char,void *),void *,const char *,va_list);
+#else
+static int fun_write(void *, const char *, int);
+#endif
 
 /* Open a file and associate it with a (possibly specified) stream */
-FILE *
-freopen(
+kFILE *
+kfreopen(
 char *filename,
 char *mode,
-FILE *fp
+kFILE *fp
 ){
 	int modef;
 	int textmode = 0;
@@ -91,21 +114,21 @@ FILE *fp
 	fp->fd = fd;
 	fp->offset = 0;
 	fp->type = _FL_FILE;
-	fp->bufmode = _IOFBF;
+	fp->bufmode = _kIOFBF;
 	fp->ptr = strdup(filename);
 	fp->flags.ascii = textmode;
 	fp->flags.append = append;
-	fp->bufsize = BUFSIZ;
-	seteol(fp,Eol);
+	fp->bufsize = kBUFSIZ;
+	kseteol(fp,Eol);
 	return fp;
 }
 /* Associate a file or socket descripter (small integer) with a stream */
-FILE *
-fdopen(
+kFILE *
+kfdopen(
 int handle,
 char *mode
 ){
-	FILE *fp;
+	kFILE *fp;
 	int textmode = 0;
 	int append = 0;
 
@@ -122,20 +145,22 @@ char *mode
 		return NULL;
 
 	fp->fd = handle;
-	fp->bufmode = _IOFBF;
+	fp->bufmode = _kIOFBF;
 	fp->type = _fd_type(handle);
 	fp->flags.ascii = textmode;
 	fp->flags.append = append;
 
-	fp->bufsize = BUFSIZ;
+	fp->bufsize = kBUFSIZ;
 	/* set default eol sequence, can be overridden by user */
 	switch(fp->type){
 	case _FL_SOCK:
-		seteol(fp,eolseq(handle));	/* Socket eol seq */
+		kseteol(fp,eolseq(handle));	/* Socket eol seq */
 		break;
 	case _FL_FILE:
-		seteol(fp,Eol);	/* System end-of-line sequence */
+		kseteol(fp,Eol);	/* System end-of-line sequence */
 		break;
+	default:
+		assert(1 == 0);
 	}
 	fp->refcnt = 1;
 
@@ -144,18 +169,18 @@ char *mode
 /* Create a stream in pipe mode (whatever is written can be
  * read back). These always work in binary mode.
  */
-FILE *
+kFILE *
 pipeopen(void)
 {
-	FILE *fp;
+	kFILE *fp;
 
 	if((fp = _fcreat()) == NULL)
 		return NULL;
 
 	fp->fd = -1;
 	fp->type = _FL_PIPE;
-	fp->bufmode = _IOFBF;
-	fp->bufsize = BUFSIZ;
+	fp->bufmode = _kIOFBF;
+	fp->bufsize = kBUFSIZ;
 
 	strcpy(fp->eol,"\r\n");
 	return fp;
@@ -164,12 +189,12 @@ pipeopen(void)
  * as a NOS interface. All packet-mode I/O is suspended until this stream
  * is closed.
  */
-FILE *
+kFILE *
 asyopen(
 char *name,	/* Name of interface */
 char *mode	/* Usual fopen-style mode (used only for text/binary) */
 ){
-	FILE *fp;
+	kFILE *fp;
 	int dev;
 	int textmode = 0;
 
@@ -183,21 +208,21 @@ char *mode	/* Usual fopen-style mode (used only for text/binary) */
 
 	fp->fd = dev;
 	fp->type = _FL_ASY;
-	fp->bufmode = _IOFBF;
+	fp->bufmode = _kIOFBF;
 	fp->flags.ascii = textmode;
 
-	fp->bufsize = BUFSIZ;
+	fp->bufsize = kBUFSIZ;
 	strcpy(fp->eol,"\r\n");
 	return fp;
 }
 /* Create a new display screen and associate it with a stream. */
-FILE *
+kFILE *
 displayopen(
 char *mode,
 int noscrol,
 int sfsize
 ){
-	FILE *fp;
+	kFILE *fp;
 	int textmode = 0;
 
 	if(strchr(mode,'t') != NULL)
@@ -208,42 +233,45 @@ int sfsize
 
 	fp->fd = -1;
 	fp->type = _FL_DISPLAY;
-	fp->bufmode = _IOFBF;
+	fp->bufmode = _kIOFBF;
 	fp->flags.ascii = textmode;
 
 	fp->ptr = newdisplay(0,0,noscrol,sfsize);
-	fp->bufsize = BUFSIZ;
+	fp->bufsize = kBUFSIZ;
 	strcpy(fp->eol,"\r\n");
 	return fp;
 }
+
+#ifdef SOUND
 /* Open the sound card driver on a stream */
-FILE *
+kFILE *
 soundopen()
 {
-	FILE *fp;
+	kFILE *fp;
 
 	if((fp = _fcreat()) == NULL)
 		return NULL;
 
 	fp->fd = -1;
 	fp->type = _FL_SOUND;
-	fp->bufmode = _IOFBF;
+	fp->bufmode = _kIOFBF;
 	fp->flags.ascii = 0;
 
-	fp->bufsize = BUFSIZ;
+	fp->bufsize = kBUFSIZ;
 	return fp;
 }
+#endif
 
 /* Read string from stdin into buf until newline, which is not retained */
 char *
-gets(char *s)
+kgets(char *s)
 {
 	int c;
 	char *cp;
 
 	cp = s;
 	for(;;){
-		if((c = getc(stdin)) == EOF)
+		if((c = kgetc(kstdin)) == kEOF)
 			return NULL;
 
 		if(c == '\n')
@@ -259,17 +287,17 @@ gets(char *s)
 
 /* Read a line from a stream into a buffer, retaining newline */
 char *
-fgets(
+kfgets(
 char *buf,	/* User buffer */
 int len,	/* Length of buffer */
-FILE *fp	/* Input stream */
+kFILE *fp	/* Input stream */
 ){
 	int c;
 	char *cp;
 
 	cp = buf;
 	while(len-- > 1){	/* Allow room for the terminal null */
-		if((c = getc(fp)) == EOF){
+		if((c = kgetc(fp)) == kEOF){
 			return NULL;
 		}
 		if(buf != NULL)
@@ -284,49 +312,64 @@ FILE *fp	/* Input stream */
 
 /* Do printf on a stream */
 int
-fprintf(FILE *fp,const char *fmt,...)
+kfprintf(kFILE *fp,const char *fmt,...)
 {
 	va_list args;
 	int len;
 
 	va_start(args,fmt);
-	len = vfprintf(fp,fmt,args);
+	len = kvfprintf(fp,fmt,args);
 	va_end(args);
 	return len;
 }
 /* Printf on standard output stream */
 int
-printf(const char *fmt,...)
+kprintf(const char *fmt,...)
 {
 	va_list args;
 	int len;
 
 	va_start(args,fmt);
-	len = vfprintf(stdout,fmt,args);
+	len = kvfprintf(kstdout,fmt,args);
 	va_end(args);
 	return len;
 }
 /* variable arg version of printf */
 int
-vprintf(const char *fmt, va_list args)
+kvprintf(const char *fmt, va_list args)
 {
-	return vfprintf(stdout,fmt,args);
+	return kvfprintf(kstdout,fmt,args);
 }
 
+#ifndef HAVE_FUNOPEN
 static void
 putter(char c,void *p)
 {
-	fputc(c,(FILE *)p);
+	kfputc(c,(kFILE *)p);
 }
+#else
+static int
+fun_write(void *p, const char *buf, int sz)
+{
+	return kfwrite(buf, 1, sz, (kFILE *)p);
+}
+#endif
 
 int
-vfprintf(FILE *fp,const char *fmt, va_list args)
+kvfprintf(kFILE *fp,const char *fmt, va_list args)
 {
 	if(fp == NULL || fp->cookie != _COOKIE)
 		return -1;
+#ifdef HAVE_FUNOPEN
+	int res = vfprintf(fp->osfp, fmt, args);
+	fflush(fp->osfp);
+	return res;
+#else
 	return _format(putter,(void *)fp,fmt, args);
+#endif
 }
 
+#ifndef USE_SYSTEM_SPRINTF
 static void
 sputter(char c,void *p)
 {
@@ -351,14 +394,15 @@ sprintf(char *s,const char *fmt,...)
 	int len;
 
 	va_start(args,fmt);
-	len = vsprintf(s,fmt,args);
+	len = kvsprintf(s,fmt,args);
 	va_end(args);
 	return len;
 }
+#endif
 
 /* put a char to a stream */ 
 int
-fputc(int c,FILE *fp)
+kfputc(int c,kFILE *fp)
 {
 	int nbytes;
 	struct mbuf *bp;
@@ -372,8 +416,8 @@ fputc(int c,FILE *fp)
 		eol = 0;
 	}
 	bp = fp->obuf;
-	if(bp != NULL && bp->size - bp->cnt < nbytes && fflush(fp) == EOF)
-		return EOF;
+	if(bp != NULL && bp->size - bp->cnt < nbytes && kfflush(fp) == kEOF)
+		return kEOF;
 	if(fp->obuf == NULL)
 		fp->obuf = ambufw(max(nbytes,fp->bufsize));
 
@@ -384,55 +428,39 @@ fputc(int c,FILE *fp)
 		bp->data[bp->cnt] = c;
 	bp->cnt += nbytes;
 
-	if(bp->cnt == bp->size || (fp->bufmode == _IONBF)
-	 || ((fp->bufmode == _IOLBF) && eol)){
-		if(fflush(fp) == EOF)
-			return EOF;
+	if(bp->cnt == bp->size || (fp->bufmode == _kIONBF)
+	 || ((fp->bufmode == _kIOLBF) && eol)){
+		if(kfflush(fp) == kEOF)
+			return kEOF;
 	}
 	return c;
 }
 /* put a string to a stream */
 int
-fputs(char *buf,FILE *fp)
+kfputs(char *buf,kFILE *fp)
 {
 	int cnt,len;
 
 	len = strlen(buf);
-	cnt = fwrite(buf,1,len,fp);
+	cnt = kfwrite(buf,1,len,fp);
 	if(cnt != len)
-		return EOF;
+		return kEOF;
 	return buf[len-1];
-}
-/* put a short to a stream in native order */
-int
-putshort(short c,FILE *fp)
-{
-	return fwrite(&c,2,1,fp);
-}
-/* Get a short from a stream in native order */
-int
-getshort(FILE *fp)
-{
-	unsigned short c;
-
-	if(fread(&c,2,1,fp) == 0)
-		return -1;
-	return c;
 }
 
 /* Put a string to standard output */
 int
-puts(char *s)
+kputs(char *s)
 {
-	if(fputs(s,stdout) == EOF)
-		return EOF;
-	putchar('\n');
+	if(kfputs(s,kstdout) == kEOF)
+		return kEOF;
+	kputchar('\n');
 	return 1;
 }
 
 /* Return a conservative estimate of the bytes ready to be read */
 int
-frrdy(FILE *fp)
+kfrrdy(kFILE *fp)
 {
 	/* Just return the bytes on the stdio input buffer */
 	if(fp->ibuf != NULL)
@@ -442,20 +470,20 @@ frrdy(FILE *fp)
 
 /* Read a character from the stream */
 int
-fgetc(FILE *fp)
+kfgetc(kFILE *fp)
 {
 	int c;
 
 	if(fp == NULL || fp->cookie != _COOKIE)
-		return EOF;
-	c = _fgetc(fp);
-	if(!fp->flags.ascii || c == EOF || c != fp->eol[0])
+		return kEOF;
+	c = _kfgetc(fp);
+	if(!fp->flags.ascii || c == kEOF || c != fp->eol[0])
 		return c;
 	/* First char of newline sequence encountered */
 	if(fp->eol[1] == '\0')
 		return '\n';	/* Translate 1-char eol sequence */
 	/* Try to read next input character */
-	if((c = _fgetc(fp)) == EOF)
+	if((c = _kfgetc(fp)) == kEOF)
 		return fp->eol[0];	/* Got a better idea? */
 	if(c == fp->eol[1]){
 		/* Translate two-character eol sequence into newline */
@@ -463,23 +491,23 @@ fgetc(FILE *fp)
 	} else {
 		/* CR-NUL sequence on Internet -> bare CR (kludge?) */
 		if(c != '\0')
-			ungetc(c,fp);
+			kungetc(c,fp);
 		/* Otherwise return first char unchanged */
 		return fp->eol[0];
 	}
 }
 /* Read a character from a stream without newline processing */
 int
-_fgetc(FILE *fp)
+_kfgetc(kFILE *fp)
 {
 	struct mbuf *bp;
 
 	if(fp == NULL || fp->cookie != _COOKIE)
-		return EOF;
-	fflush(fp);
+		return kEOF;
+	kfflush(fp);
 	if((bp = fp->ibuf) == NULL || bp->cnt == 0)
 		if(_fillbuf(fp,1) == NULL)
-			return EOF;
+			return kEOF;
 	if(fp->type == _FL_PIPE)
 		ksignal(&fp->obuf,1);
 	return PULLCHAR(&fp->ibuf);
@@ -487,7 +515,7 @@ _fgetc(FILE *fp)
 
 /* Flush output on a stream. All actual output is done here. */
 int
-fflush(FILE *fp)
+kfflush(kFILE *fp)
 {
 	struct mbuf *bp;
 	int cnt;
@@ -498,14 +526,16 @@ fflush(FILE *fp)
 	bp = fp->obuf;
 	fp->obuf = NULL;
 	switch(fp->type){
+#ifdef SOUND
 	case _FL_SOUND:
 		return sb_send(&bp);
+#endif
 	case _FL_ASY:
 		return asy_send(fp->fd,&bp);
 	case _FL_PIPE:
 		append(&fp->ibuf,&bp);
 		ksignal(&fp->ibuf,1);
-		while(len_p(fp->ibuf) >= BUFSIZ)
+		while(len_p(fp->ibuf) >= kBUFSIZ)
 			kwait(&fp->obuf);	/* Hold at hiwat mark */	
 		return 0;
 	case _FL_SOCK:
@@ -513,16 +543,16 @@ fflush(FILE *fp)
 	case _FL_FILE:
 		do {
 			if(fp->flags.append)
-				_LSEEK(fp->fd,0L,SEEK_END);
+				_LSEEK(fp->fd,0L,kSEEK_END);
 			else
-				_LSEEK(fp->fd,fp->offset,SEEK_SET);
+				_LSEEK(fp->fd,fp->offset,kSEEK_SET);
 			cnt = _WRITE(fp->fd,bp->data,bp->cnt);
 			if(cnt > 0)
 				fp->offset += cnt;
 			if(cnt != bp->cnt){
 				fp->flags.err = 1;
 				free_p(&bp);
-				return EOF;
+				return kEOF;
 			}
 			free_mbuf(&bp);
 		} while(bp != NULL);
@@ -539,7 +569,7 @@ fflush(FILE *fp)
 
 /* Set the end-of-line sequence on a stream */
 int
-seteol(FILE *fp,char *seq)
+kseteol(kFILE *fp,char *seq)
 {
 	if(fp == NULL || fp->cookie != _COOKIE)
 		return -1;
@@ -551,20 +581,20 @@ seteol(FILE *fp,char *seq)
 }
 /* Enable/disable eol translation, return previous state */
 int
-fmode(FILE *fp,int mode)
+kfmode(kFILE *fp,int mode)
 {
 	int prev;
 
 	if(fp == NULL || fp->cookie != _COOKIE)
 		return -1;
-	fflush(fp);
+	kfflush(fp);
 	prev = fp->flags.ascii;
 	fp->flags.ascii = mode;
 	return prev;
 }
 /* Control blocking behavior for fread on network, pipe and asy streams */
 int
-fblock(FILE *fp,int mode)
+kfblock(kFILE *fp,int mode)
 {
 	int prev;
 
@@ -576,7 +606,7 @@ fblock(FILE *fp,int mode)
 }
 
 int
-fclose(FILE *fp)
+kfclose(kFILE *fp)
 {
 	if(fp == NULL || fp->cookie != _COOKIE){
 		return -1;
@@ -595,33 +625,33 @@ fclose(FILE *fp)
 	return 0;
 }
 int
-fseek(
-FILE *fp,
+kfseek(
+kFILE *fp,
 long offset,
 int whence
 ){
 	struct stat statbuf;
 
 	if(fp == NULL || fp->cookie != _COOKIE || fp->type != _FL_FILE){
-		errno = EINVAL;
+		kerrno = kEINVAL;
 		return -1;
 	}
 	/* Optimize for do-nothing seek */ 
 #ifdef	notdef
-	if(whence == SEEK_SET && fp->offset == offset)
+	if(whence == kSEEK_SET && fp->offset == offset)
 		return 0;
 #endif
-	fflush(fp);	/* Flush output buffer */
+	kfflush(fp);	/* Flush output buffer */
 	/* On relative seeks, adjust for data in input buffer */
 	switch(whence){
-	case SEEK_SET:
+	case kSEEK_SET:
 		fp->offset = offset;	/* Absolute seek */
 		break;
-	case SEEK_CUR:
+	case kSEEK_CUR:
 		/* Relative seek, adjusting for buffered data */
 		fp->offset += offset - len_p(fp->ibuf);
 		break;
-	case SEEK_END:
+	case kSEEK_END:
 		/* Find out how big the file currently is */
 		if(fstat(fp->fd,&statbuf) == -1)
 			return -1;	/* "Can't happen" */
@@ -635,16 +665,16 @@ int whence
 	return 0;
 }
 long
-ftell(FILE *fp)
+kftell(kFILE *fp)
 {
 	if(fp == NULL || fp->cookie != _COOKIE || fp->type != _FL_FILE)
 		return -1;
-	fflush(fp);
+	kfflush(fp);
 	return fp->offset - len_p(fp->ibuf);
 }
 
 int
-ungetc(int c,FILE *fp)
+kungetc(int c,kFILE *fp)
 {
 	if(fp == NULL || fp->cookie != _COOKIE)
 		return -1;
@@ -657,14 +687,15 @@ ungetc(int c,FILE *fp)
 	return c;
 }
 size_t
-fwrite(
-void *ptr,
+kfwrite(
+const void *ptr,
 size_t size,
 size_t n,
-FILE *fp
+kFILE *fp
 ){
 	struct mbuf *bp;
-	uint8 *icp,*ocp;
+	const uint8 *icp;
+	uint8 *ocp;
 	size_t bytes;
 	size_t cnt;
 	size_t asize;
@@ -683,11 +714,11 @@ FILE *fp
 
 	/* Optimization for large binary file writes */
 	if(fp->type == _FL_FILE && !fp->flags.ascii && bytes >= fp->bufsize){
-		fflush(fp);
+		kfflush(fp);
 		if(fp->flags.append)
-			_LSEEK(fp->fd,0L,SEEK_END);
+			_LSEEK(fp->fd,0L,kSEEK_END);
 		else
-			_LSEEK(fp->fd,fp->offset,SEEK_SET);
+			_LSEEK(fp->fd,fp->offset,kSEEK_SET);
 		cnt = _WRITE(fp->fd,icp,bytes);
 		if(cnt > 0)
 			fp->offset += cnt;
@@ -700,7 +731,7 @@ FILE *fp
 		newlines = memcnt(ptr,'\n',bytes);
 		if(newlines != 0){
 			eollen = strlen(fp->eol);
-			if(fp->bufmode == _IOLBF)
+			if(fp->bufmode == _kIOLBF)
 				doflush = 1;
 		}
 	}
@@ -708,7 +739,7 @@ FILE *fp
 		bp = fp->obuf;
 		if(bp != NULL && bp->cnt + eollen > bp->size){
 			/* Current obuf is full; flush it */
-			if(fflush(fp) == EOF)
+			if(kfflush(fp) == kEOF)
 				return (bytes - n*size)/size;
 		}
 		if((bp = fp->obuf) == NULL){
@@ -750,14 +781,14 @@ FILE *fp
 	 * and we've written at least one newline (not necessarily the
 	 * last character)
 	 */
-	if(fp->bufmode == _IONBF || bp->cnt == bp->size || doflush){
-		if(fflush(fp) == EOF)
+	if(fp->bufmode == _kIONBF || bp->cnt == bp->size || doflush){
+		if(kfflush(fp) == kEOF)
 			return (bytes - n*size)/size;
 	}
 	return n;
 }
 static struct mbuf *
-_fillbuf(FILE *fp,int cnt)
+_fillbuf(kFILE *fp,int cnt)
 {
 	struct mbuf *bp;
 	int i;
@@ -766,25 +797,27 @@ _fillbuf(FILE *fp,int cnt)
 		return fp->ibuf;	/* Stuff already in the input buffer */
 
 	switch(fp->type){
+#ifdef SOUND
 	case _FL_SOUND:
 		fp->ibuf = sb_recv();
 		return fp->ibuf;
+#endif
 	case _FL_ASY:
-		fp->ibuf = ambufw(BUFSIZ);
-		i = asy_read(fp->fd,fp->ibuf->data,BUFSIZ);
+		fp->ibuf = ambufw(kBUFSIZ);
+		i = asy_read(fp->fd,fp->ibuf->data,kBUFSIZ);
 		if(i < 0)
 			return NULL;
 		fp->ibuf->cnt = i;
 		return fp->ibuf;
 	case _FL_PIPE:
 		while(fp->ibuf == NULL)
-			if((errno = kwait(&fp->ibuf)) != 0)	/* Wait for something */
+			if((kerrno = kwait(&fp->ibuf)) != 0)	/* Wait for something */
 				return NULL;
 		return fp->ibuf;
 	case _FL_SOCK:
 		/* Always grab everything available from a socket */
 		if(recv_mbuf(fp->fd,&fp->ibuf,0,NULL,0) <= 0
-		 && errno != EALARM){
+		 && kerrno != kEALARM){
 			fp->flags.eof = 1;
 		}
 		return fp->ibuf;
@@ -792,7 +825,7 @@ _fillbuf(FILE *fp,int cnt)
 		/* Read from file */
 		cnt = max(fp->bufsize,cnt);
 		bp = ambufw(cnt);		
-		_LSEEK(fp->fd,fp->offset,SEEK_SET);
+		_LSEEK(fp->fd,fp->offset,kSEEK_SET);
 		cnt = _READ(fp->fd,bp->data,cnt);
 		if(cnt < 0)
 			fp->flags.err = 1;
@@ -813,11 +846,11 @@ _fillbuf(FILE *fp,int cnt)
 	return NULL;	/* Can't happen */
 }
 size_t
-fread(
+kfread(
 void *ptr,
 size_t size,
 size_t n,
-FILE *fp
+kFILE *fp
 ){
 	struct mbuf *bp;
 	size_t bytes;
@@ -829,7 +862,7 @@ FILE *fp
 
 	if(fp == NULL || fp->cookie != _COOKIE || size == 0)
 		return 0;
-	fflush(fp);
+	kfflush(fp);
 	bytes = n*size;
 
 	ocp = ptr;
@@ -837,8 +870,8 @@ FILE *fp
 		/* Optimization for large binary file reads */
 		if(fp->ibuf == NULL
 		 && fp->type == _FL_FILE && !fp->flags.ascii
-		 && bytes >= BUFSIZ){
-			_LSEEK(fp->fd,fp->offset,SEEK_SET);
+		 && bytes >= kBUFSIZ){
+			_LSEEK(fp->fd,fp->offset,kSEEK_SET);
 			tot = _READ(fp->fd,ocp,bytes);
 			if(tot > 0)
 				fp->offset += tot;
@@ -873,7 +906,7 @@ FILE *fp
 			bytes -= cnt;
 		} else {
 			/* Hit a eol sequence, use fgetc to translate */
-			if((c = fgetc(fp)) == EOF)
+			if((c = kfgetc(fp)) == kEOF)
 				return tot/size;
 
 			*ocp++ = c;
@@ -886,36 +919,34 @@ FILE *fp
 	return n;
 }
 void
-perror(const char *s)
+kperror(const char *s)
 {
-	fprintf(stderr,"%s: errno %d",s,errno);
-	if(errno < sys_nerr)
-		fprintf(stderr,": %s\n",sys_errlist[errno]);
-	else if(EMIN <= errno && errno <= EMAX)
-		fprintf(stderr,": %s\n",Sock_errlist[errno-EMIN]);
+	kfprintf(kstderr,"%s: errno %d",s,kerrno);
+	if(kerrno < ksys_nerr)
+		kfprintf(kstderr,": %s\n",ksys_errlist[kerrno]);
 	else
-		fprintf(stderr,"\n");
+		kfprintf(kstderr,"\n");
 }
 int
-setvbuf(
-FILE *fp,
+ksetvbuf(
+kFILE *fp,
 char *buf,	/* Ignored; we alloc our own */
 int type,
 int size
 ){
 	if(fp == NULL || fp->cookie != _COOKIE)
 		return -1;
-	fflush(fp);
+	kfflush(fp);
 	if(size == 0)
-		type = _IONBF;
+		type = _kIONBF;
 	switch(type){
-	case _IOFBF:
+	case _kIOFBF:
 		fp->bufsize = size;
 		break;
-	case _IOLBF:
+	case _kIOLBF:
 		fp->bufsize = size;
 		break;
-	case _IONBF:
+	case _kIONBF:
 		fp->bufsize = 1;
 		break;
 	default:
@@ -925,19 +956,19 @@ int size
 	return 0;
 }
 void
-setbuf(FILE *fp,char *buf)
+ksetbuf(kFILE *fp,char *buf)
 {
 	if(buf == NULL)
-		setvbuf(fp,NULL,_IONBF,0);
+		ksetvbuf(fp,NULL,_kIONBF,0);
 	else
-		setvbuf(fp,buf,_IOFBF,BUFSIZ);
+		ksetvbuf(fp,buf,_kIOFBF,kBUFSIZ);
 }
-FILE *
-tmpfile(void)
+kFILE *
+ktmpfile(void)
 {
 	static int num;
 	struct stat statbuf;
-	FILE *fp;
+	kFILE *fp;
 	char *fname;
 	char *tmpdir;
 	char *cp;
@@ -968,7 +999,7 @@ tmpfile(void)
 		num++;
 	}
 	free(tmpdir);
-	fp = fopen(fname,"w+b");
+	fp = kfopen(fname,"w+b");
 	free(fname);
 	if(fp != NULL)
 		fp->flags.tmp = 1;
@@ -979,7 +1010,7 @@ tmpfile(void)
  * on the list
  */
 static void
-_fclose(FILE *fp)
+_fclose(kFILE *fp)
 {
 	struct stat statbuf;
 	char *buf;
@@ -990,21 +1021,21 @@ _fclose(FILE *fp)
 		return;
 	if(_clrtmp && fp->flags.tmp){
 		/* Wipe temp file for security */
-		rewind(fp);
-		fstat(fileno(fp),&statbuf);
-		buf = malloc(BUFSIZ);
-		memset(buf,0,BUFSIZ);
+		krewind(fp);
+		fstat(kfileno(fp),&statbuf);
+		buf = malloc(kBUFSIZ);
+		memset(buf,0,kBUFSIZ);
 		i = statbuf.st_size;
 		while(i > 0){
-			n = fwrite(buf,1,min(i,BUFSIZ),fp);
+			n = kfwrite(buf,1,min(i,kBUFSIZ),fp);
 			kwait(NULL);
-			if(n < BUFSIZ)
+			if(n < kBUFSIZ)
 				break;
 			i -= n;
 		}
 		free(buf);
 	}
-	fflush(fp);
+	kfflush(fp);
 	switch(fp->type){
 	case _FL_ASY:
 		asy_close(fp->fd);
@@ -1020,6 +1051,8 @@ _fclose(FILE *fp)
 		closedisplay(fp->ptr);
 		fp->ptr = NULL;
 		break;
+	default:
+		break;
 	}
 	free_p(&fp->obuf);	/* Should be NULL anyway */
 	free_p(&fp->ibuf);
@@ -1030,19 +1063,25 @@ _fclose(FILE *fp)
 	fp->flags.err = fp->flags.eof = fp->flags.ascii = 0;
 	fp->flags.append = fp->flags.tmp = fp->flags.partread = 0;
 	fp->fd = -1;
+#ifdef HAVE_FUNOPEN
+	fclose(fp->osfp);
+#endif
 }
 /* allocate a new file pointer structure, init a few fields and put on list */
-static FILE *
+static kFILE *
 _fcreat(void)
 {
-	FILE *fp;
+	kFILE *fp;
 
-	if((fp = (FILE *)calloc(1,sizeof(FILE))) == NULL)
+	if((fp = (kFILE *)calloc(1,sizeof(kFILE))) == NULL)
 		return NULL;
 
 	fp->cookie = _COOKIE;
 	fp->refcnt = 1;
 	fp->next = _Files;
+#ifdef HAVE_FUNOPEN
+	fp->osfp = funopen(fp, NULL, fun_write, NULL, NULL);
+#endif
 	_Files = fp;
 	if(fp->next != NULL)
 		fp->next->prev = fp;
@@ -1050,44 +1089,52 @@ _fcreat(void)
 }
 
 int
-read(int fd,void *buf,unsigned cnt)
+kread(int fd,void *buf,unsigned cnt)
 {
 	int type = _fd_type(fd);
+	int res;
 
 	if(fd < 0){
-		errno = EINVAL;
+		kerrno = kEINVAL;
 		return -1;
 	}
 	switch(type){
 	case _FL_FILE:
-		return _READ(fd,buf,cnt);
+		res = (int)_READ(fd,buf,cnt);
+		if (res == -1)
+			kerrno = translate_sys_errno(errno);
+		return res;
 	case _FL_SOCK:
-		return recv(fd,buf,cnt,0);
+		return krecv(fd,buf,cnt,0);
 	case _FL_ASY:
 		return asy_read(fd,buf,cnt);
 	default:
-		errno = EINVAL;
+		kerrno = kEINVAL;
 		return -1;
 	}
 }
 int
-write(int fd,const void *buf,unsigned cnt)
+kwrite(int fd,const void *buf,unsigned cnt)
 {
 	int type = _fd_type(fd);
+	int res;
 
 	if(fd < 0){
-		errno = EINVAL;
+		kerrno = kEINVAL;
 		return -1;
 	}
 	switch(type){
 	case _FL_FILE:
-		return _WRITE(fd,buf,cnt);
+		res = (int)_WRITE(fd,buf,cnt);
+		if (res == -1)
+			kerrno = translate_sys_errno(errno);
+		return res;
 	case _FL_SOCK:
-		return send(fd,buf,cnt,0);
+		return ksend(fd,buf,cnt,0);
 	case _FL_ASY:
 		return asy_write(fd,buf,cnt);
 	default:
-		errno = EINVAL;
+		kerrno = kEINVAL;
 		return -1;
 	}
 }
@@ -1095,19 +1142,21 @@ write(int fd,const void *buf,unsigned cnt)
 /* This entry point is provided for applications that want to call open()
  * directly, instead of using fopen()
  */
+#ifndef UNIX
 int
 open(const char *file,int mode,...)
 {
 	return _open(file,mode);
 }
+#endif
 
 int
-close(int fd)
+kclose(int fd)
 {
 	int type = _fd_type(fd);
 
 	if(fd < 0){
-		errno = EINVAL;
+		kerrno = kEINVAL;
 		return -1;
 	}
 	switch(type){
@@ -1118,35 +1167,35 @@ close(int fd)
 	case _FL_ASY:
 		return asy_close(fd);
 	default:
-		errno = EINVAL;
+		kerrno = kEINVAL;
 		return -1;
 	}
 }
 
 void
-fcloseall(void)
+kfcloseall(void)
 {
-	FILE *fp,*fpnext;
+	kFILE *fp,*fpnext;
 
-	flushall();
+	kflushall();
 	for(fp = _Files;fp != NULL;fp=fpnext){
 		fpnext = fp->next;
-		fclose(fp);
+		kfclose(fp);
 	}
 }
 void
-flushall(void)
+kflushall(void)
 {
-	FILE *fp;
+	kFILE *fp;
 
 	for(fp = _Files;fp != NULL;fp=fp->next){
-		fflush(fp);
+		kfflush(fp);
 	}
 }
-FILE *
-fdup(FILE *fp)
+kFILE *
+kfdup(kFILE *fp)
 {
-	FILE *nfp;
+	kFILE *nfp;
 
 	if(fp == NULL || fp->cookie != _COOKIE)
 		return NULL;	/* Invalid arg */
@@ -1174,7 +1223,7 @@ fdup(FILE *fp)
 	return fp;
 }
 char *
-fpname(FILE *fp)
+kfpname(kFILE *fp)
 {
 	if(fp == NULL || fp->cookie != _COOKIE)
 		return NULL;
@@ -1187,62 +1236,68 @@ fpname(FILE *fp)
 int
 dofiles(int argc,char *argv[],void *p)
 {
-	FILE *fp;
+	kFILE *fp;
 	int i;
 
-	printf("       fp   fd   ref      eol   type mod buf  flags\n");
+	kprintf("       fp   fd   ref      eol   type mod buf  flags\n");
 	for(fp = _Files;fp != NULL;fp = fp->next){
-		printf("%9p ",fp);
+		kprintf("%9p ",fp);
 		if(fp->fd != -1)
-			printf("%4d",fp->fd);
+			kprintf("%4d",fp->fd);
 		else
-			printf("    ");
-		printf("%6d ",fp->refcnt);
+			kprintf("    ");
+		kprintf("%6d ",fp->refcnt);
 		for(i=0;i<EOL_LEN-1;i++){
 			if(fp->eol[i] != '\0')
-				printf("   %02x",fp->eol[i]);
+				kprintf("   %02x",fp->eol[i]);
 			else
-				printf("     ");
+				kprintf("     ");
 		}
 		switch(fp->type){
 		case _FL_SOCK:
-			printf(" sock");
+			kprintf(" sock");
 			break;
 		case _FL_FILE:
-			printf(" file");
+			kprintf(" file");
 			break;
 		case _FL_DISPLAY:
-			printf(" disp");
+			kprintf(" disp");
 			break;
 		case _FL_PIPE:
-			printf(" pipe");
+			kprintf(" pipe");
 			break;
 		case _FL_ASY:
-			printf(" asy ");
+			kprintf(" asy ");
+			break;
+#ifdef SOUND
+		case _FL_SOUND:
+			kprintf(" snd ");
+			break;
+#endif
 		}
-		printf("%4s",fp->flags.ascii ? " txt" : " bin");
+		kprintf("%4s",fp->flags.ascii ? " txt" : " bin");
 		switch(fp->bufmode){
-		case _IONBF:
-			printf(" none");
+		case _kIONBF:
+			kprintf(" none");
 			break;
-		case _IOLBF:
-			printf(" line");
+		case _kIOLBF:
+			kprintf(" line");
 			break;
-		case _IOFBF:
-			printf(" full");
+		case _kIOFBF:
+			kprintf(" full");
 			break;
 		}
 		if(fp->flags.eof)
-			printf(" EOF");
+			kprintf(" EOF");
 		if(fp->flags.err)
-			printf(" ERR");
+			kprintf(" ERR");
 		if(fp->flags.append)
-			printf(" APND");
+			kprintf(" APND");
 		if(fp->flags.tmp)
-			printf(" TMP");
+			kprintf(" TMP");
 		if(fp->type == _FL_FILE && fp->ptr != NULL)
-			printf(" (%s seek=%lu)",(char *)fp->ptr,ftell(fp));
-		putchar('\n');
+			kprintf(" (%s seek=%lu)",(char *)fp->ptr,kftell(fp));
+		kputchar('\n');
 	}
 	return 0;
 }

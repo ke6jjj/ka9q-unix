@@ -1,5 +1,11 @@
 /* Copyright (C) 1996 DJ Delorie, see COPYING.DJ for details */
 /* Copyright (C) 1994 DJ Delorie, see COPYING.DJ for details */
+#include "top.h"
+
+#ifdef HAVE_FUNOPEN
+#error "Don't build this with HAVE_FUNOPEN. Use system formatter instead."
+#endif
+
 #include <libc/stubs.h>
 #include <sys/types.h>
 #include <stdarg.h>
@@ -67,7 +73,7 @@ static char NULL_REP[] = "(null)";
 
 int
 _format(
-	void putter(char,void *),	/* User function to accept output */
+	void putter(char,void *),	/* User function to kaccept output */
 	void *parg,			/* Arg passed to user function */
 	const char *fmt0,
 	va_list argp)
@@ -130,7 +136,7 @@ _format(
        * ``A negative field width argument is taken as a
        * - flag followed by a  positive field width.''
        *	-- ANSI X3J11
-       * They don't exclude field widths read from args.
+       * They don't exclude field widths kread from args.
        */
       if ((width = va_arg(argp, int)) >= 0)
 	goto rflag;

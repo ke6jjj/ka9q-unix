@@ -15,7 +15,7 @@
  * stop searching.
  *
  * Stopping a timer or letting it expire causes it to be removed
- * from the list. Starting a timer puts it on the list at the right
+ * from the list. Starting a timer kputs it on the list at the right
  * place.
  */
 struct timer {
@@ -29,12 +29,9 @@ struct timer {
 #define	TIMER_RUN	1
 #define	TIMER_EXPIRE	2
 };
-#define	MAX_TIME	(int32)4294967295	/* Max long integer */
+#define	MAX_TIME	MAXINT32 /* Max long integer */
 #ifndef	MSPTICK
 #define	MSPTICK		55		/* Milliseconds per tick */
-#endif
-#ifndef	EALARM
-#define	EALARM		106
 #endif
 /* Useful user macros that hide the timer structure internals */
 #define	dur_timer(t)	((t)->duration*MSPTICK)

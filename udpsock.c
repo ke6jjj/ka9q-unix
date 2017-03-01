@@ -1,4 +1,6 @@
-#include <errno.h>
+#include "top.h"
+
+#include "errno.h"
 #include "global.h"
 #include "udp.h"
 #include "socket.h"
@@ -19,11 +21,11 @@ so_udp_bind(up)
 struct usock *up;
 {
 	int s;
-	struct sockaddr_in *sp;
-	struct socket lsock;
+	struct ksockaddr_in *sp;
+	struct ksocket lsock;
 
 	s = up->index;
-	sp = (struct sockaddr_in *)up->name;
+	sp = (struct ksockaddr_in *)up->name;
 	lsock.address = sp->sin_addr.s_addr;
 	lsock.port = sp->sin_port;
 	up->cb.udp = open_udp(&lsock,s_urcall);
@@ -43,31 +45,31 @@ int
 so_udp_recv(up,bpp,from,fromlen)
 struct usock *up;
 struct mbuf **bpp;
-struct sockaddr *from;
+struct ksockaddr *from;
 int *fromlen;
 {
 	int cnt;
 	struct udp_cb *udp;
-	struct sockaddr_in *remote;
-	struct socket fsocket;
+	struct ksockaddr_in *remote;
+	struct ksocket fsocket;
 
 	while((udp = up->cb.udp) != NULL
 	&& (cnt = recv_udp(udp,&fsocket,bpp)) == -1){
 		if(up->noblock){
-			errno = EWOULDBLOCK;
+			kerrno = kEWOULDBLOCK;
 			return -1;
-		} else if((errno = kwait(up)) != 0){
+		} else if((kerrno = kwait(up)) != 0){
 			return -1;
 		}
 	}
 	if(udp == NULL){
 		/* Connection went away */
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}
 	if(from != NULL && fromlen != (int *)NULL && *fromlen >= SOCKSIZE){
-		remote = (struct sockaddr_in *)from;
-		remote->sin_family = AF_INET;
+		remote = (struct ksockaddr_in *)from;
+		remote->sin_family = kAF_INET;
 		remote->sin_addr.s_addr = fsocket.address;
 		remote->sin_port = fsocket.port;
 		*fromlen = SOCKSIZE;
@@ -78,23 +80,23 @@ int
 so_udp_send(
 struct usock *up,
 struct mbuf **bpp,
-struct sockaddr *to
+struct ksockaddr *to
 ){
-	struct sockaddr_in *local,*remote;
-	struct socket lsock,fsock;
+	struct ksockaddr_in *local,*remote;
+	struct ksocket lsock,fsock;
 
 	if(up->name == NULL)
 		autobind(up);
-	local = (struct sockaddr_in *)up->name;
+	local = (struct ksockaddr_in *)up->name;
 	lsock.address = local->sin_addr.s_addr;
 	lsock.port = local->sin_port;
 	if(to != NULL) {
-		remote = (struct sockaddr_in *)to;
+		remote = (struct ksockaddr_in *)to;
 	} else if(up->peername != NULL){
-		remote = (struct sockaddr_in *)up->peername;
+		remote = (struct ksockaddr_in *)up->peername;
 	} else {
 		free_p(bpp);
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}	
 	fsock.address = remote->sin_addr.s_addr;
@@ -153,14 +155,14 @@ static void
 autobind(up)
 struct usock *up;
 {
-	struct sockaddr_in local;
+	struct ksockaddr_in local;
 	int s;
 
 	s = up->index;
-	local.sin_family = AF_INET;
-	local.sin_addr.s_addr = INADDR_ANY;
+	local.sin_family = kAF_INET;
+	local.sin_addr.s_addr = kINADDR_ANY;
 	local.sin_port = Lport++;
-	bind(s,(struct sockaddr *)&local,sizeof(struct sockaddr_in));
+	kbind(s,(struct ksockaddr *)&local,sizeof(struct ksockaddr_in));
 }
 int
 so_udp_stat(up)

@@ -1,6 +1,8 @@
 /* Domain header conversion routines
  * Copyright 1991 Phil Karn, KA9Q
  */
+#include "top.h"
+
 #include "global.h"
 #include "mbuf.h"
 #include "domain.h"
@@ -149,7 +151,7 @@ uint8 *cp)	/* Pointer to start of encoded RR record */
 	cp += 2;
 	switch(rrp->type){
 	case TYPE_A:
-		/* Just read the address directly into the structure */
+		/* Just kread the address directly into the structure */
 		rrp->rdata.addr = get32(cp);
 		cp += 4;
 		break;

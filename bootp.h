@@ -31,10 +31,10 @@ struct bootp {
 	int32	xid;			/* transaction ID */
 	uint	secs;			/* seconds since boot began */
 	uint	unused;
-	struct in_addr	ciaddr;		/* client IP address */
-	struct in_addr	yiaddr;		/* 'your' IP address */
-	struct in_addr	siaddr;		/* server IP address */
-	struct in_addr	giaddr;		/* gateway IP address */
+	struct kin_addr	ciaddr;		/* client IP address */
+	struct kin_addr	yiaddr;		/* 'your' IP address */
+	struct kin_addr	siaddr;		/* server IP address */
+	struct kin_addr	giaddr;		/* gateway IP address */
 	uint8	chaddr[16];		/* client hardware address */
 	char	sname[64];		/* server host name */
 	char	file[128];		/* boot file name */

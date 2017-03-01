@@ -1,7 +1,9 @@
 /* Ethernet header tracing routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "enet.h"
@@ -9,7 +11,7 @@
 
 void
 ether_dump(
-FILE *fp,
+kFILE *fp,
 struct mbuf **bpp,
 int check	/* Not used */
 ){
@@ -19,23 +21,23 @@ int check	/* Not used */
 	ntohether(&ehdr,bpp);
 	pether(s,ehdr.source);
 	pether(d,ehdr.dest);
-	fprintf(fp,"Ether: len %u %s->%s",ETHERLEN + len_p(*bpp),s,d);
+	kfprintf(fp,"Ether: len %u %s->%s",ETHERLEN + len_p(*bpp),s,d);
 
 	switch(ehdr.type){
 		case IP_TYPE:
-			fprintf(fp," type IP\n");
+			kfprintf(fp," type IP\n");
 			ip_dump(fp,bpp,1);
 			break;
 		case REVARP_TYPE:
-			fprintf(fp," type REVARP\n");
+			kfprintf(fp," type REVARP\n");
 			arp_dump(fp,bpp);
 			break;
 		case ARP_TYPE:
-			fprintf(fp," type ARP\n");
+			kfprintf(fp," type ARP\n");
 			arp_dump(fp,bpp);
 			break;
 		default:
-			fprintf(fp," type 0x%x\n",ehdr.type);
+			kfprintf(fp," type 0x%x\n",ehdr.type);
 			break;
 	}
 }

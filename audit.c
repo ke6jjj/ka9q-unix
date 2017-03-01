@@ -2,7 +2,13 @@
  * not be up to date.
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#ifdef USE_SYSTEM_MALLOC
+#error "This file is only compatible with the KA9Q malloc implementation."
+#endif
+
+#include "stdio.h"
 #include "global.h"
 #include "proc.h"
 #include "mbuf.h"
@@ -37,6 +43,7 @@ int line
 		audit_mbuf(bp1,file,line);
 }
 
+#ifdef MSDOS
 static void
 audit_mbuf(
 struct mbuf *bp,
@@ -59,7 +66,7 @@ int line
 	/* Does buffer appear to be a valid malloc'ed block? */
 	blk = ((union header *)bp) - 1;
 	if(blk->s.ptr != blk){
-		printf("Garbage bp %lx\n",(long)bp);
+		kprintf("Garbage bp %lx\n",(long)bp);
 		errors++;
 	}
 	if((datasize = blk->s.size*sizeof(union header) - overhead) != 0){
@@ -69,11 +76,11 @@ int line
 		bufstart = (uint8 *)(bp + 1);
 		bufend = bufstart + datasize;
 		if(bp->data < bufstart){
-			printf("Data pointer before buffer\n");
+			kprintf("Data pointer before buffer\n");
 			errors++;
 		}
 		if(bp->data + bp->cnt > bufend){
-			printf("Data pointer + count past bounds\n");
+			kprintf("Data pointer + count past bounds\n");
 			errors++;
 		}
 	} else {
@@ -83,25 +90,25 @@ int line
 
 		if(bp->data < heapbot
 		 || bp->data + bp->cnt > heaptop){
-			printf("Data outside heap\n");
+			kprintf("Data outside heap\n");
 			errors++;
 		}
 	}
 	/* Now check link list pointers */
 	if(bp->next != NULL && ((bp->next < (struct mbuf *)heapbot)
 		 || bp->next > (struct mbuf *)heaptop)){
-			printf("next pointer out of limits\n");
+			kprintf("next pointer out of limits\n");
 			errors++;
 	}
 	if(bp->anext != NULL && ((bp->anext < (struct mbuf *)heapbot)
 		 || bp->anext > (struct mbuf *)heaptop)){
-			printf("anext pointer out of limits\n");
+			kprintf("anext pointer out of limits\n");
 			errors++;
 	}
 	if(errors != 0){
 		dumpbuf(bp);
-		printf("PANIC: buffer audit failure in %s line %d\n",file,line);
-		fflush(stdout);
+		kprintf("PANIC: buffer audit failure in %s line %d\n",file,line);
+		kfflush(kstdout);
 		for(;;)
 			;
 	}
@@ -113,11 +120,11 @@ dumpbuf(struct mbuf *bp)
 {
 	union header *blk;
 	if(bp == NULL){
-		printf("NULL BUFFER\n");
+		kprintf("NULL BUFFER\n");
 		return;
 	}
 	blk = ((union header *)bp) - 1;
-	printf("bp %lx tot siz %u data %lx cnt %u next %lx anext %lx\n",
+	kprintf("bp %lx tot siz %u data %lx cnt %u next %lx anext %lx\n",
 		(long)bp,blk->s.size * sizeof(union header),
 		(long)bp->data,bp->cnt,
 		(long)bp->next,(long)bp->anext);

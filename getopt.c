@@ -21,6 +21,7 @@
  * The current SVR2 man page reflects the actual behavor of this getopt.
  * However, I am not about to post a copy of anything licensed by AT&T.
  */
+#include "top.h"
 
 #include "global.h"
 #define index strchr
@@ -41,24 +42,24 @@
 #ifndef	NULL
 #define NULL	0
 #endif
-#define EOF	(-1)
-#define ERR(s, c)	if(opterr){\
-	extern int write();\
+#define kEOF	(-1)
+#define ERR(s, c)	if(kopterr){\
+	extern int kwrite();\
 	char errbuf[2];\
 	errbuf[0] = c; errbuf[1] = '\n';\
-	(void) write(2, argv[0], (unsigned)strlen(argv[0]));\
-	(void) write(2, s, (unsigned)strlen(s));\
-	(void) write(2, errbuf, 2);}
+	(void) kwrite(2, argv[0], (unsigned)strlen(argv[0]));\
+	(void) kwrite(2, s, (unsigned)strlen(s));\
+	(void) kwrite(2, errbuf, 2);}
 
 extern char *index();
 
-int	opterr = 1;
-int	optind = 1;
-int	optopt;
-char	*optarg;
+int	kopterr = 1;
+int	koptind = 1;
+int	koptopt;
+char	*koptarg;
 
 int
-getopt(argc, argv, opts)
+kgetopt(argc, argv, opts)
 int	argc;
 char	**argv, *opts;
 {
@@ -66,39 +67,40 @@ char	**argv, *opts;
 	register int c;
 	register char *cp;
 
-	if(sp == 1)
-		if(optind >= argc ||
-		   argv[optind][0] != '-' || argv[optind][1] == '\0')
-			return(EOF);
-		else if(strcmp(argv[optind], "--") == 0) {
-			optind++;
-			return(EOF);
+	if(sp == 1) {
+		if(koptind >= argc ||
+		   argv[koptind][0] != '-' || argv[koptind][1] == '\0')
+			return(kEOF);
+		else if(strcmp(argv[koptind], "--") == 0) {
+			koptind++;
+			return(kEOF);
 		}
-	optopt = c = argv[optind][sp];
+	}
+	koptopt = c = argv[koptind][sp];
 	if(c == ':' || (cp=index(opts, c)) == NULL) {
 		ERR(": illegal option -- ", c);
-		if(argv[optind][++sp] == '\0') {
-			optind++;
+		if(argv[koptind][++sp] == '\0') {
+			koptind++;
 			sp = 1;
 		}
 		return('?');
 	}
 	if(*++cp == ':') {
-		if(argv[optind][sp+1] != '\0')
-			optarg = &argv[optind++][sp+1];
-		else if(++optind >= argc) {
+		if(argv[koptind][sp+1] != '\0')
+			koptarg = &argv[koptind++][sp+1];
+		else if(++koptind >= argc) {
 			ERR(": option requires an argument -- ", c);
 			sp = 1;
 			return('?');
 		} else
-			optarg = argv[optind++];
+			koptarg = argv[koptind++];
 		sp = 1;
 	} else {
-		if(argv[optind][++sp] == '\0') {
+		if(argv[koptind][++sp] == '\0') {
 			sp = 1;
-			optind++;
+			koptind++;
 		}
-		optarg = NULL;
+		koptarg = NULL;
 	}
 	return(c);
 }

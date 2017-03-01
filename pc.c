@@ -1,7 +1,9 @@
 /* OS- and machine-dependent stuff for IBM-PC running MS-DOS and Turbo-C
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <conio.h>
 #include <dir.h>
 #include <dos.h>
@@ -27,6 +29,7 @@
 #include "cmdparse.h"
 #include "nospc.h"
 #include "display.h"
+#include "display_pc.h"
 
 static void statline(struct display *dp,struct session *sp);
 
@@ -73,7 +76,7 @@ ioinit(int hinit)
 	 * put them on the heap.
 	 */
 	inregs.h.ah = 0x67;
-	inregs.x.bx = Nfiles;	/* Up to the base of the socket numbers */
+	inregs.x.bx = Nfiles;	/* Up to the base of the ksocket numbers */
 	intdos(&inregs,&inregs);	
 
 	saved_break = getcbrk();
@@ -99,11 +102,11 @@ iostop(void)
 		iftmp = ifp->next;
 		if_detach(ifp);
 	}
-	/* Call list of shutdown functions */
+	/* Call list of kshutdown functions */
 	for(fp = Shutdown;*fp != NULL;fp++){
 		(**fp)();
 	}
-	fcloseall();
+	kfcloseall();
 #ifndef	notdef	/* Can't unchain interrupts with current DJGPP lib */
 	/* Restore previous timer and keyboard interrupts */
 	freevect(0);
@@ -298,9 +301,9 @@ statline(struct display *dp,struct session *sp)
 	else
 		attr = 0x02;	/* Green on black */
 
-	if(sp->network != NULL && (s = fileno(sp->network)) != -1){
+	if(sp->network != NULL && (s = kfileno(sp->network)) != -1){
 		unack = socklen(s,1);
-		if(sp->type == FTP && (s1 = fileno(sp->cb.ftp->data)) != -1)
+		if(sp->type == FTP && (s1 = kfileno(sp->cb.ftp->data)) != -1)
 			unack += socklen(s1,1);
 	}
 	memset(buf,' ',80);
@@ -327,7 +330,7 @@ statline(struct display *dp,struct session *sp)
  *
  * Reading the 8254 is a bit tricky since a tick could occur asynchronously
  * between the two reads. The tick counter is examined before and after the
- * hardware counter is read. If the tick counter changes, try again.
+ * hardware counter is kread. If the tick counter changes, try again.
  * Note: the hardware counter counts down from 65536.
  */
 int32
@@ -376,7 +379,7 @@ usclock(void)
 	return (hi << 16) - (int32)lo;
 }
 
-/* Directly read BIOS count of time ticks. This is used instead of
+/* Directly kread BIOS count of time ticks. This is used instead of
  * calling biostime(0,0L). The latter calls BIOS INT 1A, AH=0,
  * which resets the midnight overflow flag, losing days on the clock.
  */
@@ -392,7 +395,7 @@ bioscnt(void)
 	return rval;
 }
 
-/* Atomic read-and-decrement operation.
+/* Atomic kread-and-decrement operation.
  * Read the variable pointed to by p. If it is
  * non-zero, decrement it. Return the original value.
  */
@@ -430,17 +433,17 @@ istate(void)
 void
 _cleanup(void)
 {
-	fcloseall();
+	kfcloseall();
 }
 
 /* clockbits - Read low order bits of timer 0 (the TOD clock)
  * This works only for the 8254 chips used in ATs and 386s.
  *
  * The timer runs in mode 3 (square wave mode), counting down
- * by twos, twice for each cycle. So it is necessary to read back the
+ * by twos, twice for each cycle. So it is necessary to kread back the
  * OUTPUT pin to see which half of the cycle we're in. I.e., the OUTPUT
  * pin forms the most significant bit of the count. Unfortunately,
- * the 8253 in the PC/XT lacks a command to read the OUTPUT pin...
+ * the 8253 in the PC/XT lacks a command to kread the OUTPUT pin...
  *
  * The PC's clock design is soooo brain damaged...
  */
@@ -673,9 +676,21 @@ _go32_dpmi_unchain_protected_mode_interrupt_vector(uint irq,_go32_dpmi_seginfo *
 void
 eoi(void)
 {
-	/* read in-service register from secondary 8259 */
+	/* kread in-service register from secondary 8259 */
 	outportb(0xa0,0x0b);
 	if(inportb(0xa0))
 		outportb(0xa0,0x20);	/* Send EOI to secondary 8259 */
 	outportb(0x20,0x20);	/* Send EOI to primary 8259 */
+}
+
+/* Very dangerous function */
+void *
+htop(const char *s)
+{
+	void *r;
+	if (sscanf(s, "%p", &r) != 1)
+		/* Pointer didn't parse. Don't let it point randomly */
+		r = "BAD POINTER";
+
+	return r;
 }

@@ -9,12 +9,13 @@
  *	Feb 91	Bill Simpson added "query" command and TYPE_ANY processing.
  *	Jul 91	Bill Simpson added "more" sessions for query and cache list.
  */
+#include "top.h"
 
-#include <stdio.h>
+#include "stdio.h"
 #include <ctype.h>
 #include <time.h>
 #include <sys/stat.h>
-#include <errno.h>
+#include "errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "proc.h"
@@ -27,6 +28,9 @@
 #include "files.h"
 #include "main.h"
 #include "domain.h"
+#ifdef UNIX
+#include <unistd.h>
+#endif
 
 #undef	DEBUG				/* for certain trace messages */
 #undef	DEBUG_PAIN			/* for painful debugging */
@@ -36,8 +40,8 @@ static int Dcache_size = 20;		/* size limit */
 static time_t Dcache_time = 0L; 	/* timestamp */
 
 static int Dfile_clean = FALSE; 	/* discard expired records (flag) */
-static int Dfile_reading = 0;		/* read interlock (count) */
-static int Dfile_writing = 0;		/* write interlock (count) */
+static int Dfile_reading = 0;		/* kread interlock (count) */
+static int Dfile_writing = 0;		/* kwrite interlock (count) */
 
 struct proc *Dfile_updater = NULL;
 static int32 Dfile_wait_absolute = 0L;	/* timeout Clock time */
@@ -101,8 +105,8 @@ static void dcache_drop(struct rr *rrp);
 static struct rr *dcache_search(struct rr *rrlp);
 static void dcache_update(struct rr *rrlp);
 
-static struct rr *get_rr(FILE *fp, struct rr *lastrrp);
-static void put_rr(FILE *fp,struct rr *rrp);
+static struct rr *get_rr(kFILE *fp, struct rr *lastrrp);
+static void put_rr(kFILE *fp,struct rr *rrp);
 static struct rr *dfile_search(struct rr *rrlp);
 static void dfile_update(int s,void *unused,void *p);
 
@@ -166,7 +170,7 @@ void *p;
 {
 	if(argc < 2){
 		if(Dsuffix != NULL)
-			printf("%s\n",Dsuffix);
+			kprintf("%s\n",Dsuffix);
 		return 0;
 	}
 	FREE(Dsuffix);
@@ -204,7 +208,7 @@ void *p;
 
 	for(rrp=Dcache;rrp!=NULL;rrp=rrp->next)
 	{
-		put_rr(stdout,rrp);
+		put_rr(kstdout,rrp);
 		if(--row == 0){
 			row = keywait("--More--",0);
 			switch(row){
@@ -223,7 +227,7 @@ void *p;
 			};
 		}
 	}
-	fflush(stdout);
+	kfflush(kstdout);
 	keywait(NULL,1);
 	freesession(&sp);
 	return 0;
@@ -290,7 +294,7 @@ void *p;
 	int32 address;
 
 	if((address = resolve(argv[1])) == 0L){
-		printf("Resolver %s unknown\n",argv[1]);
+		kprintf("Resolver %s unknown\n",argv[1]);
 		return 1;
 	}
 	return add_nameserver(address);
@@ -324,7 +328,7 @@ void *p;
 			break;
 
 	if(dp == NULL){
-		printf("Not found\n");
+		kprintf("Not found\n");
 		return 1;
 	}
 
@@ -341,9 +345,9 @@ void *p;
 {
 	struct dserver *dp;
 
-	printf("Server address          srtt    mdev   timeout   queries responses\n");
+	kprintf("Server address          srtt    mdev   timeout   queries responses\n");
 	for(dp = Dservers;dp != NULL;dp = dp->next){
-		printf("%-20s%8lu%8lu%10lu%10lu%10lu\n",
+		kprintf("%-20s%8lu%8lu%10lu%10lu%10lu\n",
 		 inet_ntoa(dp->address),
 		 dp->srtt,dp->mdev,dp->timeout,
 		 dp->queries,dp->responses);
@@ -384,7 +388,7 @@ void *p;
 
 	for( rrp=result_rrlp; rrp!=NULL; rrp=rrp->next)
 	{
-		put_rr(stdout,rrp);
+		put_rr(kstdout,rrp);
 		if(--row == 0){
 			row = keywait("--More--",0);
 			switch(row){
@@ -403,7 +407,7 @@ void *p;
 			};
 		}
 	}
-	fflush(stdout);
+	kfflush(kstdout);
 	free_rr(&result_rrlp);
 	keywait(NULL,1);
 	freesession(&sp);
@@ -485,7 +489,7 @@ compare_rr(struct rr *search_rrp,struct rr *target_rrp)
 	if(search_rrp->source != RR_INQUERY){
 		if((i = strlen(search_rrp->name)) != strlen(target_rrp->name))
 			return -32759;
-		if((i = strnicmp(search_rrp->name,target_rrp->name,i)) != 0)
+		if((i = STRNICMP(search_rrp->name,target_rrp->name,i)) != 0)
 			return i;
 
 		/* match negative records so that they are replaced */
@@ -523,14 +527,14 @@ compare_rr(struct rr *search_rrp,struct rr *target_rrp)
 	case TYPE_NS:
 	case TYPE_PTR:
 	case TYPE_TXT:
-		i = stricmp(search_rrp->rdata.data,target_rrp->rdata.data);
+		i = STRICMP(search_rrp->rdata.data,target_rrp->rdata.data);
 		break;
 	case TYPE_HINFO:
 		i = strcmp(search_rrp->rdata.hinfo.cpu,target_rrp->rdata.hinfo.cpu) ||
 			strcmp(search_rrp->rdata.hinfo.os,target_rrp->rdata.hinfo.os);
 		break;
 	case TYPE_MX:
-		i = stricmp(search_rrp->rdata.mx.exch,target_rrp->rdata.mx.exch);
+		i = STRICMP(search_rrp->rdata.mx.exch,target_rrp->rdata.mx.exch);
 		break;
 	case TYPE_SOA:
 		i = search_rrp->rdata.soa.serial != target_rrp->rdata.soa.serial;
@@ -549,7 +553,7 @@ compare_rr_list(struct rr *rrlp,struct rr *target_rrp)
 			return 0;
 #ifdef DEBUG_PAIN
 		if(Dtrace)
-			printf("%15d %s\n",
+			kprintf("%15d %s\n",
 				compare_rr(rrlp,target_rrp),
 				target_rrp->name);
 #endif
@@ -798,7 +802,7 @@ dcache_search(struct rr *rrlp)
 
 #ifdef DEBUG
 	if(Dtrace && rrlp != NULL){
-		printf("dcache_search: searching for %s\n",rrlp->name);
+		kprintf("dcache_search: searching for %s\n",rrlp->name);
 	}
 #endif
 
@@ -845,7 +849,7 @@ dcache_update(struct rr *rrlp)
  **/
 
 static struct rr *
-get_rr(FILE *fp,struct rr *lastrrp)
+get_rr(kFILE *fp,struct rr *lastrrp)
 {
 	char *line,*lp,*strtok();
 	struct rr *rrp;
@@ -853,7 +857,7 @@ get_rr(FILE *fp,struct rr *lastrrp)
 	int i;
 
 	line = mallocw(256);
-	if(fgets(line,256,fp) == NULL){
+	if(kfgets(line,256,fp) == NULL){
 		FREE(line);
 		return NULL;
 	}
@@ -906,7 +910,7 @@ get_rr(FILE *fp,struct rr *lastrrp)
 	} else if(class[0] == '<'){
 		rrp->class = atoi(&class[1]);
 		type = strtok(NULL,delim);
-	} else if(stricmp(class,"IN") == 0){
+	} else if(STRICMP(class,"IN") == 0){
 		rrp->class = CLASS_IN;
 		type = strtok(NULL,delim);
 	} else {
@@ -925,7 +929,7 @@ get_rr(FILE *fp,struct rr *lastrrp)
 	} else {
 		rrp->type = TYPE_MISSING;
 		for(i=1;i<Ndtypes;i++){
-			if(stricmp(type,Dtypes[i]) == 0){
+			if(STRICMP(type,Dtypes[i]) == 0){
 				rrp->type = i;
 				data = strtok(NULL,delim);
 				break;
@@ -1006,7 +1010,7 @@ get_rr(FILE *fp,struct rr *lastrrp)
 
 /* Print a resource record */
 static void
-put_rr(FILE *fp,struct rr *rrp)
+put_rr(kFILE *fp,struct rr *rrp)
 {
 	char * stuff;
 
@@ -1014,30 +1018,30 @@ put_rr(FILE *fp,struct rr *rrp)
 		return;
 
 	if(rrp->name == NULL && rrp->comment != NULL){
-		fprintf(fp,"%s",rrp->comment);
+		kfprintf(fp,"%s",rrp->comment);
 		return;
 	}
 
-	fprintf(fp,"%s",rrp->name);
+	kfprintf(fp,"%s",rrp->name);
 	if(rrp->ttl != TTL_MISSING)
-		fprintf(fp,"\t%ld",rrp->ttl);
+		kfprintf(fp,"\t%ld",rrp->ttl);
 	if(rrp->class == CLASS_IN)
-		fprintf(fp,"\tIN");
+		kfprintf(fp,"\tIN");
 	else
-		fprintf(fp,"\t<%u>",rrp->class);
+		kfprintf(fp,"\t<%u>",rrp->class);
 
 	stuff = dtype(rrp->type);
-	fprintf(fp,"\t%s",stuff);
+	kfprintf(fp,"\t%s",stuff);
 	if(rrp->rdlength == 0){
 		/* Null data portion, indicates nonexistent record */
 		/* or unsupported type.  Hopefully, these will filter */
 		/* as time goes by. */
-		fprintf(fp,"\n");
+		kfprintf(fp,"\n");
 		return;
 	}
 	switch(rrp->type){
 	case TYPE_A:
-		fprintf(fp,"\t%s\n",inet_ntoa(rrp->rdata.addr));
+		kfprintf(fp,"\t%s\n",inet_ntoa(rrp->rdata.addr));
 		break;
 	case TYPE_CNAME:
 	case TYPE_MB:
@@ -1047,27 +1051,27 @@ put_rr(FILE *fp,struct rr *rrp)
 	case TYPE_PTR:
 	case TYPE_TXT:
 		/* These are all printable text strings */
-		fprintf(fp,"\t%s\n",rrp->rdata.data);
+		kfprintf(fp,"\t%s\n",rrp->rdata.data);
 		break;
 	case TYPE_HINFO:
-		fprintf(fp,"\t%s\t%s\n",
+		kfprintf(fp,"\t%s\t%s\n",
 		 rrp->rdata.hinfo.cpu,
 		 rrp->rdata.hinfo.os);
 		break;
 	case TYPE_MX:
-		fprintf(fp,"\t%u\t%s\n",
+		kfprintf(fp,"\t%u\t%s\n",
 		 rrp->rdata.mx.pref,
 		 rrp->rdata.mx.exch);
 		break;
 	case TYPE_SOA:
-		fprintf(fp,"\t%s\t%s\t%lu\t%lu\t%lu\t%lu\t%lu\n",
+		kfprintf(fp,"\t%s\t%s\t%lu\t%lu\t%lu\t%lu\t%lu\n",
 		 rrp->rdata.soa.mname,rrp->rdata.soa.rname,
 		 rrp->rdata.soa.serial,rrp->rdata.soa.refresh,
 		 rrp->rdata.soa.retry,rrp->rdata.soa.expire,
 		 rrp->rdata.soa.minimum);
 		break;
 	default:
-		fprintf(fp,"\n");
+		kfprintf(fp,"\n");
 		break;
 	}
 }
@@ -1081,12 +1085,12 @@ dfile_search(struct rr *rrlp)
 	struct rr *frrp;
 	struct rr **rrpp, *result_rrlp, *oldrrp;
 	int32 elapsed;
-	FILE *dbase;
+	kFILE *dbase;
 	struct stat dstat;
 
 #ifdef DEBUG
 	if(Dtrace){
-		printf("dfile_search: searching for %s\n",rrlp->name);
+		kprintf("dfile_search: searching for %s\n",rrlp->name);
 	}
 #endif
 
@@ -1094,13 +1098,13 @@ dfile_search(struct rr *rrlp)
 		kwait(&Dfile_reading);
 	Dfile_reading++;
 
-	if((dbase = fopen(Dfile,READ_TEXT)) == NULL){
+	if((dbase = kfopen(Dfile,READ_TEXT)) == NULL){
 		Dfile_reading--;
 		return NULL;
 	}
-	if(fstat(fileno(dbase),&dstat) != 0){
-		printf("dfile_search: can't get file status\n");
-		fclose(dbase);
+	if(fstat(kfileno(dbase),&dstat) != 0){
+		kprintf("dfile_search: can't get file status\n");
+		kfclose(dbase);
 		Dfile_reading--;
 		return NULL;
 	}
@@ -1127,7 +1131,7 @@ dfile_search(struct rr *rrlp)
 				All records of the same name and the same type
 				are contiguous.  Therefore, for a single query,
 				we can stop searching.  Multiple queries must
-				read the whole file.
+				kread the whole file.
 			*/
 			if(rrlp->type != TYPE_ANY
 			&& rrlp->next == NULL
@@ -1140,7 +1144,7 @@ dfile_search(struct rr *rrlp)
 	free_rr(&oldrrp);
 	*rrpp = NULL;
 
-	fclose(dbase);
+	kfclose(dbase);
 
 	if(--Dfile_reading <= 0){
 		Dfile_reading = 0;
@@ -1158,7 +1162,7 @@ dfile_update(int s,void *unused,void *p)
 {
 	struct rr **rrpp, *rrlp, *oldrrp;
 	char *newname;
-	FILE *old_fp, *new_fp;
+	kFILE *old_fp, *new_fp;
 	struct stat old_stat, new_stat;
 
 	logmsg(-1,"update Domain.txt initiated");
@@ -1166,10 +1170,10 @@ dfile_update(int s,void *unused,void *p)
 	/* Produce output on command session rather than the one
 	 * that invoked us
 	 */
-	fclose(stdin);
-	stdin = fdup(Cmdpp->input);
-	fclose(stdout);
-	stdout = fdup(Cmdpp->output);
+	kfclose(kstdin);
+	kstdin = kfdup(Cmdpp->input);
+	kfclose(kstdout);
+	kstdout = kfdup(Cmdpp->output);
 
 	newname = strdup(Dfile);
 	strcpy(&newname[strlen(newname)-3],"tmp");
@@ -1191,13 +1195,13 @@ dfile_update(int s,void *unused,void *p)
 		logmsg(-1,"update Domain.txt");
 
 		/* create new file for copy */
-		if((new_fp = fopen(newname,WRITE_TEXT)) == NULL){
-			printf("dfile_update: can't create %s!\n",newname);
+		if((new_fp = kfopen(newname,WRITE_TEXT)) == NULL){
+			kprintf("dfile_update: can't create %s!\n",newname);
 			break;
 		}
-		if(fstat(fileno(new_fp),&new_stat) != 0){
-			printf("dfile_update: can't get new_file status!\n");
-			fclose(new_fp);
+		if(fstat(kfileno(new_fp),&new_stat) != 0){
+			kprintf("dfile_update: can't get new_file status!\n");
+			kfclose(new_fp);
 			break;
 		}
 
@@ -1226,18 +1230,18 @@ dfile_update(int s,void *unused,void *p)
 		}
 		*rrpp = NULL;
 
-		/* open up the old file, concurrently with everyone else */
-		if((old_fp = fopen(Dfile,READ_TEXT)) == NULL){
+		/* kopen up the old file, concurrently with everyone else */
+		if((old_fp = kfopen(Dfile,READ_TEXT)) == NULL){
 			/* great! no old file, so we're ready to go. */
-			fclose(new_fp);
+			kfclose(new_fp);
 			rename(newname,Dfile);
 			free_rr(&rrlp);
 			break;
 		}
-		if(fstat(fileno(old_fp),&old_stat) != 0){
-			printf("dfile_update: can't get old_file status!\n");
-			fclose(new_fp);
-			fclose(old_fp);
+		if(fstat(kfileno(old_fp),&old_stat) != 0){
+			kprintf("dfile_update: can't get old_file status!\n");
+			kfclose(new_fp);
+			kfclose(old_fp);
 			free_rr(&rrlp);
 			break;
 		}
@@ -1265,8 +1269,8 @@ dfile_update(int s,void *unused,void *p)
 				kwait(NULL);	/* run in background */
 		}
 		free_rr(&oldrrp);
-		fclose(new_fp);
-		fclose(old_fp);
+		kfclose(new_fp);
+		kfclose(old_fp);
 		free_rr(&rrlp);
 
 		/* wait for everyone else to finish reading */
@@ -1297,29 +1301,29 @@ dumpdomain(struct dhdr *dhp,int32 rtt)
 	struct rr *rrp;
 	char * stuff;
 
-	printf("response id %u (rtt %lu sec) qr %u opcode %u aa %u tc %u rd %u ra %u rcode %u\n",
+	kprintf("response id %u (rtt %lu sec) qr %u opcode %u aa %u tc %u rd %u ra %u rcode %u\n",
 	 dhp->id,(long)rtt / 1000L,
 	 dhp->qr,dhp->opcode,dhp->aa,dhp->tc,dhp->rd,
 	 dhp->ra,dhp->rcode);
-	printf("%u questions:\n",dhp->qdcount);
+	kprintf("%u questions:\n",dhp->qdcount);
 	for(rrp = dhp->questions; rrp != NULL; rrp = rrp->next){
 		stuff = dtype(rrp->type);
-		printf("%s type %s class %u\n",rrp->name,
+		kprintf("%s type %s class %u\n",rrp->name,
 		 stuff,rrp->class);
 	}
-	printf("%u answers:\n",dhp->ancount);
+	kprintf("%u answers:\n",dhp->ancount);
 	for(rrp = dhp->answers; rrp != NULL; rrp = rrp->next){
-		put_rr(stdout,rrp);
+		put_rr(kstdout,rrp);
 	}
-	printf("%u authority:\n",dhp->nscount);
+	kprintf("%u authority:\n",dhp->nscount);
 	for(rrp = dhp->authority; rrp != NULL; rrp = rrp->next){
-		put_rr(stdout,rrp);
+		put_rr(kstdout,rrp);
 	}
-	printf("%u additional:\n",dhp->arcount);
+	kprintf("%u additional:\n",dhp->arcount);
 	for(rrp = dhp->additional; rrp != NULL; rrp = rrp->next){
-		put_rr(stdout,rrp);
+		put_rr(kstdout,rrp);
 	}
-	fflush(stdout);
+	kfflush(kstdout);
 }
 
 static int
@@ -1363,7 +1367,7 @@ uint buflen	/* Length of same */
 		strncpy((char *)cp,dname,len);
 		cp += len;
 		if(cp1 == NULL){
-			*cp++ = 0;	/* Last one; write null and finish */
+			*cp++ = 0;	/* Last one; kwrite null and finish */
 			break;
 		}
 		dname += len+1;
@@ -1397,26 +1401,26 @@ dns_query(struct rr *rrlp)
 	for(;;){
 		uint8 *buf;
 		int len;
-		struct sockaddr_in server_in;
+		struct ksockaddr_in server_in;
 		int s;
 		int rval;
 
 		dp->queries++;
 
-		s = socket(AF_INET,SOCK_DGRAM,0);
-		server_in.sin_family = AF_INET;
+		s = ksocket(kAF_INET,kSOCK_DGRAM,0);
+		server_in.sin_family = kAF_INET;
 		server_in.sin_port = IPPORT_DOMAIN;
 		server_in.sin_addr.s_addr = dp->address;
 
 		if(Dtrace){
-			printf("dns_query: querying server %s for %s\n",
+			kprintf("dns_query: querying server %s for %s\n",
 			 inet_ntoa(dp->address),rrlp->name);
 		}
 
 		buf = mallocw(512);
 		len = dns_makequery(0,rrlp,buf,512);
-		if(sendto(s,buf,len,0,(struct sockaddr *)&server_in,sizeof(server_in)) == -1)
-			perror("domain sendto");
+		if(ksendto(s,buf,len,0,(struct ksockaddr *)&server_in,sizeof(server_in)) == -1)
+			kperror("domain sendto");
 		FREE(buf);
 		kalarm(max(dp->timeout,100));
 		/* Wait for something to happen */
@@ -1425,16 +1429,16 @@ dns_query(struct rr *rrlp)
 		close_s(s);
 
 		if(Dtrace){
-			if(errno == 0)
-				printf("dns_query: received message length %d\n",rval);
+			if(kerrno == 0)
+				kprintf("dns_query: received message length %d\n",rval);
 			else
-				perror("dns_query");
+				kperror("dns_query");
 		}
 
 		if(rval > 0)
 			break;
 
-		if(errno == EABORT)
+		if(kerrno == kEABORT)
 			return -1;		/* Killed by "reset" command */
 
 		/* Timeout; back off this one and try another server */
@@ -1630,7 +1634,7 @@ resolve_rr(char *dname,uint dtype)
 			break;
 #ifdef DEBUG
 		if(Dtrace)
-			put_rr(stdout,result_rrlp);
+			put_rr(kstdout,result_rrlp);
 #endif
 		/* Should be CNAME or PTR record */
 		/* Replace name and try again */

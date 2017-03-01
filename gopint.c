@@ -1,5 +1,7 @@
 /* Copyright (C) 1996 DJ Delorie, see COPYING.DJ for details */
 /* Copyright (C) 1995 DJ Delorie, see COPYING.DJ for details */
+#include "top.h"
+
 #include <dpmi.h>
 #include <go32.h>
 #include <stdlib.h>

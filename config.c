@@ -6,9 +6,12 @@
  *
  * Copyright 1991 Phil Karn, KA9Q
  */
+#include "top.h"
 
-#include <stdio.h>
+#include "stdio.h"
+#if defined(MSDOS)
 #include <dos.h>
+#endif
 #include <time.h>
 #include "global.h"
 #include "config.h"
@@ -77,7 +80,7 @@ static void axnr(struct iface *iface,struct ax25_cb *axp,uint8 *src,
 
 struct mbuf *Hopper;		/* Queue of incoming packets */
 unsigned Nsessions = NSESSIONS;
-unsigned Nsock = DEFNSOCK;		/* Number of socket entries */
+unsigned Nsock = DEFNSOCK;		/* Number of ksocket entries */
 
 /* Free memory threshold, below which things start to happen to conserve
  * memory, like garbage collection, source quenching and refusing connects
@@ -86,7 +89,7 @@ int32 Memthresh = MTHRESH;
 
 unsigned Nfiles = DEFNFILES;
 
-long Sfsize = 1000;	/* Default size of session scrollback file */
+int32 Sfsize = 1000;	/* Default size of session scrollback file */
 
 /* Command lookup and branch tables */
 struct cmds Cmds[] = {
@@ -115,10 +118,10 @@ struct cmds Cmds[] = {
 	"connect",	doconnect,	1024, 3,
 	"connect <interface> <callsign>",
 #endif
-#if	!defined(UNIX) && !defined(AMIGA)
+#if	!defined(AMIGA)
 	"cd",		docd,		0, 0, NULL,
 #endif
-	"close",	doclose,	0, 0, NULL,
+	"kclose",	doclose,	0, 0, NULL,
 /* This one is out of alpabetical order to allow abbreviation to "d" */
 	"disconnect",	doclose,	0, 0, NULL,
 	"delete",	dodelete,	0, 2, "delete <file>", 
@@ -140,7 +143,7 @@ struct cmds Cmds[] = {
 #endif
 	"echo",		doecho,		0, 0, NULL,
 	"eol",		doeol,		0, 0, NULL,
-#if	!defined(MSDOS)
+#if	!defined(MSDOS) && !defined(UNIX)
 	"escape",	doescape,	0, 0, NULL,
 #endif
 	"exit",		doexit,		0, 0, NULL,
@@ -176,7 +179,9 @@ struct cmds Cmds[] = {
 	"memory",	domem,		0, 0, NULL,
 #endif
 	"mkdir",	domkd,		0, 2, "mkdir <directory>",
+#ifndef UNIX /* Not yet */
 	"more",		doview,		0, 2, "more <filename>",
+#endif
 #ifdef	NETROM
 	"netrom",	donetrom,	0, 0, NULL,
 #endif	/* NETROM */
@@ -186,7 +191,9 @@ struct cmds Cmds[] = {
 #ifdef	NRS
 	"nrstat",	donrstat,	0, 0, NULL,
 #endif	/* NRS */
+#ifndef UNIX
 	"page",		dopage,		0, 2, "page <command> [args...]",
+#endif
 	"param",	doparam,	0, 2, "param <interface>",
 	"ping",		doping,		512, 2,
 	"ping <hostid> [<length> [<interval> [incflag]]]",
@@ -200,7 +207,7 @@ struct cmds Cmds[] = {
 	"ppp",		doppp_commands,	0, 0, NULL,
 #endif
 	"ps",		ps,		0, 0, NULL,
-#if	!defined(UNIX) && !defined(AMIGA)
+#if	!defined(AMIGA)
 	"pwd",		docd,		0, 0, NULL,
 #endif
 	"record",	dorecord,	0, 0, NULL,
@@ -228,7 +235,7 @@ struct cmds Cmds[] = {
 	"socket",	dosock,		0, 0, NULL,
 #ifdef	SOUND
 	"sound",	dosound,	0, 2,
-		"sound attach|detach|listen ...",
+		"sound attach|detach|klisten ...",
 
 #endif
 #ifdef	SERVERS
@@ -247,7 +254,9 @@ struct cmds Cmds[] = {
 #endif
 	"udp",		doudp,		0, 0, NULL,
 	"upload",	doupload,	0, 0, NULL,
+#ifndef UNIX /* not yet */
 	"view",		doview,		0, 2, "view <filename>",
+#endif
 	"wipe",		dowipe,		0, 0, NULL,
 	"?",		dohelp,		0, 0, NULL,
 	NULL,	NULL,		0, 0,
@@ -274,7 +283,7 @@ struct cmds Remcmds[] = {
 	"bootp",	dobootp,	0, 0, NULL,
 	"bootpd",	bootpdcmd,	0, 0, NULL,
 #endif
-#if	!defined(UNIX) && !defined(AMIGA)
+#if	!defined(AMIGA)
 	"cd",		docd,		0, 0, NULL,
 #endif
 	"delete",	dodelete,	0, 2, "delete <file>", 
@@ -336,7 +345,7 @@ struct cmds Remcmds[] = {
 	"ppp",		doppp_commands,	0, 0, NULL,
 #endif
 	"ps",		ps,		0, 0, NULL,
-#if	!defined(UNIX) && !defined(AMIGA)
+#if	!defined(AMIGA)
 	"pwd",		docd,		0, 0, NULL,
 #endif
 	"rename",	dorename,	0, 3, "rename <oldfile> <newfile>",
@@ -359,7 +368,7 @@ struct cmds Remcmds[] = {
 	"socket",	dosock,		0, 0, NULL,
 #ifdef	SOUND
 	"sound",	dosound,	0, 2,
-		"sound attach|detach|listen ...",
+		"sound attach|detach|klisten ...",
 
 #endif
 #ifdef	SERVERS
@@ -376,14 +385,16 @@ struct cmds Remcmds[] = {
 
 /* List of supported hardware devices */
 struct cmds Attab[] = {
-#ifdef	ASY
+#if defined(ASY)
 	/* Ordinary PC asynchronous adaptor */
 	"asy", asy_attach, 0, 8,
-#ifndef	AMIGA
+#if defined(MSDOS)
 	"attach asy <address> <vector> slip|vjslip|ax25ui|ax25i|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]",
+#elif defined(UNIX)
+	"attach asy <device> slip|vjslip|ax25ui|ax25i|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]",
 #else
 	"attach asy <driver> <unit> slip|vjslip|ax25ui|ax25i|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]",
-#endif	/* AMIGA */
+#endif	/* rest (AMIGA?) */
 #endif	/* ASY */
 #ifdef	PC100
 	/* PACCOMM PC-100 8530 HDLC adaptor */
@@ -442,7 +453,7 @@ struct cmds Attab[] = {
 	"   <intack> <vec> [p]<clock> [hdwe] [param]\n"
 	"attach scc <chan> slip|kiss|nrs|ax25ui|ax25i <label> <mtu> <speed> <bufsize> [call] ",
 #endif
-#ifdef	ASY
+#if defined(ASY) && !defined(UNIX)
 	"4port",fp_attach, 0, 3, "attach 4port <base> <irq>",
 #endif
 #ifdef	KSP
@@ -516,9 +527,9 @@ static struct cmds Stopcmds[] = {
 /* Socket-protocol interface table */
 struct socklink Socklink[] = {
 	/* type,
-	 * socket,	bind,		listen,		connect,
-	 * accept,	recv,		send,		qlen,
-	 * kick,	shut,		close,		check,
+	 * ksocket,	bind,		klisten,		kconnect,
+	 * kaccept,	recv,		send,		qlen,
+	 * kick,	shut,		kclose,		check,
 	 * error,	state,		status,		eol_seq
 	 */
 	TYPE_TCP,
@@ -584,7 +595,7 @@ struct socklink Socklink[] = {
 	-1
 };
 
-/* Table of functions for printing socket addresses */
+/* Table of functions for printing ksocket addresses */
 char * (*Psock[]) () = {
 	ippsocket,
 #ifdef	AX25
@@ -883,11 +894,15 @@ asy_ioctl(struct iface *ifp,int cmd,int set,int32 val)
 /* daemons to be run at startup time */
 struct daemon Daemons[] = {
 	"killer",	512,	killer,
+#ifndef USE_SYSTEM_MALLOC
 	"gcollect",	256,	gcollect,
+#endif
 	"timer",	1024,	timerproc,
 	"network",	1536,	network,
 	"keyboard",	250,	keyboard,
+#ifndef UNIX
 	"random init",	650,	rand_init,
+#endif
 #ifdef	PHOTURIS
 	"keygen",	2048,	gendh,
 	"key mgmt",	2048,	phot_proc,
@@ -897,18 +912,25 @@ struct daemon Daemons[] = {
 
 /* Functions to be called on each clock tick */
 void (*Cfunc[])() = {
+#ifdef MSDOS
 	pctick,	/* Call PC-specific stuff to keep time */
+#endif
 	sesflush,	/* Flush current session output */
 #ifdef	ASY
+#ifndef UNIX
 	asytimer,
+#endif
 #endif
 #ifdef	SCC
 	scctimer,
 #endif
+#ifndef UNIX
 	kbint,		/* gdb 4.12 doesn't pass kb interrupts */
+#endif
 	NULL,
 };
 
+#ifndef USE_SYSTEM_MALLOC
 /* Entry points for garbage collection */
 void (*Gcollect[])() = {
 	tcp_garbage,
@@ -924,11 +946,14 @@ void (*Gcollect[])() = {
 #endif
 	NULL
 };
+#endif
 
 /* Functions to be called at shutdown */
 void (*Shutdown[])() = {
 #ifdef	ASY
+#ifdef	MSDOS
 	fp_stop,
+#endif
 #endif
 #ifdef	SCC
 	sccstop,
@@ -940,9 +965,9 @@ void (*Shutdown[])() = {
 };
 
 #ifdef	MAILBOX
-void (*Listusers)(FILE *network) = listusers;
+void (*Listusers)(kFILE *network) = listusers;
 #else
-void (*Listusers)(FILE *network) = NULL;
+void (*Listusers)(kFILE *network) = NULL;
 #endif	/* MAILBOX */
 
 #ifndef	BOOTP
@@ -1050,15 +1075,6 @@ void *s;
 	struct route *stale = (struct route *)s;
 
 	rt_drop(stale->target,stale->bits);
-}
-#endif
-
-/* Stubs for demand dialer */
-#ifndef	DIALER
-void
-dialer_kick(asyp)
-struct asy *asyp;
-{
 }
 #endif
 

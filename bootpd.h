@@ -27,7 +27,7 @@ struct host {
         char name[31];		/* host name (and suffix) */
 	uint8 htype;		/* hardware type */
 	uint8 haddr[MAXHWALEN];	/* hardware address */
-        struct in_addr iaddr;	/* internet address */
+        struct kin_addr iaddr;	/* internet address */
         char bootfile[32];	/* default boot file name */
 };
 

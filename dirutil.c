@@ -5,8 +5,9 @@
  * New version using regs.h by Russell Nelson.
  * Rewritten for Turbo-C 2.0 routines by Phil Karn, KA9Q 25 March 89
  */
+#include "top.h"
 
-#include <stdio.h>
+#include "stdio.h"
 #include <dir.h>
 #include <dos.h>
 #include <stdlib.h>
@@ -23,15 +24,15 @@ struct dirsort {
 
 static void commas(char *dest);
 static int fncmp(char *a, char *b);
-static void format_fname_full(FILE *file,struct ffblk *sbuf,int full,
+static void format_fname_full(kFILE *file,struct ffblk *sbuf,int full,
 	int n);
 static void free_clist(struct dirsort *this);
 
 #ifdef	notdef
-static int getdir_nosort(char *path,int full,FILE *file);
+static int getdir_nosort(char *path,int full,kFILE *file);
 #endif
 static int nextname(int command, char *name, struct ffblk *sbuf);
-static void print_free_space(FILE *file,int n);
+static void print_free_space(kFILE *file,int n);
 static void undosify(char *s);
 static char *wildcardize(char *path);
 
@@ -44,16 +45,16 @@ static char *wildcardize(char *path);
  * descriptor. If full == 1, give a full listing; else return just a list
  * of names.
  */
-FILE *
+kFILE *
 dir(path,full)
 char *path;
 int full;
 {
-	FILE *fp;
+	kFILE *fp;
 
-	if((fp = tmpfile()) != NULL){
+	if((fp = ktmpfile()) != NULL){
 		getdir(path,full,fp);
-		rewind(fp);
+		krewind(fp);
 	}
 	return fp;
 }
@@ -114,7 +115,7 @@ int
 getdir(path,full,file)
 char *path;
 int full;
-FILE *file;
+kFILE *file;
 {
 	struct ffblk sbuf;
 	int command = 0;
@@ -186,13 +187,13 @@ void *p;
 
 	if(argc > 1){
 		if(chdir(argv[1]) == -1){
-			printf("Can't change directory\n");
+			kprintf("Can't change directory\n");
 			return 1;
 		}
 	}
 	if(getcwd(dirname,128) != NULL){
 		undosify(dirname);
-		printf("%s\n",dirname);
+		kprintf("%s\n",dirname);
 	}
 	return 0;
 }
@@ -206,7 +207,7 @@ void *p;
 	char *path;
 
 	path = (argc >= 2) ? argv[1] : "*.*";
-	getdir(path,1,stdout);
+	getdir(path,1,kstdout);
 	return 0;
 }
 /* Create directory */
@@ -221,7 +222,7 @@ void *p;
 #else
 	if(mkdir(argv[1],0777) == -1)
 #endif
-		perror("Can't mkdir");
+		kperror("Can't mkdir");
 	return 0;
 }
 /* Remove directory */
@@ -232,7 +233,7 @@ char *argv[];
 void *p;
 {
 	if(rmdir(argv[1]) == -1)
-		perror("Can't rmdir");
+		kperror("Can't rmdir");
 	return 0;
 }
 
@@ -300,7 +301,7 @@ char *path;
 
 static void
 format_fname_full(file, sbuf, full, n)
-FILE *file;
+kFILE *file;
 struct ffblk *sbuf;
 int full, n;
 {
@@ -326,16 +327,16 @@ int full, n;
 		  (sbuf->ff_fdate ) & 0x1f,		/* day */
 		  (sbuf->ff_fdate >> 9) + 80,	/* year */
 		  (n & 1) ? "   " : "\n");
-		fputs(line_buf,file);
+		kfputs(line_buf,file);
 	} else {
-		fputs(cbuf,file);
-		fputs("\n",file);
+		kfputs(cbuf,file);
+		kfputs("\n",file);
 	}
 }
 /* Provide additional information only on DIR */
 static void
 print_free_space(file, n)
-FILE *file;
+kFILE *file;
 int n;
 {
 	unsigned long free_bytes, total_bytes;
@@ -345,7 +346,7 @@ int n;
 	unsigned long bpcl;
 
 	if(n & 1)
-		fputs("\n",file);
+		kfputs("\n",file);
 
 	/* Find disk free space */
 	getdfree(0,&dtable);
@@ -364,7 +365,7 @@ int n;
 	else
 		strcpy(cbuf,"No");
 
-	fprintf(file,"%s file%s. %s bytes free. Disk size %s bytes.\n",
+	kfprintf(file,"%s file%s. %s bytes free. Disk size %s bytes.\n",
 		cbuf,(n==1? "":"s"),s_free,s_total);
 }
 static void
@@ -384,7 +385,7 @@ static int
 getdir_nosort(path,full,file)
 char *path;
 int full;
-FILE *file;
+kFILE *file;
 {
 	struct ffblk sbuf;
 	int command;

@@ -1,3 +1,5 @@
+#include "top.h"
+
 #include "global.h"
 #include "crc.h"
 /*

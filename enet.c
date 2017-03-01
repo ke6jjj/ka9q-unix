@@ -1,7 +1,9 @@
 /* Stuff generic to all Ethernet controllers
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "iface.h"

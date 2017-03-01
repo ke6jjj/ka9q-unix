@@ -1,7 +1,9 @@
 /* Miscellaneous Internet servers: discard, echo
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "socket.h"
@@ -11,9 +13,14 @@
 #include "hardware.h"
 #include "mailbox.h"
 #include "asy.h"
+#ifdef UNIX
+#include "asy_unix.h"
+#else
 #include "n8250.h"
+#endif
 #include "devparam.h"
 #include "telnet.h"
+#include "errno.h"
 
 static int chkrpass(struct mbuf *bp);
 static void discserv(int s,void *unused,void *p);
@@ -120,24 +127,24 @@ int s,
 void *unused,
 void *p
 ){
-	FILE *network = NULL;
-	FILE *asy;
+	kFILE *network = NULL;
+	kFILE *asy;
 	char *buf = NULL;
 	struct iface *ifp;
 	struct route *rp;
-	struct sockaddr_in fsocket;
+	struct ksockaddr_in fsocket;
 	struct proc *rxproc = NULL;
 	int i;
 	
 	sockowner(s,Curproc);
 	logmsg(s,"open term");
-	network = fdopen(s,"r+");
+	network = kfdopen(s,"r+");
 
-	if(network == NULL || (buf = malloc(BUFSIZ)) == NULL)
+	if(network == NULL || (buf = malloc(kBUFSIZ)) == NULL)
 		goto quit;
 
-	if(SETSIG(EABORT)){
-		fprintf(network,"Abort\r\n");
+	if(SETSIG(kEABORT)){
+		kfprintf(network,"Abort\r\n");
 		goto quit;
 	}
 	/* Prompt for desired interface. Verify that it exists, that
@@ -146,48 +153,48 @@ void *p
 	 * or dialer session active on it.
 	 */
 	for(;;){
-		fprintf(network,"Interface: ");
-		fgets(buf,BUFSIZ,network);
+		kfprintf(network,"Interface: ");
+		kfgets(buf,kBUFSIZ,network);
 		rip(buf);
 		if((ifp = if_lookup(buf)) == NULL){
-			fprintf(network,"Interface %s does not exist\n",buf);
+			kfprintf(network,"Interface %s does not exist\n",buf);
 			continue;
 		}
-		if(getpeername(s,(struct sockaddr *)&fsocket,&i) != -1
+		if(kgetpeername(s,(struct ksockaddr *)&fsocket,&i) != -1
 		 && !ismyaddr(fsocket.sin_addr.s_addr)
 		 && (rp = rt_lookup(fsocket.sin_addr.s_addr)) != NULL
 		 && rp->iface == ifp){
-			fprintf(network,"You're using interface %s!\n",ifp->name);
+			kfprintf(network,"You're using interface %s!\n",ifp->name);
 			continue;
 		}
 		if((asy = asyopen(buf,"r+b")) != NULL)
 			break;
-		fprintf(network,"Can't open interface %s\n",buf);
-		fprintf(network,"Try to bounce current user? ");
-		fgets(buf,BUFSIZ,network);
+		kfprintf(network,"Can't kopen interface %s\n",buf);
+		kfprintf(network,"Try to bounce current user? ");
+		kfgets(buf,kBUFSIZ,network);
 		if(buf[0] == 'y' || buf[0] == 'Y'){
 			tunregister(ifp,1);
 			kwait(NULL);
 		}
 	}
-	setvbuf(asy,NULL,_IONBF,0);
+	ksetvbuf(asy,NULL,_kIONBF,0);
 	tregister(ifp);
-	fprintf(network,"Wink DTR? ");
-	fgets(buf,BUFSIZ,network);
+	kfprintf(network,"Wink DTR? ");
+	kfgets(buf,kBUFSIZ,network);
 	if(buf[0] == 'y' || buf[0] == 'Y'){
 		asy_ioctl(ifp,PARAM_DTR,1,0);	/* drop DTR */
 		ppause(1000L);
 		asy_ioctl(ifp,PARAM_DTR,1,1);	/* raise DTR */
 	}
-	fmode(network,STREAM_BINARY);	/* Switch to raw mode */
-	setvbuf(network,NULL,_IONBF,0);
-	fprintf(network,"Turn off local echo? ");
-	fgets(buf,BUFSIZ,network);
+	kfmode(network,STREAM_BINARY);	/* Switch to raw mode */
+	ksetvbuf(network,NULL,_kIONBF,0);
+	kfprintf(network,"Turn off local echo? ");
+	kfgets(buf,kBUFSIZ,network);
 	if(buf[0] == 'y' || buf[0] == 'Y'){
-		fprintf(network,"%c%c%c",IAC,WILL,TN_ECHO);
+		kfprintf(network,"%c%c%c",IAC,WILL,TN_ECHO);
 		/* Eat the response */
 		for(i=0;i<3;i++)
-			(void)fgetc(network);
+			(void)kfgetc(network);
 	}
 #ifdef	notdef
 	FREE(buf);
@@ -196,11 +203,11 @@ void *p
 	rxproc = newproc("term rx",1500,termrx,s,network,asy,0);
 
 	/* We continue to handle the TCP->asy direction */
-	fblock(network,PART_READ);
-	while((i = fread(buf,1,BUFSIZ,network)) > 0)
-		fwrite(buf,1,i,asy);
-quit:	fclose(network);
-	fclose(asy);
+	kfblock(network,PART_READ);
+	while((i = kfread(buf,1,kBUFSIZ,network)) > 0)
+		kfwrite(buf,1,i,asy);
+quit:	kfclose(network);
+	kfclose(asy);
 	killproc(&rxproc);
 	logmsg(s,"close term");
 	free(buf);
@@ -211,13 +218,13 @@ void
 termrx(int s,void *p1,void *p2)
 {
 	int i;
-	FILE *network = (FILE *)p1;
-	FILE *asy = (FILE *)p2;
-	char buf[BUFSIZ];
+	kFILE *network = (kFILE *)p1;
+	kFILE *asy = (kFILE *)p2;
+	char buf[kBUFSIZ];
 	
-	fblock(asy,PART_READ);
-	while((i = fread(buf,1,BUFSIZ,asy)) > 0){
-		fwrite(buf,1,i,network);
+	kfblock(asy,PART_READ);
+	while((i = kfread(buf,1,kBUFSIZ,asy)) > 0){
+		kfwrite(buf,1,i,network);
 		kwait(NULL);
 	}
 }
@@ -245,7 +252,7 @@ tunregister(struct iface *ifp,int kill)
 	if(tserv == NULL)
 		return;
 	if(kill)
-		alert(tserv->proc,EABORT);
+		alert(tserv->proc,kEABORT);
 
 	if(prev == NULL)
 		Tserv = tserv->next;

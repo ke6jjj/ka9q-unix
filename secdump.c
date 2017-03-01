@@ -1,6 +1,8 @@
 /* Security packet tracing
  * Copyright 1993 Phil Karn, KA9Q
  */
+#include "top.h"
+
 #include "global.h"
 #include "mbuf.h"
 #include "netuser.h"
@@ -10,7 +12,7 @@
 
 void
 esp_dump(fp,bpp,source,dest,check)
-FILE *fp;
+kFILE *fp;
 struct mbuf **bpp;
 int32 source,dest;
 int check;
@@ -18,12 +20,12 @@ int check;
 	int32 spi;
 
 	spi = pull32(bpp);
-	fprintf(fp,"ESP: SPI %lx\n",spi);
+	kfprintf(fp,"ESP: SPI %lx\n",spi);
 }
 
 void
 ah_dump(fp,bpp,source,dest,check)
-FILE *fp;
+kFILE *fp;
 struct mbuf **bpp;
 int32 source,dest;
 int check;
@@ -36,42 +38,42 @@ int check;
 	authlen = sizeof(int32) * PULLCHAR(bpp);
 	pull16(bpp);
 	spi = pull32(bpp);
-	fprintf(fp,"AH: SPI %lx",spi);
+	kfprintf(fp,"AH: SPI %lx",spi);
 	if(authlen != 0){
-		fprintf(fp," auth ");
+		kfprintf(fp," auth ");
 		auth = mallocw(authlen);
 		pullup(bpp,auth,authlen);
 		for(i=0;i<authlen;i++)
-			fprintf(fp,"%02x",auth[i]);
+			kfprintf(fp,"%02x",auth[i]);
 	}
 	switch(protocol){
 	case IP4_PTCL:
 	case IP_PTCL:
-		fprintf(fp," prot IP\n");
+		kfprintf(fp," prot IP\n");
 		ip_dump(fp,bpp,check);
 		break;
 	case TCP_PTCL:
-		fprintf(fp," prot TCP\n");
+		kfprintf(fp," prot TCP\n");
 		tcp_dump(fp,bpp,source,dest,check);
 		break;
 	case UDP_PTCL:
-		fprintf(fp," prot UDP\n");
+		kfprintf(fp," prot UDP\n");
 		udp_dump(fp,bpp,source,dest,check);
 		break;
 	case ICMP_PTCL:
-		fprintf(fp," prot ICMP\n");
+		kfprintf(fp," prot ICMP\n");
 		icmp_dump(fp,bpp,source,dest,check);
 		break;
 	case ESP_PTCL:
-		fprintf(fp," prot ESP\n");
+		kfprintf(fp," prot ESP\n");
 		esp_dump(fp,bpp,source,dest,check);
 		break;
 	case AH_PTCL:
-		fprintf(fp," prot AH\n");
+		kfprintf(fp," prot AH\n");
 		ah_dump(fp,bpp,source,dest,check);
 		break;
 	default:
-		fprintf(fp," prot %u\n",protocol);
+		kfprintf(fp," prot %u\n",protocol);
 		break;
 	}
 

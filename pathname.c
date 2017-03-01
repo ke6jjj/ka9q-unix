@@ -1,7 +1,9 @@
 /* Convert relative to absolute pathnames
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "dirutil.h"
 
@@ -83,7 +85,7 @@ register char *path;
 	register char *cp;
 	
 
-	cp = buf + strlen(buf);	/* Start write at end of current buffer */
+	cp = buf + strlen(buf);	/* Start kwrite at end of current buffer */
 	
 	/* Now start crunching the pathname argument */
 	for(;;){

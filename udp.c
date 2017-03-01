@@ -1,6 +1,8 @@
 /* Internet User Data Protocol (UDP)
  * Copyright 1991 Phil Karn, KA9Q
  */
+#include "top.h"
+
 #include "global.h"
 #include "mbuf.h"
 #include "netuser.h"
@@ -10,7 +12,7 @@
 #include "internet.h"
 #include "icmp.h"
 
-static struct udp_cb *lookup_udp(struct socket *socket);
+static struct udp_cb *lookup_udp(struct ksocket *socket);
 
 struct mib_entry Udp_mib[] = {
 	"",			0,
@@ -28,7 +30,7 @@ struct udp_cb *Udps;
  */
 struct udp_cb *
 open_udp(lsocket,r_upcall)
-struct socket *lsocket;
+struct ksocket *lsocket;
 void (*r_upcall)();
 {
 	register struct udp_cb *up;
@@ -51,8 +53,8 @@ void (*r_upcall)();
 /* Send a UDP datagram */
 int
 send_udp(
-struct socket *lsocket,		/* Source socket */
-struct socket *fsocket,		/* Destination socket */
+struct ksocket *lsocket,		/* Source socket */
+struct ksocket *fsocket,		/* Destination socket */
 char tos,			/* Type-of-service for IP */
 char ttl,			/* Time-to-live for IP */
 struct mbuf **bpp,		/* Data field, if any */
@@ -74,7 +76,7 @@ char df				/* Don't Fragment flag for IP */
 	length += UDPHDR;
 
 	laddr = lsocket->address;
-	if(laddr == INADDR_ANY)
+	if(laddr == kINADDR_ANY)
 		laddr = locaddr(fsocket->address);
 
 	udp.source = lsocket->port;
@@ -96,10 +98,10 @@ char df				/* Don't Fragment flag for IP */
 int
 recv_udp(up,fsocket,bp)
 register struct udp_cb *up;
-struct socket *fsocket;		/* Place to stash incoming socket */
+struct ksocket *fsocket;		/* Place to stash incoming socket */
 struct mbuf **bp;		/* Place to stash data packet */
 {
-	struct socket sp;
+	struct ksocket sp;
 	struct mbuf *buf;
 	uint length;
 
@@ -115,7 +117,7 @@ struct mbuf **bp;		/* Place to stash data packet */
 	up->rcvcnt--;
 
 	/* Strip socket header */
-	pullup(&buf,&sp,sizeof(struct socket));
+	pullup(&buf,&sp,sizeof(struct ksocket));
 
 	/* Fill in the user's foreign socket structure, if given */
 	if(fsocket != NULL){
@@ -176,8 +178,8 @@ int32 said
 	struct pseudo_header ph;
 	struct udp udp;
 	struct udp_cb *up;
-	struct socket lsocket;
-	struct socket fsocket;
+	struct ksocket lsocket;
+	struct ksocket fsocket;
 	uint length;
 
 	if(bpp == NULL || *bpp == NULL)
@@ -215,7 +217,7 @@ int32 said
 		lsocket.address = ip->dest;
 
 	lsocket.port = udp.dest;
-	/* See if there's somebody around to read it */
+	/* See if there's somebody around to kread it */
 	if((up = lookup_udp(&lsocket)) == NULL){
 		/* Nope, return an ICMP message */
 		if(!rxbroadcast){
@@ -244,7 +246,7 @@ int32 said
  * searches.
  */
 static struct udp_cb *
-lookup_udp(struct socket *socket)
+lookup_udp(struct ksocket *socket)
 {
 	struct udp_cb *up;
 	struct udp_cb *uplast = NULL;
@@ -252,7 +254,7 @@ lookup_udp(struct socket *socket)
 	for(up = Udps;up != NULL;uplast = up,up = up->next){
 		if(socket->port == up->socket.port
 		 && (socket->address == up->socket.address
-		 || up->socket.address == INADDR_ANY)){
+		 || up->socket.address == kINADDR_ANY)){
 			if(uplast != NULL){
 				/* Move to top of list */
 				uplast->next = up->next;

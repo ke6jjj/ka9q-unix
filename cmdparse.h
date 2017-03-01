@@ -11,7 +11,7 @@ struct cmds {
 	int  argcmin;		/* Minimum number of args */
 	char *argc_errmsg;	/* Message to print if insufficient args */
 };
-extern struct cmds Cmds[],Remcmds[],Startcmds[],Stopcmds[],Attab[];
+extern struct cmds Cmds[],Remcmds[],Attab[];
 
 /* In cmdparse.c: */
 int cmdparse(struct cmds cmds[],char *line,void *p);

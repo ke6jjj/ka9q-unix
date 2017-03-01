@@ -1,6 +1,8 @@
 /* Functions for level 3 net/rom support
  * Copyright 1989 Dan Frank, W9NK
  */
+#include "top.h"
+
 #include "global.h"
 #include "mbuf.h"
 #include "ax25.h"

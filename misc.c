@@ -1,7 +1,9 @@
 /* Miscellaneous machine independent utilities
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "socket.h"
 #include "mbuf.h"
@@ -119,6 +121,7 @@ memxor(uint8 *a,uint8 *b,unsigned int n)
 		*a++ ^= *b++;
 }
 
+#ifndef HAVE_STRDUP
 /* Copy a string to a malloc'ed buffer. Turbo C has this one in its
  * library, but it doesn't call mallocw() and can therefore return NULL.
  * NOS uses of strdup() generally don't check for NULL, so they need this one.
@@ -138,11 +141,12 @@ strdup(const char *s)
 	out[len] = '\0';
 	return out;
 }
+#endif
 /* Routines not needed for Turbo 2.0, but available for older libraries */
 #ifdef	AZTEC
 
 /* Case-insensitive string comparison */
-strnicmp(char *a,char *b,int n)
+STRNICMP(char *a,char *b,int n)
 {
 	char a1,b1;
 

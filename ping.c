@@ -1,7 +1,9 @@
 /* ICMP-related user commands
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "icmp.h"
 #include "mbuf.h"
@@ -12,6 +14,7 @@
 #include "session.h"
 #include "commands.h"
 #include "ping.h"
+#include "errno.h"
 
 static void pingtx(int s,void *ping1,void *p);
 static void pinghdr(struct session *sp,struct ping *ping);
@@ -25,7 +28,7 @@ int argc;
 char *argv[];
 void *p;
 {
-	struct sockaddr_in from;
+	struct ksockaddr_in from;
 	struct icmp icmp;
 	struct mbuf *bp;
 	int32 timestamp,rtt,abserr;
@@ -36,29 +39,29 @@ void *p;
 	memset(&ping,0,sizeof(ping));
 	/* Allocate a session descriptor */
 	if((sp = ping.sp = newsession(Cmdline,PING,1)) == NULL){
-		printf("Too many sessions\n");
+		kprintf("Too many sessions\n");
 		return 1;
 	}
-	if((ping.s = s = socket(AF_INET,SOCK_RAW,ICMP_PTCL)) == -1){
-		printf("Can't create socket\n");
+	if((ping.s = s = ksocket(kAF_INET,kSOCK_RAW,ICMP_PTCL)) == -1){
+		kprintf("Can't create ksocket\n");
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
 	}
 	sp->inproc = keychar;	/* Intercept ^C */
-	if(SETSIG(EABORT)){
+	if(SETSIG(kEABORT)){
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
 	}
-	printf("Resolving %s...\n",argv[1]);
+	kprintf("Resolving %s...\n",argv[1]);
 	if((ping.target = resolve(argv[1])) == 0){
-		printf("unknown\n");
+		kprintf("unknown\n");
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
 	}
-	printf("Pinging %s\n",inet_ntoa(ping.target));
+	kprintf("Pinging %s\n",inet_ntoa(ping.target));
 	sp->cb.p = &ping;
 	if(argc > 2)
 		ping.len = atoi(argv[2]);
@@ -74,11 +77,11 @@ void *p;
 		sp->proc1 = newproc("pingtx",300,pingtx,s,&ping,NULL,0);
 	} else {
 		/* One shot ping; let echo_proc hook handle response.
-		 * An ID of MAXINT16 will not be confused with a legal socket
+		 * An ID of MAXINT16 will not be confused with a legal ksocket
 		 * number, which is used to identify repeated pings
 		 */
 		pingem(s,ping.target,0,MAXINT16,ping.len);
-		close(s);
+		kclose(s);
 		freesession(&sp);
 		return 0;
 	}
@@ -87,7 +90,7 @@ void *p;
 	pinghdr(sp,&ping);
 	for(;;){
 		fromlen = sizeof(from);
-		if(recv_mbuf(s,&bp,0,(struct sockaddr *)&from,&fromlen) == -1)
+		if(recv_mbuf(s,&bp,0,(struct ksockaddr *)&from,&fromlen) == -1)
 			break;
 		ntohicmp(&icmp,&bp);
 		if(icmp.type != ICMP_ECHO_REPLY || icmp.args.echo.id != s){
@@ -125,13 +128,13 @@ void *p;
 		}
 		if((ping.responses % 20) == 0)
 			pinghdr(sp,&ping);
-		printf("%10lu%10lu%5lu%8lu%8lu%8lu%8lu%8lu\n",
+		kprintf("%10lu%10lu%5lu%8lu%8lu%8lu%8lu%8lu\n",
 		 ping.sent,ping.responses,
 		 (ping.responses*100 + ping.sent/2)/ping.sent,
 		 rtt,ping.srtt,ping.mdev,ping.maxrtt,ping.minrtt);
 	}
 	killproc(&sp->proc1);
-	close(s);
+	kclose(s);
 	keywait(NULL,1);
 	freesession(&sp);
 	return 0;
@@ -143,8 +146,8 @@ int c;
 	if(c != CTLC)
 		return 1;	/* Ignore all but ^C */
 
-	fprintf(Current->output,"^C\n");
-	alert(Current->proc,EABORT);
+	kfprintf(Current->output,"^C\n");
+	alert(Current->proc,kEABORT);
 	return 0;
 }
 static void
@@ -152,7 +155,7 @@ pinghdr(sp,ping)
 struct session *sp;
 struct ping *ping;
 {
-	printf("      sent      rcvd    %%     rtt     avg    mdev     max     min\n");
+	kprintf("      sent      rcvd    %%     rtt     avg    mdev     max     min\n");
 }
 
 void
@@ -169,7 +172,7 @@ struct mbuf **bpp
 	 == sizeof(timestamp)){
 		/* Compute round trip time */
 		rtt = msclock() - timestamp;
-		printf("%s: rtt %lu\n",inet_ntoa(source),rtt);
+		kprintf("%s: rtt %lu\n",inet_ntoa(source),rtt);
 	}
 	free_p(bpp);
 }
@@ -201,7 +204,7 @@ void *p;
 /* Send ICMP Echo Request packet */
 int
 pingem(s,target,seq,id,len)
-int s;		/* Raw socket on which to send ping */
+int s;		/* Raw ksocket on which to send ping */
 int32 target;	/* Site to be pinged */
 uint seq;	/* ICMP Echo Request sequence number */
 uint id;	/* ICMP Echo Request ID */
@@ -209,7 +212,7 @@ uint len;	/* Length of optional data field */
 {
 	struct mbuf *data;
 	struct icmp icmp;
-	struct sockaddr_in to;
+	struct ksockaddr_in to;
 	int32 clock;
 	int i;
 	uint8 *cp;
@@ -243,9 +246,9 @@ uint len;	/* Length of optional data field */
 	icmp.args.echo.seq = seq;
 	icmp.args.echo.id = id;
 	htonicmp(&icmp,&data);
-	to.sin_family = AF_INET;
+	to.sin_family = kAF_INET;
 	to.sin_addr.s_addr = target;
-	send_mbuf(s,&data,0,(struct sockaddr *)&to,sizeof(to));
+	send_mbuf(s,&data,0,(struct ksockaddr *)&to,sizeof(to));
 	return 0;
 }
 static int
@@ -265,19 +268,19 @@ int c;
 	case 'Q':
 	case 'q':
 	case 3:	/* ctl-c - quit */
-		alert(sp->proc,EABORT);
+		alert(sp->proc,kEABORT);
 		killproc(&sp->proc1);
-		shutdown(p->s,2);
+		kshutdown(p->s,2);
 		p->s = -1;
 		break;
 	case ' ':	/* Toggle pinger */
 		if(sp->proc1 != NULL){
 			killproc(&sp->proc1);
-			fprintf(sp->output,"Pinging suspended, %lu sent\n",p->sent);
+			kfprintf(sp->output,"Pinging suspended, %lu sent\n",p->sent);
 		} else {
 			p->sent = p->responses = 0;
 			sp->proc1 = newproc("pingtx",300,pingtx,p->s,p,NULL,0);
-			fprintf(sp->output,"Pinging resumed\n");
+			kfprintf(sp->output,"Pinging resumed\n");
 		}
 		break;
 	}

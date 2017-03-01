@@ -3,8 +3,9 @@
  * non-commercial distribution only.
  * Ported to NOS by SM0RGV, 890525.
  */
+#include "top.h"
 
-#include <stdio.h>
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "timer.h"
@@ -59,7 +60,7 @@ struct mbuf **bpp;
 	
 	op = hdr->opcode & NR4OPCODE;	/* Mask off flags */
 	
-	if(op == NR4OPCONRQ){			/* process connect request first */
+	if(op == NR4OPCONRQ){			/* process kconnect request first */
 		acceptc = 1;
 		newconn = 0;
 
@@ -67,7 +68,7 @@ struct mbuf **bpp;
 		rhdr.yourindex = hdr->u.conreq.myindex;
 		rhdr.yourid = hdr->u.conreq.myid;
 
-		/* Check to see if we have already received a connect */
+		/* Check to see if we have already received a kconnect */
 		/* request for this circuit. */
 		if((cb = match_n4circ(hdr->u.conreq.myindex,
 		 hdr->u.conreq.myid,hdr->u.conreq.user,hdr->u.conreq.node))
@@ -79,7 +80,7 @@ struct mbuf **bpp;
 			/* See if we have any listening sockets */
 			for(i = 0; i < NR4MAXCIRC; i++){
 				if((cb2 = Nr4circuits[i].ccb) == NULL)
-				continue;/* not an open circuit */
+				continue;/* not an kopen circuit */
 				if(cb2->state == NR4STLISTEN)
 					/* A listener was found */
 					break;
@@ -150,7 +151,7 @@ struct mbuf **bpp;
 			
 		free_p(bpp);
 		return;
-	} /* end connect request code */
+	} /* end kconnect request code */
 
 	/* validate circuit number */
 	if((cb = get_n4circ(hdr->yourindex, hdr->yourid)) == NULL){
@@ -164,7 +165,7 @@ struct mbuf **bpp;
 	else
 		gotchoke = 0;
 	
-	/* Here's where the interesting stuff gets done */
+	/* Here's where the interesting stuff kgets done */
 	switch(cb->state){
 	case NR4STCPEND:
 		switch(op){
@@ -172,7 +173,7 @@ struct mbuf **bpp;
 			/* Save the round trip time for later use */
 			i = dur_timer(&cb->tcd) - read_timer(&cb->tcd);
 			stop_timer(&cb->tcd);
-			if(gotchoke){		/* connect rejected */
+			if(gotchoke){		/* kconnect rejected */
 				cb->dreason = NR4RREFUSED;
 				nr4state(cb, NR4STDISC);
 				break;
@@ -326,7 +327,7 @@ struct mbuf **bpp
 	unsigned newdata = 0;		/* whether to upcall */
 
 #ifdef NR4DEBUG
-	printf("Processing received info\n");
+	kprintf("Processing received info\n");
 #endif
 
 	/* If we're choked, just reset the ACK timer to blast out
@@ -345,12 +346,12 @@ struct mbuf **bpp
 	 * condition, another NAK, and the process would repeat indefinitely.
 	 * Therefore, if the frame is out-of-sequence, but within the last
 	 * 'n' frames by sequence number ('n' being the window size), just
-	 * accept it and discard it.  Else, NAK it if we haven't already.
+	 * kaccept it and discard it.  Else, NAK it if we haven't already.
 	 *	(Modified by Rob Stampfli, kd8wk, 9 Jan 1990)
 	 */
 	if(rxseq != cb->rxpected && !cb->naksent){
 #ifdef NR4DEBUG
-		printf("Frame out of sequence -- expected %u, got %u.\n",
+		kprintf("Frame out of sequence -- expected %u, got %u.\n",
 			   cb->rxpected, rxseq);
 #endif				
 		if(nr4between(cb->rxpected,
@@ -381,7 +382,7 @@ struct mbuf **bpp
 	if(nr4between(cb->rxpected,rxseq,cb->rxpastwin)
 		&& !cb->rxbufs[rxbuf].occupied){
 #ifdef NR4DEBUG
-		printf("Frame within window\n");
+		kprintf("Frame within window\n");
 #endif
 		cb->rxbufs[rxbuf].occupied = 1;
 		cb->rxbufs[rxbuf].data = *bpp;
@@ -390,7 +391,7 @@ struct mbuf **bpp
 		for(rxbuf = cb->rxpected % window; cb->rxbufs[rxbuf].occupied;
 			 rxbuf = cb->rxpected % window){
 #ifdef NR4DEBUG
-			printf("Removing frame from buffer %d\n", rxbuf);
+			kprintf("Removing frame from buffer %d\n", rxbuf);
 #endif
 			newdata = 1;
 			cb->rxbufs[rxbuf].occupied = 0;
@@ -433,7 +434,7 @@ unsigned seq;
 	/* sanity check */
 	if(bufnum >= cb->window){
 #ifdef NRDEBUG
-		printf("sbuf: buffer number %u beyond window\n",bufnum);
+		kprintf("sbuf: buffer number %u beyond window\n",bufnum);
 #endif
 		return;
 	}
@@ -451,7 +452,7 @@ unsigned seq;
 	/* Notice that we use copy_p instead of dup_p.  This is because
 	 * a frame can still be sitting on the AX.25 send queue when it
 	 * get acknowledged, and we don't want to deallocate its data
-	 * before it gets sent!
+	 * before it kgets sent!
 	 */
 	if((bp = copy_p(bufbp, len_p(bufbp))) == NULL){
 		free_mbuf(&bp);
@@ -503,7 +504,7 @@ int gotchoke;	/* The choke flag is set in the received frame */
 	 */
 	while (nr4between(cb->ackxpected, seq, cb->nextosend)){
 #ifdef NR4DEBUG
-		printf("Sequence # %u acknowledged\n", seq);
+		kprintf("Sequence # %u acknowledged\n", seq);
 #endif
 		cb->nbuffered--;
 		txbuf = cb->ackxpected % cb->window;
@@ -573,7 +574,7 @@ int gotchoke;	/* The choke flag is set in the received frame */
 }
 
 
-/* If the send window is open and there are frames on the txq,
+/* If the send window is kopen and there are frames on the txq,
  * move as many as possible to the transmit buffers and send them.
  * Return the number of frames sent.
  */
@@ -590,21 +591,21 @@ struct nr4cb *cb;
 		return 0;		/* No sending if not connected */
 					/* or if choked */
 		
-	/* See if the window is open */
+	/* See if the window is kopen */
 	if(cb->nbuffered >= cb->window)
 		return 0;
 
 	numq = len_q(cb->txq);
 	
 #ifdef NR4DEBUG
-	printf("nr4output: %d packets on txq\n", numq);
+	kprintf("nr4output: %d packets on txq\n", numq);
 #endif
 	
 	for(i = 0; i < numq; i++){
 		bp = dequeue(&cb->txq);
 #ifdef NR4DEBUG
 		if(len_p(bp) > NR4MAXINFO){	/* should be checked higher up */
-			printf("Upper layers queued too big a buffer\n");
+			kprintf("Upper layers queued too big a buffer\n");
 			continue;
 		}
 #endif
@@ -669,7 +670,7 @@ int newstate;
 
 		/* The following loop will only be executed if the
 		 * window was set, since when the control block is
-		 * calloc'd the window field gets a 0 in it.  This
+		 * calloc'd the window field kgets a 0 in it.  This
 		 * protects us from dereferencing an unallocated
 		 * window buffer pointer
 		 */
@@ -736,7 +737,7 @@ struct nr4cb *cb;
 		q = bp;
 	 }
 
-	cb->nextosend = cb->ackxpected;	/* close the window */
+	cb->nextosend = cb->ackxpected;	/* kclose the window */
 	cb->nbuffered = 0;		/* nothing in the window */
 	cb->txq = q;			/* Replace the txq with the one that has */
 					/* the purged packets prepended */

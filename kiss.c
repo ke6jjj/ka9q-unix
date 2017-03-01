@@ -1,6 +1,8 @@
 /* Routines for AX.25 encapsulation in KISS TNC
  * Copyright 1991 Phil Karn, KA9Q
  */
+#include "top.h"
+
 #include "global.h"
 #include "mbuf.h"
 #include "iface.h"
@@ -25,7 +27,7 @@ kiss_init(struct iface *ifp)
 			break;
 	}
 	if(xdev >= SLIP_MAX) {
-		printf("Too many slip devices\n");
+		kprintf("Too many slip devices\n");
 		return -1;
 	}
 	ifp->ioctl = kiss_ioctl;
@@ -111,7 +113,7 @@ int32 val
 	case PARAM_FULLDUP:
 	case PARAM_HW:
 		if(!set){
-			rval = -1;	/* Can't read back */
+			rval = -1;	/* Can't kread back */
 			break;
 		}
 		/* Allocate space for cmd and arg */

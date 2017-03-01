@@ -9,7 +9,9 @@
  * Mar '91 - Glenn McGregor
  *		handle string escaped sequences
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "proc.h"
 #include "cmdparse.h"
@@ -180,12 +182,12 @@ void *p
 	}
 	if(cmdp->name == NULL) {
 		if(cmdp->argc_errmsg != NULL)
-			printf("%s\n",cmdp->argc_errmsg);
+			kprintf("%s\n",cmdp->argc_errmsg);
 		return -1;
 	}
 	if(argc < cmdp->argcmin) {
 		/* Insufficient arguments */
-		printf("Usage: %s\n",cmdp->argc_errmsg);
+		kprintf("Usage: %s\n",cmdp->argc_errmsg);
 		return -1;
 	}
 	if(cmdp->func == NULL)
@@ -221,9 +223,9 @@ void *p;
 	/* Strip off first token and pass rest of line to subcommand */
 	if (argc < 2) {
 		if (argc < 1)
-			printf("SUBCMD - Don't know what to do?\n");
+			kprintf("SUBCMD - Don't know what to do?\n");
 		else
-			printf("\"%s\" - takes at least one argument\n",argv[0]);
+			kprintf("\"%s\" - takes at least one argument\n",argv[0]);
 		return -1;
 	}
 	argc--;
@@ -235,15 +237,15 @@ void *p;
 		}
 	}
 	if(!found){
-		printf("valid subcommands:");
+		kprintf("valid subcommands:");
 		for(cmdp = tab;cmdp->name != NULL;cmdp++)
-			printf(" %s",cmdp->name);
-		printf("\n");
+			kprintf(" %s",cmdp->name);
+		kprintf("\n");
 		return -1;
 	}
 	if(argc < cmdp->argcmin){
 		if(cmdp->argc_errmsg != NULL)
-			printf("Usage: %s\n",cmdp->argc_errmsg);
+			kprintf("Usage: %s\n",cmdp->argc_errmsg);
 		return -1;
 	}
 	if(cmdp->stksize == 0){
@@ -270,20 +272,20 @@ char *argv[];
 	struct boolcmd *bc;
 
 	if(argc < 2){
-		printf("%s: %s\n",label,*var ? "on":"off");
+		kprintf("%s: %s\n",label,*var ? "on":"off");
 		return 0;
 	}
 	for(bc = Boolcmds;bc->str != NULL;bc++){
-		if(stricmp(argv[1],bc->str) == 0){
+		if(STRICMP(argv[1],bc->str) == 0){
 			*var = bc->val;
 			return 0;
 		}
 	}
-	printf("Valid options:");
+	kprintf("Valid options:");
 	for(bc = Boolcmds;bc->str != NULL;bc++)
-		printf(" %s",bc->str);
+		kprintf(" %s",bc->str);
 
-	printf("\n");
+	kprintf("\n");
 	return 1;
 }
 
@@ -313,13 +315,13 @@ char *argv[];
 /* Subroutine for setting and displaying long variables */
 int
 setlong(var,label,argc,argv)
-long *var;
+int32 *var;
 char *label;
 int argc;
 char *argv[];
 {
 	if(argc < 2)
-		printf("%s: %ld\n",label,*var);
+		kprintf("%s: %ld\n",label,*var);
 	else
 		*var = atol(argv[1]);
 
@@ -334,7 +336,7 @@ int argc;
 char *argv[];
 {
 	if(argc < 2)
-		printf("%s: %u\n",label,*var);
+		kprintf("%s: %u\n",label,*var);
 	else
 		*var = atoi(argv[1]);
 
@@ -349,7 +351,7 @@ int argc;
 char *argv[];
 {
 	if(argc < 2)
-		printf("%s: %i\n",label,*var);
+		kprintf("%s: %i\n",label,*var);
 	else
 		*var = atoi(argv[1]);
 
@@ -364,10 +366,17 @@ char *label;
 int argc;
 char *argv[];
 {
+	long cand;
+
 	if(argc < 2)
-		printf("%s: %u\n",label,*var);
-	else
-		*var = atoi(argv[1]);
+		kprintf("%s: %u\n",label,*var);
+	else {
+		cand = atol(argv[1]);
+		if (cand >= 0)
+			*var = (unsigned) cand;
+		else
+			return 1;
+	}
 
 	return 0;
 }

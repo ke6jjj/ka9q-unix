@@ -20,12 +20,17 @@
  *	Permission granted for non-commercial copying and use, provided
  *	this notice is retained.
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <fcntl.h>
 #include <time.h>
 #include <setjmp.h>
 #ifdef UNIX
 #include <sys/types.h>
+#endif
+#ifdef MODERN_UNIX
+#include <unistd.h> /* for unlink() */
 #endif
 #ifdef	__TURBOC__
 #include <dir.h>
@@ -49,7 +54,7 @@ extern char Badhost[];
 /* POP client control block */
 
 struct pop_ccb {
-	FILE *network;		/* Network stream for this connection */
+	kFILE *network;		/* Network stream for this connection */
 	char	state;		/* client state */
 #define	   CALL		0
 #define	   NMBR		3
@@ -104,7 +109,9 @@ static char ackd_cmd[] = "ACKD\n",
 	fold_cmd[] = "FOLD %s\n",
 #endif
 	login_cmd[] = "HELO %s %s\n",
-	/* nack_cmd[]      = "NACK\n",     /* Not implemented */
+#if 0
+	nack_cmd[]      = "NACK\n",     /* Not implemented */
+#endif
 	quit_cmd[]      = "QUIT\n",
 	read_cur_cmd[]  = "READ\n",
 	retr_cmd[]      = "RETR\n";
@@ -113,7 +120,7 @@ static char ackd_cmd[] = "ACKD\n",
 
 static char *greeting_rsp  = "+ POP2 ";
 
-FILE	*fd;
+kFILE	*fd;
 
 int
 dopop(argc,argv,p)
@@ -132,9 +139,9 @@ void *p;
 {
 	if(argc < 2) {
 		if(mailbox_name[0] == '\0')
-			printf("maibox name not set yet\n");
+			kprintf("maibox name not set yet\n");
 		else
-			printf("%s\n",mailbox_name);
+			kprintf("%s\n",mailbox_name);
 	} else {
 		strncpy(mailbox_name,argv[1],10);
 	}
@@ -151,10 +158,10 @@ void *p;
 	int32 n;
 
 	if(argc < 2) {
-		printf("%s\n",inet_ntoa(mailhost));
+		kprintf("%s\n",inet_ntoa(mailhost));
 	} else
 		if((n = resolve(argv[1])) == 0) {
-			printf(Badhost,argv[1]);
+			kprintf(Badhost,argv[1]);
 			return 1;
 		} else
 			mailhost = n;
@@ -178,9 +185,9 @@ char *argv[];
 void *p;
 {
 	if (argc < 2)
-		printf("%s\n",username);
+		kprintf("%s\n",username);
 	else if (argc != 3) {
-		printf("Usage: pop userdata <username> <password>\n");
+		kprintf("Usage: pop userdata <username> <password>\n");
 		return 1;
 	} else {
 		sscanf(argv[1],"%18s",username);
@@ -199,7 +206,7 @@ char *argv[];
 void *p;
 {
 	if(argc < 2) {
-		printf("%lu/%lu\n",
+		kprintf("%lu/%lu\n",
 			read_timer(&popcli_t) /1000L,
 			dur_timer(&popcli_t)/ 1000L);
 		return 0;
@@ -230,27 +237,27 @@ poptick()
 		/* Don't start if any of the required parameters have not been specified */
 
 		if (mailhost == 0) {
-			printf("mailhost not defined yet.(pop mailhost <host>)\n");
+			kprintf("mailhost not defined yet.(pop mailhost <host>)\n");
 			return 0;
 		}
 
 		if (mailbox_name[0] == '\0') {
-			printf("mailbox name not defined yet.(pop mailbox <name>)\n");
+			kprintf("mailbox name not defined yet.(pop mailbox <name>)\n");
 			return 0;
 		}
 
 		if (username[0] == '\0') {
-			printf("username not defined yet. (pop user <name> <pass>)\n");
+			kprintf("username not defined yet. (pop user <name> <pass>)\n");
 			return 0;
 		}
 
 		if (password[0] == '\0') {
-			printf(" Unknown password\n");
+			kprintf(" Unknown password\n");
 			return 0;
 		}
 
 		if ((ccb = new_ccb()) == NULL) {
-			fprintf(stderr,"*** Unable to allocate CCB");
+			kfprintf(kstderr,"*** Unable to allocate CCB");
 			return 0;
 		}
 
@@ -273,24 +280,24 @@ void *cb1;
 void *p;
 {
 	char *cp;
-	struct sockaddr_in fsocket;
+	struct ksockaddr_in fsocket;
 	struct pop_ccb	*ccb;
 	void pop_csm(struct pop_ccb *);
 	void quit_session(struct pop_ccb *);
 	int s;
 
 	ccb = (struct pop_ccb *)cb1;
-	fsocket.sin_family = AF_INET;
+	fsocket.sin_family = kAF_INET;
 	fsocket.sin_addr.s_addr = mailhost;
 	fsocket.sin_port = IPPORT_POP;
 
-	s = socket(AF_INET,SOCK_STREAM,0);
+	s = ksocket(kAF_INET,kSOCK_STREAM,0);
 
 	ccb->state = CALL;
 
-	if (connect(s,(struct sockaddr *)&fsocket,SOCKSIZE) == 0) {
+	if (kconnect(s,(struct ksockaddr *)&fsocket,SOCKSIZE) == 0) {
 		logmsg(s,"Connected to mailhost %s", inet_ntoa(mailhost));
-		ccb->network = fdopen(s,"r+t");
+		ccb->network = kfdopen(s,"r+t");
 	} else {
 		cp = sockerr(s);
 		logmsg(s,"Connect to mailhost %s failed: %s", inet_ntoa(mailhost),
@@ -298,7 +305,7 @@ void *p;
 	}
 
 	while(1) {
-		if (fgets(ccb->buf,BUF_LEN,ccb->network) == NULL)
+		if (kfgets(ccb->buf,BUF_LEN,ccb->network) == NULL)
 			goto quit;
 
 		rip(ccb->buf);
@@ -308,9 +315,9 @@ void *p;
 	}
 quit:
 	logmsg(s,"Connection closed to mailhost %s", inet_ntoa(mailhost));
-	fclose(ccb->network);
+	kfclose(ccb->network);
 	if (fd != NULL)
-		fclose(fd);
+		kfclose(fd);
 	delete_ccb();
 }
 
@@ -344,7 +351,7 @@ void
 pop_csm(ccb)
 struct pop_ccb	*ccb;
 {
-	FILE *mf;
+	kFILE *mf;
 
 	int mlock (char *,char *);
 	int rmlock (char * ,char *);
@@ -356,7 +363,7 @@ struct pop_ccb	*ccb;
 	switch(ccb->state) {
 	case CALL:
 		if (strncmp(ccb->buf,greeting_rsp,strlen(greeting_rsp)) == 0) {
-			 fprintf(ccb->network,login_cmd,username,password);
+			 kfprintf(ccb->network,login_cmd,username,password);
 			ccb->state = NMBR;
 		} else
 			(void) quit_session(ccb);
@@ -366,15 +373,15 @@ struct pop_ccb	*ccb;
 
 		switch (ccb->buf[0]) {
 		case '#':
-			if ((fd = fopen(Workfile_name,"a+")) == NULL) {
-				perror("Unable to open work file");
+			if ((fd = kfopen(Workfile_name,"a+")) == NULL) {
+				kperror("Unable to kopen work file");
 				quit_session(ccb);
 				return;
 			}
 
-			fseek(fd,0,SEEK_SET);
+			kfseek(fd,0,kSEEK_SET);
 			ccb->folder_len = atoi(&(ccb->buf[1]));
-			fprintf(ccb->network,read_cur_cmd);
+			kfprintf(ccb->network,read_cur_cmd);
 			ccb->state = SIZE;
 			break;
 
@@ -382,7 +389,7 @@ struct pop_ccb	*ccb;
 
 			/* If there is no mail (the only time we get a "+"
 			 * response back at this stage of the game),
-			 * then just close out the connection, because
+			 * then just kclose out the connection, because
 			 * there is nothing more to do!! */
 
 		default:
@@ -395,17 +402,17 @@ struct pop_ccb	*ccb;
 		if (ccb->buf[0] == '=') {
 			ccb->msg_len = atol(&(ccb->buf[1]));
 			if (ccb->msg_len > 0) {
-				fprintf(ccb->network,retr_cmd);
+				kfprintf(ccb->network,retr_cmd);
 
 				ccb->state = XFER;
 			} else {
-				logmsg(fileno(ccb->network),"POP client retrieved %d messages",
+				logmsg(kfileno(ccb->network),"POP client retrieved %d messages",
 					    ccb->folder_len);
 
 				/* All done, so do local cleanup */
 
 				if (mlock(Mailspool,mailbox_name)) {
-					printf("\n*** Local mailbox locked, new mail in file %s\n",
+					kprintf("\n*** Local mailbox locked, new mail in file %s\n",
 						 Workfile_name);
 					quit_session(ccb);
 					return;
@@ -413,24 +420,24 @@ struct pop_ccb	*ccb;
 
 				sprintf(mailbox_pathname,"%s/%s.txt",Mailspool,
 					mailbox_name);
-				if ((mf = fopen(mailbox_pathname,"a+")) == NULL) {
-					printf("\n*** Unable to open local mailbox, new mail in file %s\n",
+				if ((mf = kfopen(mailbox_pathname,"a+")) == NULL) {
+					kprintf("\n*** Unable to kopen local mailbox, new mail in file %s\n",
 					       Workfile_name);
 					quit_session(ccb);
 					return;
 				}
 
-				fseek(fd,0,SEEK_SET);
+				kfseek(fd,0,kSEEK_SET);
 
-				while (!feof(fd)) {
-					if(fgets(ccb->buf,BUF_LEN,fd) != NULL) {
-						fputs(ccb->buf,mf);
+				while (!kfeof(fd)) {
+					if(kfgets(ccb->buf,BUF_LEN,fd) != NULL) {
+						kfputs(ccb->buf,mf);
 					}
 				}
-				fclose(mf);
-				fclose(fd);
+				kfclose(mf);
+				kfclose(fd);
 				fd = NULL;
-				printf("New mail arrived for %s from mailhost <%s>%c\n",
+				kprintf("New mail arrived for %s from mailhost <%s>%c\n",
 					mailbox_name, inet_ntoa(mailhost),
 					Popquiet ? ' ' : '\007');
 				rmlock(Mailspool,mailbox_name);
@@ -442,14 +449,14 @@ struct pop_ccb	*ccb;
 		break;
 
 		case XFER:
-			fprintf(fd,"%s\n",ccb->buf);
+			kfprintf(fd,"%s\n",ccb->buf);
 
 			ccb->msg_len -= (long)(strlen(ccb->buf)+2);	/* Add CRLF */
 
 			if (ccb->msg_len > 0)
 				return;
 
-			fprintf(ccb->network,ackd_cmd);
+			kfprintf(ccb->network,ackd_cmd);
 
 			ccb->msg_num++;
 			ccb->state = SIZE;
@@ -457,7 +464,7 @@ struct pop_ccb	*ccb;
 
 		case EXIT:
 			if (fd != NULL)
-				fclose(fd);
+				kfclose(fd);
 			break;
 
 		default:
@@ -469,7 +476,7 @@ void
 quit_session(ccb)
 struct pop_ccb	*ccb;
 {
-	fprintf(ccb->network,quit_cmd);
+	kfprintf(ccb->network,quit_cmd);
 
 	ccb->state  = EXIT;
 }

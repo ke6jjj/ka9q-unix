@@ -121,7 +121,7 @@ struct rr {
 	char *comment;		/* optional comment */
 	char *name;		/* Domain name, ascii form */
 	int32 ttl;		/* Time-to-live */
-#define TTL_MISSING	0x80000000L
+#define TTL_MISSING	((int32)0x80000000L)
 	uint class;		/* IN, etc */
 #define CLASS_MISSING	0
 	uint type;		/* A, MX, etc */

@@ -1,6 +1,8 @@
 /* TCP output segment processing
  * Copyright 1991 Phil Karn, KA9Q
  */
+#include "top.h"
+
 #include "global.h"
 #include "timer.h"
 #include "mbuf.h"
@@ -9,7 +11,7 @@
 #include "tcp.h"
 #include "ip.h"
 
-/* Send a segment on the specified connection. One gets sent only
+/* Send a segment on the specified connection. One kgets sent only
  * if there is data to be sent or if "force" is non zero
  */
 void
@@ -32,6 +34,8 @@ tcp_output(struct tcb *tcb)
 	case TCP_LISTEN:
 	case TCP_CLOSED:
 		return;	/* Don't send anything */
+	default:
+		break;
 	}
 	for(;;){
 		memset(&seg,0,sizeof(seg));
@@ -175,7 +179,7 @@ tcp_output(struct tcb *tcb)
 
 		tcb->snd.ptr += ssize;
 		/* If this is the first transmission of a range of sequence
-		 * numbers, record it so we'll accept acknowledgments
+		 * numbers, record it so we'll kaccept acknowledgments
 		 * for it later
 		 */
 		if(seq_gt(tcb->snd.ptr,tcb->snd.nxt))

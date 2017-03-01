@@ -11,10 +11,6 @@
 #include "proc.h"
 #endif
 
-#ifndef _HARDWARE_H
-#include "hardware.h"
-#endif
-
 #ifndef	_FTPCLI_H
 #include "ftpcli.h"
 #endif
@@ -63,12 +59,12 @@ struct session {
 	struct proc *proc;	/* Primary session process (e.g., tn recv) */
 	struct proc *proc1;	/* Secondary session process (e.g., tn xmit) */
 	struct proc *proc2;	/* Tertiary session process (e.g., upload) */
-	FILE *network;		/* Primary network socket (control for FTP) */
-	FILE *record;		/* Receive record file */
-	FILE *upload;		/* Send file */
+	kFILE *network;		/* Primary network ksocket (control for FTP) */
+	kFILE *record;		/* Receive record file */
+	kFILE *upload;		/* Send file */
 	struct ttystate ttystate;
-	FILE *input;		/* Input stream */
-	FILE *output;		/* Output stream */
+	kFILE *input;		/* Input stream */
+	kFILE *output;		/* Output stream */
 	int (*ctlproc)(int);	/* Upcall  for keyboard ctls */
 	int (*inproc)(int);	/* Upcall for normal characters */
 	struct session *parent;
@@ -79,7 +75,7 @@ struct session {
 };
 extern char *Sestypes[];
 extern unsigned Nsessions;		/* Maximum number of sessions */
-extern long Sfsize;			/* Size of scrollback file, lines */
+extern int32 Sfsize;			/* Size of scrollback file, lines */
 extern struct session **Sessions;	/* Session descriptors themselves */
 extern struct session *Current;		/* Always points to current session */
 extern struct session *Lastcurr;	/* Last non-command session */

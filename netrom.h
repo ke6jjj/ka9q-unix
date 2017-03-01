@@ -142,7 +142,7 @@ extern uint8 Nr_nodebc[AXALEN];
 
 /* filter modes: */
 #define	NRNF_NOFILTER	0	/* don't filter */
-#define	NRNF_ACCEPT	1	/* accept broadcasts from stations in list */
+#define	NRNF_ACCEPT	1	/* kaccept broadcasts from stations in list */
 #define	NRNF_REJECT	2	/* reject broadcasts from stations in list */
 
 /* The filter mode */
@@ -151,26 +151,10 @@ extern unsigned Nr_nfmode ;
 /* The time-to-live for net/rom network layer packets */
 extern unsigned short Nr_ttl ;
 
-/* The obsolescence count initializer */
-extern unsigned Obso_init ;
-
-/* The threshhold at which routes becoming obsolete are not broadcast */
-extern unsigned Obso_minbc ;
-
-/* The quality threshhold below which routes in a broadcast will */
-/* be ignored */
-extern unsigned Nr_autofloor ;
-
 /* Whether we want to broadcast the contents of our routing
  * table, or just our own callsign and alias:
  */
 extern int Nr_verbose ;
-
-/* The maximum number of routes maintained for a destination. */
-/* If the list fills up, only the highest quality routes are  */
-/* kept.  This limiting is done to avoid possible over-use of */
-/* memory for routing tables in closely spaced net/rom networks. */
-extern unsigned Nr_maxroutes ;
 
 /* The netrom pseudo-interface */
 extern struct iface *Nr_iface ;

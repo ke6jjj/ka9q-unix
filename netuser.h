@@ -7,7 +7,7 @@
 #include "global.h"
 #endif
 
-#define	NCONN	20		/* Maximum number of open network connections */
+#define	NCONN	20		/* Maximum number of kopen network connections */
 
 extern int32 Ip_addr;	/* Our IP address */
 extern int Net_error;	/* Error return code */
@@ -28,20 +28,20 @@ extern char Inet_eol[];
 #define	TCP_SERVER	2	/* Passive, clone on opening */
 
 /* Local IP wildcard address */
-#define	INADDR_ANY	0x0L
+#define	kINADDR_ANY	0x0L
 
 #define	NET_HDR_PAD	70	/* mbuf size to preallocate for headers */
 
 /* Socket structure */
-struct socket {
+struct ksocket {
 	int32 address;		/* IP address */
 	uint port;		/* port number */
 };
 
 /* Connection structure (two sockets) */
 struct connection {
-	struct socket local;
-	struct socket remote;
+	struct ksocket local;
+	struct ksocket remote;
 };
 /* In domain.c: */
 int32 resolve(char *name);
@@ -51,6 +51,6 @@ char *resolve_a(int32 ip_address, int shorten);
 /* In netuser.c: */
 int32 aton(char *s);
 char *inet_ntoa(int32 a);
-char *pinet(struct socket *s);
+char *pinet(struct ksocket *s);
 
 #endif	/* _NETUSER_H */

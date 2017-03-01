@@ -1,4 +1,6 @@
 /* Asynchronous HDLC routines */
+#include "top.h"
+
 #include "global.h"
 #include "ahdlc.h"
 #include "crc.h"
@@ -24,9 +26,10 @@ int maxsize;
 
 /* Process incoming data. Return completed packets, NULL otherwise */
 struct mbuf *
-ahdlcrx(ap,c)
-struct ahdlc *ap;	/* HDLC Receiver control block */
-uint8 c;
+ahdlcrx(
+  struct ahdlc *ap,	/* HDLC Receiver control block */
+  uint8 c
+)
 {
 	struct mbuf *bp;
 
@@ -48,7 +51,7 @@ uint8 c;
 			/* Frame too large */
 			ap->toobigs++;
 #ifdef	debug
-			printf("FRAME TOO LARGE (>%u bytes)\n",ap->maxsize);
+			kprintf("FRAME TOO LARGE (>%u bytes)\n",ap->maxsize);
 #endif
 			free_p(&ap->inframe);
 			ap->inframe = NULL;
@@ -67,7 +70,7 @@ uint8 c;
 		/* ESC, FLAG is frame abort */
 		ap->aborts++;
 #ifdef	debug
-		printf("AHDLC ABORT, cnt = %u\n",ap->inframe->cnt);
+		kprintf("AHDLC ABORT, cnt = %u\n",ap->inframe->cnt);
 #endif
 		ap->hunt = 1;
 		ap->escaped = 0;
@@ -89,8 +92,8 @@ uint8 c;
 		/* CRC error */
 		ap->crcerrs++;
 #ifdef	debug
-		printf("AHDLC CRC ERROR, cnt = %u\n",ap->inframe->cnt);
-		hex_dump(stdout,&ap->inframe);
+		kprintf("AHDLC CRC ERROR, cnt = %u\n",ap->inframe->cnt);
+		hex_dump(kstdout,&ap->inframe);
 #endif
 		free_p(&ap->inframe);
 		ap->inframe = NULL;
@@ -101,7 +104,7 @@ uint8 c;
 		/* Runt frame */
 		ap->runts++;
 #ifdef	debug
-		printf("AHDLC RUNT, cnt = %u\n",ap->inframe->cnt);
+		kprintf("AHDLC RUNT, cnt = %u\n",ap->inframe->cnt);
 #endif
 		free_p(&ap->inframe);
 		ap->inframe = NULL;
@@ -115,7 +118,7 @@ uint8 c;
 	ap->fcs = FCS_START;
 	bp->cnt -= 2;
 #ifdef	debug
-	printf("Normal AHDLC receive, len %u\n",bp->cnt);
+	kprintf("Normal AHDLC receive, len %u\n",bp->cnt);
 #endif
 	return bp;
 }
@@ -146,9 +149,10 @@ struct mbuf *bp;
 	return obp;
 }
 static uint8 *
-putbyte(cp,c)
-uint8 *cp;
-uint8 c;
+putbyte(
+  uint8 *cp,
+  uint8 c
+)
 {
 	switch(c){
 	case HDLC_FLAG:

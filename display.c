@@ -16,6 +16,8 @@
  * Copyright 1992 Phil Karn, KA9Q
  * 
  */
+#include "top.h"
+
 #include <conio.h>
 #include <string.h>
 #include <sys/stat.h>
@@ -111,7 +113,7 @@ closedisplay(struct display *dp)
  */
 void
 statwrite(
-int col,		/* Starting column of write */
+int col,		/* Starting column of kwrite */
 void *buf,		/* Data to be written */
 int cnt,		/* Count */
 int attrib		/* Screen attribute to be used */
@@ -123,7 +125,7 @@ int attrib		/* Screen attribute to be used */
 	if(Kdebug && cnt > DCOL - col - 1)
 		cnt = DCOL - col - 1;
 	else if(cnt > COLS-col)
-		cnt = COLS - col;	/* Limit write to line length */
+		cnt = COLS - col;	/* Limit kwrite to line length */
 
 	while(cnt-- != 0){
 		if(sp[0] != *buf1 || sp[1] != attrib){

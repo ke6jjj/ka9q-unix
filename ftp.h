@@ -8,7 +8,7 @@ enum ftp_type {
 	LOGICAL_TYPE
 };
 
-/* Verbosity levels for sendfile and recvfile in ftpsubr.c */
+/* Verbosity levels for ksendfile and krecvfile in ftpsubr.c */
 enum verb_level {
 	V_QUIET,	/* Error messages only */
 	V_SHORT,	/* Final message only */
@@ -17,9 +17,9 @@ enum verb_level {
 	V_STAT		/* Full-blown status display */
 };
 /* In ftpsubr.c: */
-long sendfile(FILE *fp,FILE *network,enum ftp_type mode,enum verb_level verb);
-long recvfile(FILE *fp,FILE *network,enum ftp_type mode,enum verb_level verb);
-int isbinary(FILE *fp);
-int md5hash(FILE *fp,uint8 hash[16],int ascii);
+long ksendfile(kFILE *fp,kFILE *network,enum ftp_type mode,enum verb_level verb);
+long krecvfile(kFILE *fp,kFILE *network,enum ftp_type mode,enum verb_level verb);
+int isbinary(kFILE *fp);
+int md5hash(kFILE *fp,uint8 hash[16],int ascii);
 
 #endif	/* _FTP_H */

@@ -7,7 +7,9 @@
  *			reflect changes to header compression calls
  *			revise status display
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "iface.h"
@@ -38,7 +40,7 @@ struct iface *ifp;
 			break;
 	}
 	if(xdev >= SLIP_MAX) {
-		printf("Too many slip devices\n");
+		kprintf("Too many slip devices\n");
 		return -1;
 	}
 	ifp->ioctl = asy_ioctl;
@@ -126,8 +128,7 @@ struct mbuf **bpp
 	return Slip[iface->xdev].send(iface->dev,&bp1);
 }
 /* Encode a packet in SLIP format */
-static
-struct mbuf *
+static struct mbuf *
 slip_encode(struct mbuf **bpp)
 {
 	struct mbuf *lbp;	/* Mbuf containing line-ready packet */
@@ -170,11 +171,11 @@ slip_encode(struct mbuf **bpp)
 /* Process incoming bytes in SLIP format
  * When a buffer is complete, return it; otherwise NULL
  */
-static
-struct mbuf *
-slip_decode(sp,c)
-register struct slip *sp;
-uint8 c;		/* Incoming character */
+static struct mbuf *
+slip_decode(
+  struct slip *sp,
+  uint8 c		/* Incoming character */
+)
 {
 	struct mbuf *bp;
 

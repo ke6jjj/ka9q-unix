@@ -14,13 +14,13 @@
 extern char *Userfile;	/* List of user names and permissions */
 
 struct ftpserv {
-	FILE *control;		/* Control stream */
-	FILE *data;		/* Data stream */
+	kFILE *control;		/* Control stream */
+	kFILE *data;		/* Data stream */
 	enum ftp_type type;	/* Transfer type */
 	int logbsize;		/* Logical byte size for logical type */
 
-	FILE *fp;		/* File descriptor being transferred */
-	struct sockaddr_in port;/* Remote port for data connection */
+	kFILE *fp;		/* File descriptor being transferred */
+	struct ksockaddr_in port;/* Remote port for data connection */
 	char *username;		/* Arg to USER command */
 	char *path;		/* Allowable path prefix */
 	int perms;		/* Permission flag bits */

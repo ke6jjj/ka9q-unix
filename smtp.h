@@ -22,11 +22,11 @@ struct list {
 
 /* Per-session control block  used by smtp server */
 struct smtpsv {
-	FILE *network;		/* The network stream for this connection */
+	kFILE *network;		/* The network stream for this connection */
 	char *system;		/* Name of remote system */
 	char *from;		/* sender address */
 	struct list *to;	/* Linked list of recipients */
-	FILE *data;		/* Temporary input file pointer */
+	kFILE *data;		/* Temporary input file pointer */
 };
 
 /* used by smtpcli as a queue entry for a single message */
@@ -39,14 +39,14 @@ struct smtp_job {
 
 /* control structure used by an smtp client session */
 struct smtpcli {
-	FILE *network;		/* The network stream for this connection */
+	kFILE *network;		/* The network stream for this connection */
 	int32	ipdest;		/* address of forwarding system */
 	char	*destname;	/* domain address of forwarding system */
 	char	*wname;		/* name of workfile */
 	char	*tname;		/* name of data file */
 	char	buf[LINELEN];	/* Output buffer */
 	char	cnt;		/* Length of input buffer */
-	FILE	*tfile;
+	kFILE	*tfile;
 	struct	smtp_job *jobq;
 	struct	list 	*errlog;	
 	int lock;		/* In use */
@@ -69,9 +69,9 @@ char *ptime(time_t *t);
 long get_msgid(void);
 char *getname(char *cp);
 int validate_address(char *s);
-int queuejob(FILE *dfile,char *host,struct list *to,char *from);
+int queuejob(kFILE *dfile,char *host,struct list *to,char *from);
 struct list *addlist(struct list **head,char *val,int type);
-int mdaemon(FILE *data,char *to,struct list *lp,int bounce);
+int mdaemon(kFILE *data,char *to,struct list *lp,int bounce);
 
 /* In smtpcli.c: */
 int smtptick(int32 target);

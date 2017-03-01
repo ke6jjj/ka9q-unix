@@ -4,13 +4,14 @@
  *	02-90	-- Katie Stevens (dkstevens@ucdavis.edu)
  *		   UC Davis, Computing Services
  *		   Davis, CA
- *	04-90	-- Modified by Phil Karn to use raw IP sockets to read replies
+ *	04-90	-- Modified by Phil Karn to use raw IP sockets to kread replies
  *	08-90	-- Modified by Bill Simpson to display domain names
  */
+#include "top.h"
 
-#include <stdio.h>
+#include "stdio.h"
 #include <string.h>
-#include <errno.h>
+#include "errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "usock.h"
@@ -81,10 +82,10 @@ char *argv[];
 void *p;
 {
 	uint r;
-	uint x = Hopquery;
+	int x = Hopquery;
 	r = setint(&x,"# queries each attempt",argc,argv);
 	if ((x <= 0)||(x > HOPMAXQUERY)) {
-		printf("Must be  0 < x <= %d\n",HOPMAXQUERY);
+		kprintf("Must be  0 < x <= %d\n",HOPMAXQUERY);
 		return 0;
 	} else {
 		Hopquery = x;
@@ -110,10 +111,10 @@ char *argv[];
 void *p;
 {
 	uint r;
-	uint x = Hopmaxttl;
+	int x = Hopmaxttl;
 	r = setint(&x,"Max attempts to reach host",argc,argv);
 	if ((x <= 0)||(x > 255)) {
-		printf("Must be  0 < x <= 255\n");
+		kprintf("Must be  0 < x <= 255\n");
 		return 0;
 	} else {
 		Hopmaxttl = x;
@@ -128,10 +129,10 @@ char *argv[];
 void *p;
 {
 	uint r;
-	uint x = Hopmaxwait;
+	int x = Hopmaxwait;
 	r = setint(&x,"# secs to wait for reply to query",argc,argv);
 	if (x <= 0) {
-		printf("Must be >= 0\n");
+		kprintf("Must be >= 0\n");
 		return 0;
 	} else {
 		Hopmaxwait = x;
@@ -148,17 +149,17 @@ void *p;
 {
 	struct session *sp;		/* Session for trace output */
 	int s;				/* Socket for queries */
-	int s1;				/* Raw socket for replies */
-	struct socket lsocket;		/* Local socket sending queries */
-	struct socket rsocket;		/* Final destination of queries */
+	int s1;				/* Raw ksocket for replies */
+	struct ksocket lsocket;		/* Local ksocket sending queries */
+	struct ksocket rsocket;		/* Final destination of queries */
 	int32 cticks;			/* Timer for query replies */
 	int32 icsource;			/* Sender of last ICMP reply */
 	char ictype;			/* ICMP type last ICMP reply */
 	char iccode;			/* ICMP code last ICMP reply */
 	int32 lastaddr;			/* Sender of previous ICMP reply */
-	struct sockaddr_in sock;
+	struct ksockaddr_in sock;
 	struct usock *usp;
-	struct sockaddr_in *sinp;
+	struct ksockaddr_in *sinp;
 	unsigned char sndttl, q;
 	int tracedone = 0;
 	int ilookup = 1;		/* Control of inverse domain lookup */
@@ -169,67 +170,67 @@ void *p;
 	int user_reset = 0;
 
 	optind = 1;
-	while((c = getopt(argc,argv,"n")) != EOF){
+	while((c = kgetopt(argc,argv,"n")) != kEOF){
 		switch(c){
 		case 'n':
 			ilookup = 0;
 			break;
 		}
 	}
-	hostname = argv[optind];
+	hostname = argv[koptind];
 	/* Allocate a session descriptor */
 	if((sp = newsession(Cmdline,HOP,1)) == NULL){
-		printf("Too many sessions\n");
+		kprintf("Too many sessions\n");
 		keywait(NULL,1);
 		return 1;
 	}
 	sp->inproc = keychar;
 	s = -1;
 
-	/* Setup UDP socket to remote host */
-	sock.sin_family = AF_INET;
+	/* Setup UDP ksocket to remote host */
+	sock.sin_family = kAF_INET;
 	sock.sin_port = Hoprport;
-	printf("Resolving %s... ",hostname);
+	kprintf("Resolving %s... ",hostname);
 	if((sock.sin_addr.s_addr = resolve(hostname)) == 0){
-		printf("unknown\n",hostname);
+		kprintf("unknown\n",hostname);
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
 	}
 
-	/* Open socket to remote host */
-	printf("%s ",psocket((struct sockaddr *)&sock));
-	if((s = socket(AF_INET,SOCK_DGRAM,0)) == -1){
-		printf("Can't create udp socket\n");
+	/* Open ksocket to remote host */
+	kprintf("%s ",psocket((struct ksockaddr *)&sock));
+	if((s = ksocket(kAF_INET,kSOCK_DGRAM,0)) == -1){
+		kprintf("Can't create udp ksocket\n");
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
 	}
-	if(connect(s,(struct sockaddr *)&sock,sizeof(sock)) == -1){
-		printf("Connect failed\n");
+	if(kconnect(s,(struct ksockaddr *)&sock,sizeof(sock)) == -1){
+		kprintf("Connect failed\n");
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
 	}
-	if((s1 = socket(AF_INET,SOCK_RAW,ICMP_PTCL)) == -1){
-		printf("Can't create raw socket\n");
+	if((s1 = ksocket(kAF_INET,kSOCK_RAW,ICMP_PTCL)) == -1){
+		kprintf("Can't create raw ksocket\n");
 		keywait(NULL,1);
-		close(s);
+		kclose(s);
 		freesession(&sp);
 		return 1;
 	}
-	printf("\n");
+	kprintf("\n");
 	/* turn off icmp tracing while hop-checking */
 	save_trace = Icmp_trace;
 	Icmp_trace = 0;
 
 	/* Setup structures to send queries */
-	/* Retrieve socket details for user socket control block */
+	/* Retrieve ksocket details for user ksocket control block */
 	usp = itop(s);
-	sinp = (struct sockaddr_in *)usp->name;
+	sinp = (struct ksockaddr_in *)usp->name;
 	lsocket.address = sinp->sin_addr.s_addr;
 	lsocket.port = sinp->sin_port;
-	sinp = (struct sockaddr_in *)usp->peername;
+	sinp = (struct ksockaddr_in *)usp->peername;
 	rsocket.address = sinp->sin_addr.s_addr;
 
 	/* Send queries with increasing TTL; start with TTL=1 */
@@ -238,7 +239,7 @@ void *p;
 	for (sndttl=1; (sndttl < Hopmaxttl); ++sndttl, sinp->sin_port++) {
 		/* Increment funny UDP port number each round */
 		rsocket.port = sinp->sin_port;
-		printf("%3d:",sndttl);
+		kprintf("%3d:",sndttl);
 		lastaddr = (int32)0;
 		/* Send a round of queries */
 		for (q=0; (q < Hopquery); ++q) {
@@ -251,12 +252,12 @@ void *p;
 			/* Wait for a reply to our query */
 			if(geticmp(s1,lsocket.port,rsocket.port,
 			 &icsource,&ictype,&iccode) == -1){
-				if(errno != EALARM){
+				if(kerrno != kEALARM){
 					user_reset = 1;
 					goto done;	/* User reset */
 				}
 				/* Alarm rang, give up waiting for replies */
-				printf(" ***");
+				kprintf(" ***");
 				continue;
 			}
 			/* Save #ticks taken for reply */
@@ -266,8 +267,8 @@ void *p;
 				struct rr *save_rrlp, *rrlp;
 
 				if(lastaddr != (int32)0)
-					printf("\n    ");
-				printf(" %-15s",inet_ntoa(icsource));
+					kprintf("\n    ");
+				kprintf(" %-15s",inet_ntoa(icsource));
 				if(ilookup){
 					for(rrlp = save_rrlp = inverse_a(icsource);
 					    rrlp != NULL;
@@ -275,15 +276,15 @@ void *p;
 						if(rrlp->rdlength > 0){
 							switch(rrlp->type){
 							case TYPE_PTR:
-								printf(" %s", rrlp->rdata.name);
+								kprintf(" %s", rrlp->rdata.name);
 								goto got_name;
 							case TYPE_A:
-								printf(" %s", rrlp->name);
+								kprintf(" %s", rrlp->name);
 								goto got_name;
 							}
 #ifdef notdef
 							if(rrlp->next != NULL)
-								printf("\n%20s"," ");
+								kprintf("\n%20s"," ");
 #endif
 						}
 					}
@@ -293,7 +294,7 @@ void *p;
 				}
 				lastaddr = icsource;
 			}
-                        printf(" (%ld ms)",cticks);
+                        kprintf(" (%ld ms)",cticks);
 #ifdef HOPTRACE
 			if (Hoptrace)
 				logmsg(s,
@@ -314,59 +315,59 @@ void *p;
 				break;
 			case ICMP_NET_UNREACH:
 				++tracedone;
-				printf(" !N");
+				kprintf(" !N");
 				break;
 			case ICMP_HOST_UNREACH:
 				++tracedone;
-				printf(" !H");
+				kprintf(" !H");
 				break;
 			case ICMP_PROT_UNREACH:
 				++tracedone;
-				printf(" !P");
+				kprintf(" !P");
 				break;
 			case ICMP_FRAG_NEEDED:
 				++tracedone;
-				printf(" !F");
+				kprintf(" !F");
 				break;
 			case ICMP_ROUTE_FAIL:
 				++tracedone;
-				printf(" !S");
+				kprintf(" !S");
 				break;
                         case ICMP_ADMIN_PROHIB:
                                 ++tracedone;
-                                printf(" !A");
+                                kprintf(" !A");
                                 break;
                         default:
-                                printf(" !?");
+                                kprintf(" !?");
                                 break;
 			}
 		}
 		/* Done with this round of queries */
 		kalarm((long)0);
-		printf("\n");
+		kprintf("\n");
 		/* Check if we reached remote host this round */
 		if (tracedone != 0)
 			break;
 	}
 
 	/* Done with traceroute */
-done:	close(s);
+done:	kclose(s);
 	s = -1;
-	close(s1);
+	kclose(s1);
 	if(user_reset)
-		printf("\n");	/* May have been in middle of line */
-	printf("traceroute done: ");
+		kprintf("\n");	/* May have been in middle of line */
+	kprintf("traceroute done: ");
 	Icmp_trace = save_trace;
 	if(user_reset){
-		printf("user abort\n");
+		kprintf("user abort\n");
 	} else if (sndttl >= Hopmaxttl) {
-		printf("!! maximum TTL exceeded\n");
+		kprintf("!! maximum TTL exceeded\n");
 	} else if ((icsource == rsocket.address)
 		    &&(iccode == ICMP_PORT_UNREACH)) {
-		printf("normal (%s %s)\n",
+		kprintf("normal (%s %s)\n",
 			Icmptypes[ictype],Unreach[iccode]);
 	} else {
-		printf("!! %s %s\n",
+		kprintf("!! %s %s\n",
 			Icmptypes[ictype],Unreach[iccode]);
 	}
 #ifdef HOPTRACE
@@ -385,13 +386,13 @@ int c;
 {
 	switch(c){
 	case CTLC:
-		alert(Current->proc,EABORT);
+		alert(Current->proc,kEABORT);
 		return 0;
 	}
 	return 1;
 }
 
-/* Read raw network socket looking for ICMP messages in response to our
+/* Read raw network ksocket looking for ICMP messages in response to our
  * UDP probes
  */
 static int
@@ -407,11 +408,11 @@ char *type,*code;
 	struct ip iphdr;
 	struct udp udphdr;
 	struct mbuf *bp;
-	struct sockaddr_in sock;
+	struct ksockaddr_in sock;
 
 	for(;;){
 		size = sizeof(sock);
-		if(recv_mbuf(s,&bp,0,(struct sockaddr *)&sock,&size) == -1)
+		if(recv_mbuf(s,&bp,0,(struct ksockaddr *)&sock,&size) == -1)
 			return -1;
 		/* It's an ICMP message, let's see if it's interesting */
 		ntohicmp(&icmphdr,&bp);

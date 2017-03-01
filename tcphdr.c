@@ -1,6 +1,8 @@
 /* TCP header conversion routines
  * Copyright 1991 Phil Karn, KA9Q
  */
+#include "top.h"
+
 #include "global.h"
 #include "mbuf.h"
 #include "tcp.h"

@@ -1,7 +1,9 @@
 /* TCP control and status routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "timer.h"
 #include "mbuf.h"
@@ -12,6 +14,7 @@
 #include "commands.h"
 #include "socket.h"
 #include "session.h"
+#include "errno.h"
 
 int Tcp_tstamps = 1;
 
@@ -79,7 +82,7 @@ void *p;
 
 	tcb = (struct tcb *) htol(argv[1]);
 	if(!tcpval(tcb)){
-		printf(Notval);
+		kprintf(Notval);
 		return 1;
 	}
 	reset_tcp(tcb);
@@ -99,7 +102,7 @@ void *p;
 	if(argc < 2){
 		for(tp = &Tcp_rtt[0];tp < &Tcp_rtt[RTTCACHE];tp++){
 			if(tp->addr != 0){
-				printf("%s: srtt %lu mdev %lu\n",
+				kprintf("%s: srtt %lu mdev %lu\n",
 				 inet_ntoa(tp->addr),
 				 tp->srtt,tp->mdev);
 			}
@@ -119,7 +122,7 @@ void *p;
 
 	tcb = (struct tcb *) htol(argv[1]);
 	if(!tcpval(tcb)){
-		printf(Notval);
+		kprintf(Notval);
 		return 1;
 	}
 	tcb->srtt = atol(argv[2]);
@@ -137,7 +140,7 @@ void *p;
 
 	tcb = (struct tcb *) htol(argv[1]);
 	if(kick_tcp(tcb) == -1){
-		printf(Notval);
+		kprintf(Notval);
 		return 1;
 	}
 	return 0;
@@ -150,7 +153,7 @@ int argc;
 char *argv[];
 void *p;
 {
-	return setint(&Tcp_mss,"TCP MSS",argc,argv);
+	return setuns(&Tcp_mss,"TCP MSS",argc,argv);
 }
 
 /* Set default window size */
@@ -160,7 +163,7 @@ int argc;
 char *argv[];
 void *p;
 {
-	return setint(&Tcp_window,"TCP window",argc,argv);	
+	return setuns(&Tcp_window,"TCP window",argc,argv);	
 }
 
 static int
@@ -192,7 +195,7 @@ void *p;
 
 	tcb = (struct tcb *) htol(argv[1]);
 	if(!tcpval(tcb)){
-		printf(Notval);
+		kprintf(Notval);
 		return 1;
 	}
 	if(interval == 0){
@@ -213,12 +216,12 @@ void *p2;
 	struct session *sp;
 	
 	if((sp = newsession(Cmdline,REPEAT,1)) == NULL){
-		printf("Too many sessions\n");
+		kprintf("Too many sessions\n");
 		return;
 	}
 	sp->inproc = keychar;	/* Intercept ^C */
 	while(sp->inproc == keychar){	/* ^C will clear sp->inproc */
-		printf("%c[2J",ESC);	/* Clear screen */
+		kprintf("%c[2J",ESC);	/* Clear screen */
 		st_tcp(tcb);
 		if(tcb->state == TCP_CLOSED || ppause(interval) == -1)
 			break;
@@ -228,7 +231,7 @@ void *p2;
 }
 
 /* Dump TCP stats and summary of all TCBs
-/*     &TCB Rcv-Q Snd-Q           Local socket         Remote socket State
+ *     &TCB Rcv-Q Snd-Q           Local socket         Remote socket State
  *     1234     0     0  xxx.xxx.xxx.xxx:xxxxx xxx.xxx.xxx.xxx:xxxxx Established
  */
 static int
@@ -241,25 +244,25 @@ tstat()
 	for(j=i=1;i<=NUMTCPMIB;i++){
 		if(Tcp_mib[i].name == NULL)
 			continue;
-		printf("(%2u)%-20s%10lu",i,Tcp_mib[i].name,
+		kprintf("(%2u)%-20s%10lu",i,Tcp_mib[i].name,
 		 Tcp_mib[i].value.integer);
 		if(j++ % 2)
-			printf("     ");
+			kprintf("     ");
 		else
-			printf("\n");
+			kprintf("\n");
 	}
 	if((j % 2) == 0)
-		printf("\n");
+		kprintf("\n");
 
-	printf("     &TCB Rcv-Q Snd-Q            Local socket         Remote socket State\n");
+	kprintf("     &TCB Rcv-Q Snd-Q            Local ksocket         Remote ksocket State\n");
 	for(tcb=Tcbs;tcb != NULL;tcb = tcb->next){
-		printf("%9p%6u%6u  ",tcb,tcb->rcvcnt,tcb->sndcnt);
-		printf("%22s",pinet(&tcb->conn.local));
-		printf("%22s",pinet(&tcb->conn.remote));
-		printf(" %s",Tcpstates[tcb->state]);
+		kprintf("%9p%6u%6u  ",tcb,tcb->rcvcnt,tcb->sndcnt);
+		kprintf("%22s",pinet(&tcb->conn.local));
+		kprintf("%22s",pinet(&tcb->conn.remote));
+		kprintf(" %s",Tcpstates[tcb->state]);
 		if(tcb->state == TCP_LISTEN && tcb->flags.clone)
-			printf(" (S)");
-		printf("\n");
+			kprintf(" (S)");
+		kprintf("\n");
 	}
 	return 0;
 }
@@ -304,6 +307,9 @@ struct tcb *tcb;
 		sent -= 2;
 		recvd -= 2;
 		break;
+	case TCP_CLOSED:
+		/* Not handled. Perhaps impossible to acheive here? */
+		break; /* Quiet the compiler */
 	}
 	if(tcb->outrate != 0)
 		txbw = 1000L * tcb->outlen / tcb->outrate;
@@ -313,50 +319,50 @@ struct tcb *tcb;
 		rxbw = 1000L * tcb->inlen / tcb->inrate;
 	else
 		rxbw = 0;
-	printf("Local: %s",pinet(&tcb->conn.local));
-	printf(" Remote: %s",pinet(&tcb->conn.remote));
-	printf(" State: %s\n",Tcpstates[tcb->state]);
-	printf("         Unack     Next Resent CWind Thrsh  Wind  MSS Queue  Thruput      Total\n");
-	printf("Send: %08lx %08lx%7lu%6lu%6lu%6lu%5lu%6lu%9lu%11lu\n",
+	kprintf("Local: %s",pinet(&tcb->conn.local));
+	kprintf(" Remote: %s",pinet(&tcb->conn.remote));
+	kprintf(" State: %s\n",Tcpstates[tcb->state]);
+	kprintf("         Unack     Next Resent CWind Thrsh  Wind  MSS Queue  Thruput      Total\n");
+	kprintf("Send: %08lx %08lx%7lu%6lu%6lu%6lu%5lu%6lu%9lu%11lu\n",
 	 tcb->snd.una,tcb->snd.nxt,tcb->resent,tcb->cwind,tcb->ssthresh,
 	 tcb->snd.wnd,tcb->mss,tcb->sndcnt,txbw,sent);
 
-	printf("Recv:          %08lx%7lu            %6lu     %6lu%9lu%11lu\n",
+	kprintf("Recv:          %08lx%7lu            %6lu     %6lu%9lu%11lu\n",
 	 tcb->rcv.nxt,tcb->rerecv,tcb->rcv.wnd,tcb->rcvcnt,rxbw,recvd);
 
-	printf("Dup acks   Backoff   Timeouts   Source Quench   Unreachables   Power\n");
-	printf("%8u%10u%11lu%16lu%15lu",tcb->dupacks,tcb->backoff,tcb->timeouts,
+	kprintf("Dup acks   Backoff   Timeouts   Source Quench   Unreachables   Power\n");
+	kprintf("%8u%10u%11lu%16lu%15lu",tcb->dupacks,tcb->backoff,tcb->timeouts,
 	 tcb->quench,tcb->unreach);
 	if(tcb->srtt != 0)
-		printf("%8lu",1000*txbw/tcb->srtt);
+		kprintf("%8lu",1000*txbw/tcb->srtt);
 	else
-		printf("     INF");
+		kprintf("     INF");
 	if(tcb->flags.retran)
-		printf(" Retry");
-	printf("\n");
+		kprintf(" Retry");
+	kprintf("\n");
 
-	printf("Timer        Count  Duration  Last RTT      SRTT      Mdev   Method\n");
+	kprintf("Timer        Count  Duration  Last RTT      SRTT      Mdev   Method\n");
 	switch(tcb->timer.state){
 	case TIMER_STOP:
-		printf("stopped");
+		kprintf("stopped");
 		break;
 	case TIMER_RUN:
-		printf("running");
+		kprintf("running");
 		break;
 	case TIMER_EXPIRE:
-		printf("expired");
+		kprintf("expired");
 		break;
 	}
-	printf(" %10lu%10lu%10lu%10lu%10lu",(long)read_timer(&tcb->timer),
+	kprintf(" %10lu%10lu%10lu%10lu%10lu",(long)read_timer(&tcb->timer),
 	 (long)dur_timer(&tcb->timer),tcb->rtt,tcb->srtt,tcb->mdev);
-	printf("   %s\n",tcb->flags.ts_ok ? "timestamps":"standard");
+	kprintf("   %s\n",tcb->flags.ts_ok ? "timestamps":"standard");
 
 	if(tcb->reseq != (struct reseq *)NULL){
 		struct reseq *rp;
 
-		printf("Reassembly queue:\n");
+		kprintf("Reassembly queue:\n");
 		for(rp = tcb->reseq;rp != (struct reseq *)NULL; rp = rp->next){
-			printf("  seq x%lx %u bytes\n",rp->seg.seq,rp->length);
+			kprintf("  seq x%lx %u bytes\n",rp->seg.seq,rp->length);
 		}
 	}
 }
@@ -367,8 +373,8 @@ int c;
 	if(c != CTLC)
 		return 1;	/* Ignore all but ^C */
 
-	fprintf(Current->output,"^C\n");
-	alert(Current->proc,EABORT);
+	kfprintf(Current->output,"^C\n");
+	alert(Current->proc,kEABORT);
 	Current->inproc = NULL;
 	return 0;
 }

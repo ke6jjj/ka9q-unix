@@ -1,4 +1,6 @@
-#include <errno.h>
+#include "top.h"
+
+#include "errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "ax25.h"
@@ -32,13 +34,13 @@ so_n4_listen(up,backlog)
 struct usock *up;
 int backlog;
 {
-	struct sockaddr_nr *local;
+	struct ksockaddr_nr *local;
 	int s;
 
 	s = up->index;
 	if(up->name == NULL)
 		autobind(up);
-	local = (struct sockaddr_nr *)up->name;
+	local = (struct ksockaddr_nr *)up->name;
 	up->cb.nr4 = open_nr4(&local->nr_addr,NULL,
 	 backlog ? AX_SERVER:AX_PASSIVE,s_nrcall,s_ntcall,s_nscall,s);
 	return 0;
@@ -55,24 +57,24 @@ int
 so_n4_conn(up)
 struct usock *up;
 {
-	struct sockaddr_nr *local,*remote;
+	struct ksockaddr_nr *local,*remote;
 	struct nr4cb *nr4;
 	int s;
 	
 	s = up->index;
 	if(up->name != NULL)
 		autobind(up);
-	local = (struct sockaddr_nr *)up->name;
-	remote = (struct sockaddr_nr *)up->peername;
+	local = (struct ksockaddr_nr *)up->name;
+	remote = (struct ksockaddr_nr *)up->peername;
 	up->cb.nr4 = open_nr4(&local->nr_addr,&remote->nr_addr,
 	 AX_ACTIVE,s_nrcall,s_ntcall,s_nscall,s);
 
 	/* Wait for the connection to complete */
 	while((nr4 = up->cb.nr4) != NULL && nr4->state != NR4STCON){
 		if(up->noblock){
-			errno = EWOULDBLOCK;
+			kerrno = kEWOULDBLOCK;
 			return -1;
-		} else if((errno = kwait(up)) != 0){
+		} else if((kerrno = kwait(up)) != 0){
 			return -1;
 		}
 	}
@@ -80,7 +82,7 @@ struct usock *up;
 		/* Connection probably already exists */
 		free(up->peername);
 		up->peername = NULL;
-		errno = ECONNREFUSED;
+		kerrno = kECONNREFUSED;
 		return -1;
 	}
 	return 0;
@@ -89,39 +91,39 @@ int
 so_n3_recv(up,bpp,from,fromlen)
 struct usock *up;
 struct mbuf **bpp;
-struct sockaddr *from;
+struct ksockaddr *from;
 int *fromlen;
 {
 	int cnt;
 	struct raw_nr *rnr;
-	struct sockaddr_nr *remote;
+	struct ksockaddr_nr *remote;
 	struct nr3hdr n3hdr;
 
 	while((rnr = up->cb.rnr) != NULL
 	 && rnr->rcvq == NULL){
 		if(up->noblock){
-			errno = EWOULDBLOCK;
+			kerrno = kEWOULDBLOCK;
 			return -1;
-		} else if((errno = kwait(up)) != 0){
+		} else if((kerrno = kwait(up)) != 0){
 			return -1;
 		}
 	}
 	if(rnr == NULL){
 		/* Connection went away */
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}
 	*bpp = dequeue(&rnr->rcvq);
 	ntohnr3(&n3hdr,bpp);
 	cnt = len_p(*bpp);
 	if(from != NULL && fromlen != NULL
-	   && *fromlen >= sizeof(struct sockaddr_nr)){
-		remote = (struct sockaddr_nr *)from;
-		remote->nr_family = AF_NETROM;
+	   && *fromlen >= sizeof(struct ksockaddr_nr)){
+		remote = (struct ksockaddr_nr *)from;
+		remote->nr_family = kAF_NETROM;
 		/* The callsign of the local user is not part of
 		   NET/ROM level 3, so that field is not used here */
 		memcpy(remote->nr_addr.node,n3hdr.source,AXALEN);
-		*fromlen = sizeof(struct sockaddr_nr);
+		*fromlen = sizeof(struct ksockaddr_nr);
 	}
 	return cnt;
 }
@@ -129,7 +131,7 @@ int
 so_n4_recv(up,bpp,from,fromlen)
 struct usock *up;
 struct mbuf **bpp;
-struct sockaddr *from;
+struct ksockaddr *from;
 int *fromlen;
 {
 	struct nr4cb *nr4;
@@ -137,15 +139,15 @@ int *fromlen;
 	while((nr4 = up->cb.nr4) != NULL
 	 && (*bpp = recv_nr4(nr4,0)) == NULL){
 		if(up->noblock){
-			errno = EWOULDBLOCK;
+			kerrno = kEWOULDBLOCK;
 			return -1;
-		} else if((errno = kwait(up)) != 0){
+		} else if((kerrno = kwait(up)) != 0){
 			return -1;
 		}
 	}
 	if(nr4 == NULL){
 		/* Connection went away */
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}
 	return (*bpp)->cnt;
@@ -154,22 +156,22 @@ int
 so_n3_send(
 struct usock *up,
 struct mbuf **bpp,
-struct sockaddr *to
+struct ksockaddr *to
 ){
-	struct sockaddr_nr *remote;
+	struct ksockaddr_nr *remote;
 
 	if(len_p(*bpp) > NR4MAXINFO) {
 		free_p(bpp);
-		errno = EMSGSIZE;
+		kerrno = kEMSGSIZE;
 		return -1;
 	}
 	if(to != NULL) {
-		remote = (struct sockaddr_nr *)to;
+		remote = (struct ksockaddr_nr *)to;
 	} else if(up->peername != NULL) {
-		remote = (struct sockaddr_nr *)up->peername;
+		remote = (struct ksockaddr_nr *)up->peername;
 	} else {
 		free_p(bpp);
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}	
 	/* The NETROM username is always ignored in outgoing traffic */
@@ -181,32 +183,32 @@ int
 so_n4_send(
 struct usock *up,
 struct mbuf **bpp,
-struct sockaddr *to
+struct ksockaddr *to
 ){
 	struct nr4cb *nr4;
 
 	if((nr4 = up->cb.nr4) == NULL) {
 		free_p(bpp);
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}
 	if(len_p(*bpp) > NR4MAXINFO){ /* reject big packets */
 		free_p(bpp);
-		errno = EMSGSIZE;
+		kerrno = kEMSGSIZE;
 		return -1;
 	}
 	send_nr4(nr4,bpp);
 
 	while((nr4 = up->cb.nr4) != NULL && nr4->nbuffered >= nr4->window){
 		if(up->noblock){
-			errno = EWOULDBLOCK;
+			kerrno = kEWOULDBLOCK;
 			return -1;
-		} else if((errno = kwait(up)) != 0){
+		} else if((kerrno = kwait(up)) != 0){
 			return -1;
 		}
 	}
 	if(nr4 == NULL){
-		errno = EBADF;
+		kerrno = kEBADF;
 		return -1;
 	}
 	return 0;
@@ -250,7 +252,7 @@ so_n4_kick(up)
 struct usock *up;
 {
 	if(up->cb.nr4 == NULL){
-		errno = ENOTCONN;
+		kerrno = kENOTCONN;
 		return -1;
 	}
 	kick_nr4(up->cb.nr4);
@@ -285,7 +287,7 @@ so_n4_close(up)
 struct usock *up;
 {
 	if(up->cb.nr4 != NULL){
-		/* Tell the TCP_CLOSED upcall there's no more socket */
+		/* Tell the TCP_CLOSED upcall there's no more ksocket */
 		up->cb.nr4->user = -1;
 		disc_nr4(up->cb.nr4);
 	}
@@ -298,14 +300,14 @@ static void
 autobind(up)
 struct usock *up;
 {
-	struct sockaddr_nr local;
+	struct ksockaddr_nr local;
 	int s;
 
 	s = up->index;
-	local.nr_family = AF_NETROM;
+	local.nr_family = kAF_NETROM;
 	memcpy(local.nr_addr.user,Mycall,AXALEN);
 	memcpy(local.nr_addr.node,Mycall,AXALEN);
-	bind(s,(struct sockaddr *)&local,sizeof(struct sockaddr_nr));
+	kbind(s,(struct ksockaddr *)&local,sizeof(struct ksockaddr_nr));
 }
 
 /* NET/ROM receive upcall routine */
@@ -342,10 +344,10 @@ int old,new;
 	oup = up = itop(s);
 
  	if(new == NR4STDISC && up != NULL){
-		/* Clean up. If the user has already closed the socket,
-		 * then up will be null (s was set to -1 by the close routine).
-		 * If not, then this is an abnormal close (e.g., a reset)
-		 * and clearing out the pointer in the socket structure will
+		/* Clean up. If the user has already closed the ksocket,
+		 * then up will be null (s was set to -1 by the kclose routine).
+		 * If not, then this is an abnormal kclose (e.g., a reset)
+		 * and clearing out the pointer in the ksocket structure will
 		 * prevent any further operations on what will be a freed
 		 * control block. Also wake up anybody waiting on events
 		 * related to this cb so they will notice it disappearing.
@@ -356,43 +358,43 @@ int old,new;
  	if(new == NR4STCON && old == NR4STDISC){
 		/* Handle an incoming connection. If this is a server cb,
 		 * then we're being handed a "clone" cb and we need to
-		 * create a new socket structure for it. In either case,
+		 * create a new ksocket structure for it. In either case,
 		 * find out who we're talking to and wake up the guy waiting
 		 * for the connection.
 		 */
 		if(cb->clone){
-			/* Clone the socket */
-			ns = socket(AF_NETROM,SOCK_SEQPACKET,0);
+			/* Clone the ksocket */
+			ns = ksocket(kAF_NETROM,kSOCK_SEQPACKET,0);
 			nup = itop(ns);
 			ASSIGN(*nup,*up);
 			cb->user = ns;
 			nup->cb.nr4 = cb;
 			cb->clone = 0; /* to avoid getting here again */
 			/* Allocate new memory for the name areas */
-			nup->name = mallocw(sizeof(struct sockaddr_nr));
-			nup->peername = mallocw(sizeof(struct sockaddr_nr));
-			/* Store the new socket # in the old one */
+			nup->name = mallocw(sizeof(struct ksockaddr_nr));
+			nup->peername = mallocw(sizeof(struct ksockaddr_nr));
+			/* Store the new ksocket # in the old one */
 			up->rdysock = ns;
 			up = nup;
 			s = ns;
 		} else {
 			/* Allocate space for the peer's name */
-			up->peername = mallocw(sizeof(struct sockaddr_nr));
-			/* Store the old socket # in the old socket */
+			up->peername = mallocw(sizeof(struct ksockaddr_nr));
+			/* Store the old ksocket # in the old ksocket */
 			up->rdysock = s;
 		}
 		/* Load the addresses. Memory for the name has already
 		 * been allocated, either above or in the original bind.
 		 */
 		sp.sa = up->name;
-		sp.nr->nr_family = AF_NETROM;
+		sp.nr->nr_family = kAF_NETROM;
 		ASSIGN(sp.nr->nr_addr,up->cb.nr4->local);
-		up->namelen = sizeof(struct sockaddr_nr);
+		up->namelen = sizeof(struct ksockaddr_nr);
 
 		sp.sa = up->peername;
-		sp.nr->nr_family = AF_NETROM;
+		sp.nr->nr_family = kAF_NETROM;
 		ASSIGN(sp.nr->nr_addr,up->cb.nr4->remote);
-		up->peernamelen = sizeof(struct sockaddr_nr);
+		up->peernamelen = sizeof(struct ksockaddr_nr);
 
 		/* Wake up the guy accepting it, and let him run */
 		ksignal(oup,1);
@@ -404,25 +406,25 @@ int old,new;
 
 int
 checknraddr(name,namelen)
-struct sockaddr *name;
+struct ksockaddr *name;
 int namelen;
 {
-	struct sockaddr_nr *sock;
+	struct ksockaddr_nr *sock;
 
-	sock = (struct sockaddr_nr *)name;
-	if(sock->nr_family != AF_NETROM || namelen != sizeof(struct sockaddr_nr))
+	sock = (struct ksockaddr_nr *)name;
+	if(sock->nr_family != kAF_NETROM || namelen != sizeof(struct ksockaddr_nr))
 		return -1;
 	return 0;
 }
 char *
 nrpsocket(p)
-struct sockaddr *p;
+struct ksockaddr *p;
 {
-	struct sockaddr_nr *nrp;
+	struct ksockaddr_nr *nrp;
 	static char buf[30];
 	char tmp[11];
 
-	nrp = (struct sockaddr_nr *)p;
+	nrp = (struct ksockaddr_nr *)p;
 	pax25(tmp,nrp->nr_addr.user);
 	sprintf(buf,"%s @ ",tmp);
 	pax25(tmp,nrp->nr_addr.node);

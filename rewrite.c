@@ -1,4 +1,6 @@
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
@@ -45,11 +47,11 @@ char *addr;
 {
 	char *argv[10], buf[MBXLINE], *cp, *cp2, *retstr;
 	int cnt;
-	FILE *fp;
-	if ((fp = fopen(Rewritefile,READ_TEXT)) == NULL)
+	kFILE *fp;
+	if ((fp = kfopen(Rewritefile,READ_TEXT)) == NULL)
 		return NULL;
 	memset(argv,0,10*sizeof(char *));
-	while(fgets(buf,MBXLINE,fp) != NULL) {
+	while(kfgets(buf,MBXLINE,fp) != NULL) {
 		if(*buf == '#')		/* skip commented lines */
 			continue;
 		if((cp = strchr(buf,' ')) == NULL) /* get the first word */
@@ -81,7 +83,7 @@ char *addr;
 				*cp2++ = *cp++;
 		for(cnt=0; argv[cnt] != NULL; ++cnt)
 			free(argv[cnt]);
-		fclose(fp);
+		kfclose(fp);
 		/* If there remains an 'r' character on the line, repeat
 		 * everything by recursing.
 		 */
@@ -93,7 +95,7 @@ char *addr;
 		}
 		return retstr;
 	}
-	fclose(fp);
+	kfclose(fp);
 	return NULL;
 }
 
@@ -110,11 +112,13 @@ int cont;		/* true if string is a continued header line */
 	if((cp = getname(string)) != NULL) /* Look for <> style address */
 	     return cp;
 	cp = string;
-	if(!cont)
-	     if((cp = strchr(string,':')) == NULL)	/* Skip the token */
+	if(!cont) {
+	     if((cp = strchr(string,':')) == NULL) {	/* Skip the token */
 		  return NULL;
-	     else
+	     } else {
 		  ++cp;
+	     }
+	}
 	for(; *cp != '\0'; ++cp) {
 	     if(par && *cp == ')') {
 		  --par;
@@ -151,7 +155,7 @@ char *s;
 		return NOHEADER;
 
 	for (i = 0; Hdrs[i] != NULL; i++) {
-		if (strnicmp(Hdrs[i],s,strlen(Hdrs[i])) == 0)
+		if (STRNICMP(Hdrs[i],s,strlen(Hdrs[i])) == 0)
 			return i;
 	}
 	return UNKNOWN;

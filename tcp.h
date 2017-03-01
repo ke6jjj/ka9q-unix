@@ -123,7 +123,7 @@ struct tcb {
 	enum tcp_state state;	/* Connection state */
 
 	char reason;		/* Reason for closing */
-#define	NORMAL		0	/* Normal close */
+#define	NORMAL		0	/* Normal kclose */
 #define	RESET		1	/* Reset by other end */
 #define	TIMEOUT		2	/* Excessive retransmissions */
 #define	NETWORK		3	/* Network problem (ICMP message) */
@@ -176,7 +176,7 @@ struct tcb {
 		unsigned int force:1;	/* We owe the other end an ACK or window update */
 		unsigned int clone:1;	/* Server-type TCB, cloned on incoming SYN */
 		unsigned int retran:1;	/* A retransmission has occurred */
-		unsigned int active:1;	/* TCB created with an active open */
+		unsigned int active:1;	/* TCB created with an active kopen */
 		unsigned int synack:1;	/* Our SYN has been acked */
 		unsigned int rtt_run:1;	/* We're timing a segment */
 		unsigned int congest:1;	/* Copy of last IP congest bit received */
@@ -305,7 +305,7 @@ int close_tcp(struct tcb *tcb);
 int del_tcp(struct tcb **tcb);
 int kick(int32 addr);
 int kick_tcp(struct tcb *tcb);
-struct tcb *open_tcp(struct socket *lsocket,struct socket *fsocket,
+struct tcb *open_tcp(struct ksocket *lsocket,struct ksocket *fsocket,
 	int mode,uint window,
 	void (*r_upcall)(struct tcb *tcb,int32 cnt),
 	void (*t_upcall)(struct tcb *tcb,int32 cnt),

@@ -1,7 +1,9 @@
 /* Stuff generic to all ARCnet controllers
  * Copyright 1990 Russ Nelson
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "iface.h"

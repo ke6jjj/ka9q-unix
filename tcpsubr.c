@@ -7,7 +7,9 @@
  *
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "timer.h"
 #include "mbuf.h"
@@ -206,7 +208,7 @@ enum tcp_state newstate;
 	oldstate = tcb->state;
 	tcb->state = newstate;
 	if(Tcp_trace)
-		printf("TCB %p %s -> %s\n",tcb,
+		kprintf("TCB %p %s -> %s\n",tcb,
 		 Tcpstates[oldstate],Tcpstates[newstate]);
 
 	/* Update MIB variables */
@@ -229,6 +231,8 @@ enum tcp_state newstate;
 		case TCP_LISTEN:
 			tcpAttemptFails++; 
 			break;
+		default:
+			break;
 		}
 		break;
 	case TCP_ESTABLISHED:
@@ -238,8 +242,12 @@ enum tcp_state newstate;
 		case TCP_LISTEN:
 			tcpEstabResets++;
 			break;
+		default:
+			break;
 		}
 		tcpCurrEstab--;
+		break;
+	default:
 		break;
 	}
 	if(newstate == TCP_ESTABLISHED || newstate == TCP_CLOSE_WAIT)
@@ -254,6 +262,8 @@ enum tcp_state newstate;
 		/* Notify the user that he can begin sending data */
 		if(tcb->t_upcall)
 			(*tcb->t_upcall)(tcb,tcb->window - tcb->sndcnt);
+		break;
+	default:
 		break;
 	}
 }

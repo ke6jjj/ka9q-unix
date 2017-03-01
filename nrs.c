@@ -5,7 +5,9 @@
  *
  * Copyright 1989 Dan Frank, W9NK
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "iface.h"
@@ -36,7 +38,7 @@ struct iface *ifp;
 			break;
 	}
 	if(xdev >= NRS_MAX) {
-		printf("Too many nrs devices\n");
+		kprintf("Too many nrs devices\n");
 		return -1;
 	}
 	/* no call supplied? */
@@ -130,9 +132,10 @@ struct mbuf *bp;
  * When a buffer is complete, return it; otherwise NULL
  */
 static struct mbuf *
-nrs_decode(dev,c)
-int dev;	/* net/rom unit number */
-uint8 c;	/* Incoming character */
+nrs_decode(
+  int dev,	/* net/rom unit number */
+  uint8 c	/* Incoming character */
+)
 {
 	struct mbuf *bp;
 	struct nrs *sp;
@@ -226,7 +229,7 @@ void *v2;
 
 	np = &Nrs[dev];
 	/* Process any pending input */
-	while((c = np->get(np->iface->dev)) != EOF){
+	while((c = np->get(np->iface->dev)) != kEOF){
 		if((bp = nrs_decode(dev,c)) == NULL)
 			continue;
 		net_route(np->iface,&bp);
@@ -244,11 +247,11 @@ void *p;
 	struct nrs *np;
 	int i;
 
-	printf("Interface   RcvB  NumReceived  CSumErrors\n");
+	kprintf("Interface   RcvB  NumReceived  CSumErrors\n");
 
 	for(i = 0, np = Nrs; i < ASY_MAX; i++, np++)
 		if(np->iface != NULL)
-			printf(" %8s   %4d   %10lu  %10lu\n",
+			kprintf(" %8s   %4d   %10lu  %10lu\n",
 			 np->iface->name, np->rcnt,
 			 np->packets, np->errors);
 

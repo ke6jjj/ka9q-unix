@@ -23,7 +23,9 @@
  *	Timer, and arp on address with little activity
  *   Reassignment to same machine if possible.
  */     
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <time.h>	
 
 #include "global.h"
@@ -177,6 +179,7 @@ extern int bp_ReadingCMDFile;
 /*
  * Done serving a network.
  */
+int
 da_done_net(iface)
 struct iface *iface;
 {
@@ -226,7 +229,7 @@ struct iface *iface;
 		
 		/* If network not found, return */
 		if(dr == NULL){
-			printf("Range for interface '%s' not found.\n", iface->name);
+			kprintf("Range for interface '%s' not found.\n", iface->name);
 			return;	
 		}
 		/* The range has been found.  Print it. */
@@ -278,32 +281,32 @@ struct drange_desc *dr;
 
 	iptoa(dr->dr_start, ipa);
 	iptoa(dr->dr_end, ipb);
-	printf("Interface %s range: %s - %s\n", dr->dr_iface->name, ipa, ipb);
+	kprintf("Interface %s range: %s - %s\n", dr->dr_iface->name, ipa, ipb);
 
         da = (struct daddr *) dr->dr_freeq.head;
-	printf("Free address queue\n");
+	kprintf("Free address queue\n");
         while(da){
                 iptoa(da->da_addr, ipa);
-                printf("    %s  last used by %s\n", ipa,(*at->format)(bp_ascii, da->da_hwaddr));
+                kprintf("    %s  last used by %s\n", ipa,(*at->format)(bp_ascii, da->da_hwaddr));
                 da = da->da_next;
         }
 
         da = (struct daddr *) dr->dr_usedq.head;
-        printf("\nUsed address queue\n");
+        kprintf("\nUsed address queue\n");
         while(da){
                 iptoa(da->da_addr, ipa);
-                printf("    %s  in use by %s\n", ipa, (*at->format)(bp_ascii, da->da_hwaddr));
+                kprintf("    %s  in use by %s\n", ipa, (*at->format)(bp_ascii, da->da_hwaddr));
                 da = da->da_next;
         }
 
         da =(struct daddr *) dr->dr_reclaimq.head;
-        printf("\nReclaimation address queue\n");
+        kprintf("\nReclaimation address queue\n");
         while(da){
                 iptoa(da->da_addr, ipa);
-                printf("    %s  in use by %s?\n", ipa, (*at->format)(bp_ascii, da->da_hwaddr));
+                kprintf("    %s  in use by %s?\n", ipa, (*at->format)(bp_ascii, da->da_hwaddr));
                 da = da->da_next;
         }
-        printf("\n");
+        kprintf("\n");
 }
 
 

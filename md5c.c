@@ -1,4 +1,5 @@
 /* MD5.C - RSA Data Security, Inc., MD5 message-digest algorithm */
+#include "top.h"
 
 #include <memory.h>
 
@@ -445,7 +446,7 @@ unsigned char block[64];
 	mov C,dword ptr si[2*4];	/* C = state[2] */
 	mov D,dword ptr si[3*4];	/* D = state[3] */
 
-	lds si,block;	/* Set up for data block read */
+	lds si,block;	/* Set up for data block kread */
 
 	/* The FF macro uses ebp as scratch. This makes our args
 	 * inaccessible until it is restored!

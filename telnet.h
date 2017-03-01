@@ -38,7 +38,7 @@ extern int Refuse_echo;
 extern int Tn_cr_mode;
 
 /* In telnet.c: */
-int tel_connect(struct session *sp,struct sockaddr *fsocket,int len);
+int tel_connect(struct session *sp,struct ksockaddr *fsocket,int len);
 void tel_output(int unused,void *p1,void *p2);
 void tnrecv(struct telnet *tn);
 void doopt(struct telnet *tn,int opt);

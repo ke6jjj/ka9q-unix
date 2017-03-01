@@ -15,11 +15,11 @@
  * BOOTP (bootstrap protocol) server daemon.
  *
  */
+#include "top.h"
 
-
-#include <stdio.h>
-#include <sys\types.h>
-#include <sys\stat.h>
+#include "stdio.h"
+#include <sys/types.h>
+#include <sys/stat.h>
 #include <ctype.h>
 #include <time.h>
 
@@ -81,7 +81,7 @@ int cnt;
 
 	while(bootpd_recv(sock, &bp_packet) != -1) {
 
-       		if(readtab() == -1) /* maybe re-read bootptab */
+       		if(readtab() == -1) /* maybe re-kread bootptab */
 			return;
 
 		switch(bp_packet.op) {
@@ -97,13 +97,13 @@ int cnt;
 
 }
 
-/* A packet has been received, read it into a bootp structure. */
+/* A packet has been received, kread it into a bootp structure. */
 static int
 bootpd_recv(sock, bootp)
 struct udp_cb *sock;
 struct bootp *bootp;
 {
-	struct socket fsock;
+	struct ksocket fsock;
 	struct mbuf *bp;
 	int len;
 

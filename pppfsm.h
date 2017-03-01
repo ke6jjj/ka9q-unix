@@ -173,13 +173,13 @@ struct ppp_s {
 	char *peername;			/* Peername from remote (if any) */
 
 	int32 OutTxOctetCount;		/* # octets sent */
-	int32 OutOpenFlag;		/* # of open flags sent */
+	int32 OutOpenFlag;		/* # of kopen flags sent */
 	uint OutNCP[fsmi_Size];	/* # NCP packets sent by protocol */
 	uint OutError;			/* # packets with error on send */
 	uint OutMemory;		/* # alloc failures on send */
 
 	int32 InRxOctetCount;		/* # octets received */
-	int32 InOpenFlag;		/* # of open flags */
+	int32 InOpenFlag;		/* # of kopen flags */
 	uint InNCP[fsmi_Size];		/* # NCP packets by protocol */
 	uint InUnknown;		/* # unknown packets received */
 	uint InChecksum;		/* # packets with bad checksum */

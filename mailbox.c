@@ -5,18 +5,21 @@
  *
  * SM0RGV 890506, most work done previously by W9NK
  *
- *** Changed 900114 by KA9Q to use newline mapping features in stream socket
+ *** Changed 900114 by KA9Q to use newline mapping features in stream ksocket
  *	interface code; everything here uses C eol convention (\n)
  *
  *	Numerous new commands and other changes by SM0RGV, 900120
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <time.h>
 #include <ctype.h>
-#include <errno.h>
+#include "errno.h"
 #ifdef	UNIX
 #include <sys/types.h>
 #include <sys/stat.h>
+#include <unistd.h>
 #endif
 
 #include "global.h"
@@ -50,7 +53,7 @@ static int Attended = TRUE;	/* default to attended mode */
 unsigned Maxlet = BM_NLET;
 
 char Noperm[] = "Permission denied.\n";
-char Nosock[] = "Can't create socket\n";
+char Nosock[] = "Can't create ksocket\n";
 
 static char Mbbanner[] = "[NET-H$]\nWelcome %s to the %s TCP/IP Mailbox (%s)\n%s";
 static char Mbmenu[] = "Current msg# %d : A,B,C,D,E,F,G,H,I,J,K,L,N,R,S,T,U,V,W,Z,? >\n";
@@ -128,13 +131,13 @@ char *argv[];
 void *p;
 {
 	if(argc > 2) {
-		printf("Usage: mbox motd \"<your message>\"\n");
+		kprintf("Usage: mbox motd \"<your message>\"\n");
 		return 0;
 	}
 
 	if(argc < 2) {
 		if(Motd != NULL)
-			puts(Motd);
+			kputs(Motd);
 	}
 	else {
 		if(Motd != NULL){
@@ -158,18 +161,18 @@ void *p;
 {
 	int i, j, len;
 	struct mbx *m;
-	struct sockaddr fsocket;
+	struct ksockaddr fsocket;
 	static char *states[] = {"LOGIN","CMD","SUBJ","DATA","REVFWD",
 				"TRYING","FORWARD"};
 
-	printf("User       State    S#  Where\n");
+	kprintf("User       State    S#  Where\n");
 
 	for (i = 0; i < NUMMBX; i++){
 		if((m = Mbox[i]) != NULL){
 			len = MAXSOCKSIZE;
-			j = getpeername(fileno(m->user),&fsocket,&len);
-			printf("%-11s%-9s%-4u%s\n",m->name,
-			 states[m->state],fileno(m->user),
+			j = kgetpeername(kfileno(m->user),&fsocket,&len);
+			kprintf("%-11s%-9s%-4u%s\n",m->name,
+			 states[m->state],kfileno(m->user),
 			 j != -1 ? psocket(&fsocket): "");
 		}
 	}
@@ -190,15 +193,15 @@ void *p;
 
 void
 listusers(network)
-FILE *network;
+kFILE *network;
 {
-	FILE *outsave;
+	kFILE *outsave;
 
-	fprintf(network,"\nCurrent remote users:\n");
-	outsave = stdout;
-	stdout = network;
+	kfprintf(network,"\nCurrent remote users:\n");
+	outsave = kstdout;
+	kstdout = network;
 	domboxdisplay(0,NULL,NULL);
-	stdout = outsave;
+	kstdout = outsave;
 }
 
 struct mbx *
@@ -226,15 +229,15 @@ struct mbx *m;
 	char *cp;
 #endif
 	union sp sp;
-	struct sockaddr tmp;
+	struct ksockaddr tmp;
 	char buf[MBXLINE];
 	int len = MAXSOCKSIZE;
 	int anony = 0;
 	int oldmode;
 
 	sp.sa = &tmp;
-	sp.sa->sa_family = AF_LOCAL;	/* default to AF_LOCAL */
-	getpeername(fileno(m->user),&tmp,&len);
+	sp.sa->sa_family = kAF_LOCAL;	/* default to AF_LOCAL */
+	kgetpeername(kfileno(m->user),&tmp,&len);
 	m->path = mallocw(MBXLINE);
 	/* This is one of the two parts of the mbox code that depends on the
 	 * underlying protocol. We have to figure out the name of the
@@ -243,9 +246,9 @@ struct mbx *m;
 	 */
 	switch(sp.sa->sa_family){
 #ifdef	AX25
-	case AF_NETROM:
-	case AF_AX25:
-		/* NETROM and AX25 socket address structures are "compatible" */
+	case kAF_NETROM:
+	case kAF_AX25:
+		/* NETROM and AX25 ksocket address structures are "compatible" */
 		pax25(m->name,sp.ax->ax25_addr);
 		cp = strchr(m->name,'-');
 		if(cp != NULL)			/* get rid of SSID */
@@ -271,42 +274,42 @@ struct mbx *m;
 			return -1;
 		return 0;
 #endif
-	case AF_LOCAL:
-	case AF_INET:
+	case kAF_LOCAL:
+	case kAF_INET:
 		m->state = MBX_LOGIN;
-		printf(Loginbanner,Hostname);
+		kprintf(Loginbanner,Hostname);
 		for(;;){
-			fputs("login: ",stdout);
-			if(mbxrecvline(m->user,m->name,sizeof(m->name),-1) == EOF)
+			kfputs("login: ",kstdout);
+			if(mbxrecvline(m->user,m->name,sizeof(m->name),-1) == kEOF)
 				return -1;
 			if(*m->name == '\0')
 				continue;
-			printf("Password: %c%c%c",IAC,WILL,TN_ECHO);
-			oldmode = fmode(m->user,STREAM_BINARY);
-			if(mbxrecvline(m->user,buf,MBXLINE,-1) == EOF)
+			kprintf("Password: %c%c%c",IAC,WILL,TN_ECHO);
+			oldmode = kfmode(m->user,STREAM_BINARY);
+			if(mbxrecvline(m->user,buf,MBXLINE,-1) == kEOF)
 				return -1;
-			printf("%c%c%c",IAC,WONT,TN_ECHO);
-			fmode(m->user,oldmode);
-			putchar('\n');
+			kprintf("%c%c%c",IAC,WONT,TN_ECHO);
+			kfmode(m->user,oldmode);
+			kputchar('\n');
 #ifdef	notdef
 			/* This is needed if the password was send before the
 			 * telnet no-echo options were received. We neeed to
 			 * flush the eold sequence from the input buffers, sigh
 			 */
-			if(socklen(fileno(m->user),0))/* discard any remaining input */
-				recv_mbuf(fileno(m->user),NULL,0,NULL,0);
+			if(socklen(kfileno(m->user),0))/* discard any remaining input */
+				recv_mbuf(kfileno(m->user),NULL,0,NULL,0);
 #endif
 			if((m->privs = userlogin(m->name,buf,&m->path,MBXLINE,&anony))
 			 != -1){
 				if(anony)
-					logmsg(fileno(m->user),"MBOX login: %s Password: %s",m->name,buf);
+					logmsg(kfileno(m->user),"MBOX login: %s Password: %s",m->name,buf);
 				else
-					logmsg(fileno(m->user),"MBOX login: %s",m->name);
+					logmsg(kfileno(m->user),"MBOX login: %s",m->name);
 				if(m->privs & EXCLUDED_CMD)
 					return -1;
 				return 0;
 			}
-			printf("Login incorrect\n");
+			kprintf("Login incorrect\n");
 			*m->name = '\0';	/* wipe any garbage */
 		}
 	}
@@ -324,28 +327,28 @@ void *p;
 	struct usock *up;
 	char *buf[3];
 	int rval;
-	FILE *network;
+	kFILE *network;
 
 	sockowner(s,Curproc);	/* We own it now */
 	if(p == NULL)
-		network = fdopen(s,"r+t");
+		network = kfdopen(s,"r+t");
 	else
-		network = (FILE *)p;
+		network = (kFILE *)p;
 	
-	/* Secede from the parent's sockets, and use the network socket that
+	/* Secede from the parent's sockets, and use the network ksocket that
 	 * was passed to us for both input and output. The reference
-	 * count on this socket will still be 1; this allows the domboxbye()
-	 * command to work by closing that socket with a single call.
-	 * If we return, the socket will be closed automatically.
+	 * count on this ksocket will still be 1; this allows the domboxbye()
+	 * command to work by closing that ksocket with a single call.
+	 * If we return, the ksocket will be closed automatically.
 	 */
-	fclose(stdin);
-	stdin = fdup(network);
-	fclose(stdout);
-	stdout = fdup(network);
+	kfclose(kstdin);
+	kstdin = kfdup(network);
+	kfclose(kstdout);
+	kstdout = kfdup(network);
 
-	logmsg(fileno(network),"open MBOX");
+	logmsg(kfileno(network),"open MBOX");
 	if((m = newmbx()) == NULL){
-		printf("Too many mailbox sessions\n");
+		kprintf("Too many mailbox sessions\n");
 		return;
 	}
 	m->user = network;
@@ -360,29 +363,29 @@ void *p;
 	m->state = MBX_CMD;	/* start in command state */
 
 	/* Now say hi */
-	printf(Mbbanner,m->name,Hostname,Version,
+	kprintf(Mbbanner,m->name,Hostname,Version,
 		Motd != NULL ? Motd : "");
 	/* Enable our local message area */
 	buf[1] = m->name;
 	doarea(2,buf,m);
-	printf(Mbmenu,m->current);
-	while(mbxrecvline(network,m->line,MBXLINE,-1) != EOF){
+	kprintf(Mbmenu,m->current);
+	while(mbxrecvline(network,m->line,MBXLINE,-1) != kEOF){
 		if((rval = mbx_parse(m)) == -2)
 			break;
 		if(rval == 1)
-			printf("Bad syntax.\n");
+			kprintf("Bad syntax.\n");
 		if(!(m->sid & MBX_SID) && isnewprivmail(m) > 0L)
-			printf("You have new mail.\n");
+			kprintf("You have new mail.\n");
 		scanmail(m);
-		printf((m->sid & MBX_SID) ? ">\n" : Mbmenu, m->current);
+		kprintf((m->sid & MBX_SID) ? ">\n" : Mbmenu, m->current);
 		m->state = MBX_CMD;
 	}
 	exitbbs(m);
 	/* nasty hack! we may have screwed up reference count */
 	/* by invoking newproc("smtp_send",....); Fudge it!   */
-	if((up = itop(fileno(stdout))) != NULL)
+	if((up = itop(kfileno(kstdout))) != NULL)
 		up->refcnt = 1;
-	fclose(stdout);
+	kfclose(kstdout);
 }
 
 void
@@ -420,7 +423,7 @@ static void gw_superv(int null,void *proc,void *p);
 static int mbx_to(int argc,char *argv[],void *p);
 static int mbx_data(struct mbx *m,struct list *cclist,char *extra);
 static int msgidcheck(char *string);
-static int uuencode(FILE *infile,FILE *outfile,char *infilename);
+static int uuencode(kFILE *infile,kFILE *outfile,char *infilename);
 
 static struct cmds Mbcmds[] = {
 	"",		doreadnext,	0, 0, NULL,
@@ -518,7 +521,7 @@ struct mbx *m;
  */
 int
 mbxrecvline(network,buf,len,escape)
-FILE *network;
+kFILE *network;
 char *buf;
 int len;
 int escape;
@@ -526,39 +529,39 @@ int escape;
 	int c, cnt = 0, opt;
 	if(buf == NULL)
 		return 0;
-	fflush(stdout);
-	while((c = getc(network)) != EOF){
+	kfflush(kstdout);
+	while((c = kgetc(network)) != kEOF){
 		if(c == IAC){		/* Telnet command escape */
-			if((c = getc(network)) == EOF)
+			if((c = kgetc(network)) == kEOF)
 				break;
-			if(c > 250 && c < 255 && (opt = getc(network)) != EOF){
+			if(c > 250 && c < 255 && (opt = kgetc(network)) != kEOF){
 #ifdef	foo
 				switch(c){
 				case WILL:
-					printf("%c%c%c",IAC,DONT,opt);
+					kprintf("%c%c%c",IAC,DONT,opt);
 					break;
 				case WONT:
-					printf("%c%c%c",IAC,DONT,opt);
+					kprintf("%c%c%c",IAC,DONT,opt);
 					break;
 				case DO:
-					printf("%c%c%c",IAC,WONT,opt);
+					kprintf("%c%c%c",IAC,WONT,opt);
 					break;
 				case DONT:
-					printf("%c%c%c",IAC,WONT,opt);
+					kprintf("%c%c%c",IAC,WONT,opt);
 				}
 #endif
-/* to be fixed 			fflush(stdout);*/
+/* to be fixed 			kfflush(kstdout);*/
 				continue;
 			}
-			if(c != IAC && (c = fgetc(network)) == EOF)
+			if(c != IAC && (c = kfgetc(network)) == kEOF)
 				break;
 		}
 		/* ordinary character */
 		if(c == '\r' || c == '\n')
 			break;
 		if(c == escape){
-			if(socklen(fileno(network),0)) /* discard any remaining input */
-				recv_mbuf(fileno(network),NULL,0,NULL,0);
+			if(socklen(kfileno(network),0)) /* discard any remaining input */
+				recv_mbuf(kfileno(network),NULL,0,NULL,0);
 			cnt = -2;
 			break;
 		}
@@ -567,7 +570,7 @@ int escape;
 		if(cnt == len - 1)
 			break;
 	}
-	if(c == EOF && cnt == 0)
+	if(c == kEOF && cnt == 0)
 		return -1;
 	*buf = '\0';
 	return cnt;
@@ -583,10 +586,10 @@ void *p;
 
 	m = (struct mbx *)p;
 	/* Now say goodbye */
-	printf("Thank you %s, for calling the %s Tcp/Ip Mailbox.\n",m->name,
+	kprintf("Thank you %s, for calling the %s Tcp/Ip Mailbox.\n",m->name,
 		Hostname);
 	if(m->type == TIP)
-		printf("Please hang up now.\n");
+		kprintf("Please hang up now.\n");
 
 	return -2;	/* signal that exitbbs() should be called */
 }
@@ -598,11 +601,11 @@ void *p;
 {
 	char buf[255];
 	int i;
-	FILE *fp;
+	kFILE *fp;
 	if(*argv[0] == '?') {
-		fputs(Longmenu1,stdout);
-		fputs(Longmenu2,stdout);
-		fputs(Longmenu3,stdout);
+		kfputs(Longmenu1,kstdout);
+		kfputs(Longmenu2,kstdout);
+		kfputs(Longmenu3,kstdout);
 		return 0;
 	}
 	buf[0] = '\0';
@@ -612,17 +615,19 @@ void *p;
 				sprintf(buf,"%s/%s.hlp",Helpdir,Mbcmds[i].name);
 				break;
 			}
-	if(buf[0] == '\0')
-		if(*argv[0] == 'i')			/* INFO command */
+	if(buf[0] == '\0') {
+		if(*argv[0] == 'i') {			/* INFO command */
 			sprintf(buf,"%s/info.hlp",Helpdir);
-		else
+		} else {
 			sprintf(buf,"%s/help.hlp",Helpdir);
-	if((fp = fopen(buf,READ_TEXT)) != NULL) {
-		sendfile(fp,Curproc->output,ASCII_TYPE,0);
-		fclose(fp);
+		}
+	}
+	if((fp = kfopen(buf,READ_TEXT)) != NULL) {
+		ksendfile(fp,Curproc->output,ASCII_TYPE,0);
+		kfclose(fp);
 	}
 	else
-		printf("No help available. (%s not found)\n",buf);
+		kprintf("No help available. (%s not found)\n",buf);
 	return 0;
 }
 
@@ -642,7 +647,7 @@ void *p;
 		return dombtelnet(3,newargv,p);
 	}
 	else {
-		printf("Sorry - the system is unattended.\007\n");
+		kprintf("Sorry - the system is unattended.\007\n");
 	}
 	/* It returns only after a disconnect or refusal */
 	return 0;
@@ -658,43 +663,44 @@ void *p;
 	char *host, *cp, fullfrom[MBXLINE], sigwork[LINELEN], *rhdr = NULL;
 	struct list *ap, *cclist = NULL;
 	struct mbx *m;
-	FILE *fp;
+	kFILE *fp;
 
 	m = (struct mbx *)p;
 	if((m->stype != 'R' || (m->sid & MBX_SID)) && mbx_to(argc,argv,m)
 	   == -1){
 		if(m->sid & MBX_SID)
-			printf("NO - syntax error\n");
+			kprintf("NO - syntax error\n");
 		else {
-			printf("S command syntax error - format is:\n");
-			printf("  S[F] name [@ host] [< from_addr] [$bulletin_id]\n");
-			printf("  SR [number]\n");
+			kprintf("S command syntax error - format is:\n");
+			kprintf("  S[F] name [@ host] [< from_addr] [$bulletin_id]\n");
+			kprintf("  SR [number]\n");
 		}
 		return 0;
 	}
 	if(m->stype != 'R' && msgidcheck(m->tomsgid)) {
 		if(m->sid & MBX_SID)
-			fputs("NO - ",stdout);
-		printf("Already have %s\n",m->tomsgid);
+			kfputs("NO - ",kstdout);
+		kprintf("Already have %s\n",m->tomsgid);
 		return 0;
 	}
 	if(m->stype == 'R' && !(m->sid & MBX_SID) &&
 	   mbx_reply(argc,argv,m,&cclist,&rhdr) == -1)
 		return 0;
-	if((cp = rewrite_address(m->to)) != NULL)
+	if((cp = rewrite_address(m->to)) != NULL) {
 	     if(strcmp(m->to,cp) != 0){
 		  m->origto = m->to;
 		  m->to = cp;
-	     }
-	     else
+	     } else {
 		  free(cp);
+	     }
+	}
 	if((m->origto != NULL || m->stype == 'R') && !(m->sid & MBX_SID))
-		printf("To: %s\n", m->to);
+		kprintf("To: %s\n", m->to);
 	if(validate_address(m->to) == 0){
 		if(m->sid & MBX_SID)
-			printf("NO - bad address\n");
+			kprintf("NO - bad address\n");
 		else
-			printf("Bad user or host name\n");
+			kprintf("Bad user or host name\n");
 		free(rhdr);
 		del_list(cclist);
 		/* We don't free any more buffers here. They are freed upon
@@ -705,68 +711,68 @@ void *p;
 	/* Display the Cc: line (during SR command) */
 	for(ap = cclist; ap != NULL; ap = ap->next) {
 		if(cccnt == 0){
-			printf("%s",Hdrs[CC]);
+			kprintf("%s",Hdrs[CC]);
 			cccnt = 4;
 		}
 		else {
-			fputs(", ",stdout);
+			kfputs(", ",kstdout);
 			cccnt += 2;
 		}
 		if(cccnt + strlen(ap->val) > 80 - 3) {
-			fputs("\n    ",stdout);
+			kfputs("\n    ",kstdout);
 			cccnt = 4;
 		}
-		fputs(ap->val,stdout);
+		kfputs(ap->val,kstdout);
 		cccnt += strlen(ap->val);
 	}
 	if(cccnt)
-		putchar('\n');
+		kputchar('\n');
 	m->state = MBX_SUBJ;
 	if(m->stype != 'R' || (m->sid & MBX_SID) != 0) {
-		printf((m->sid & MBX_SID) ? "OK\n" : "Subject: ");
+		kprintf((m->sid & MBX_SID) ? "OK\n" : "Subject: ");
 		if(mbxrecvline(m->user,m->line,MBXLINE,-1) == -1)
 			return 0;
 	}
 	else				/* Replying to a message */
-		printf("Subject: %s\n",m->line);
+		kprintf("Subject: %s\n",m->line);
 	if(mbx_data(m,cclist,rhdr) == -1){
 		free(rhdr);
 		del_list(cclist);
-		puts("Can't create temp file for mail");
+		kputs("Can't create temp file for mail");
 		return 0;
 	}
 	free(rhdr);
 	m->state = MBX_DATA;
 	if((m->sid & MBX_SID) == 0 && m->stype != 'F')
-		printf("Enter message.  %s",Howtoend);
+		kprintf("Enter message.  %s",Howtoend);
 
 	if(m->stype != 'F' || (m->sid & MBX_SID) != 0)
 		while(mbxrecvline(m->user,m->line,MBXLINE,-1) != -1){
 			if(m->line[0] == 0x01){  /* CTRL-A */
-				fclose(m->tfile);
-				puts("Aborted.");
+				kfclose(m->tfile);
+				kputs("Aborted.");
 				del_list(cclist);
 				return 0;
 			}
-			if(m->line[0] != CTLZ && stricmp(m->line, "/ex"))
-				fprintf(m->tfile,"%s\n",m->line);
+			if(m->line[0] != CTLZ && STRICMP(m->line, "/ex"))
+				kfprintf(m->tfile,"%s\n",m->line);
 			else
 				break;	/* all done */
 		}
 	else {
-		fprintf(m->tfile,"----- Forwarded message -----\n\n");
+		kfprintf(m->tfile,"----- Forwarded message -----\n\n");
 		msgtofile(m,m->current,m->tfile,0);
-		fprintf(m->tfile,"----- End of forwarded message -----\n");
+		kfprintf(m->tfile,"----- End of forwarded message -----\n");
 	}
 
 	/* Insert customised signature if one is found */
 	if(!(m->sid & MBX_SID)) {	/* not a forwarding BBS */
 	     sprintf(sigwork,"%s/%s.sig",Signature,
 		     m->tofrom ? m->tofrom : m->name);
-	     if((fp = fopen(sigwork,READ_TEXT)) != NULL){
-		  while(fgets(sigwork,LINELEN,fp) != NULL)
-			fputs(sigwork,m->tfile);
-		  fclose(fp);
+	     if((fp = kfopen(sigwork,READ_TEXT)) != NULL){
+		  while(kfgets(sigwork,LINELEN,fp) != NULL)
+			kfputs(sigwork,m->tfile);
+		  kfclose(fp);
 	     }
 	}
 
@@ -789,24 +795,24 @@ void *p;
 		sprintf(fullfrom,"%s%%%s.bbs@%s",m->tofrom, m->name, Hostname);
 	else
 		sprintf(fullfrom,"%s@%s",m->name,Hostname);
-	if(cclist != NULL && stricmp(host,Hostname) != 0) {
-		fseek(m->tfile,0L,0);	/* reset to beginning */
+	if(cclist != NULL && STRICMP(host,Hostname) != 0) {
+		kfseek(m->tfile,0L,0);	/* reset to beginning */
 		fail = queuejob(m->tfile,Hostname,cclist,fullfrom);
 		del_list(cclist);
 		cclist = NULL;
 	}
 	addlist(&cclist,m->to,0);
-	fseek(m->tfile,0L,0);
+	kfseek(m->tfile,0L,0);
 	fail += queuejob(m->tfile,host,cclist,fullfrom);
 	del_list(cclist);
-	fclose(m->tfile);
+	kfclose(m->tfile);
 	if(fail)
-	     puts("Couldn't queue message for delivery");
+	     kputs("Couldn't queue message for delivery");
 	else
 	     if(m->tomsgid != NULL &&
-		(fp = fopen(Historyfile,APPEND_TEXT)) != NULL) {
-		  fprintf(fp,"%s\n",m->tomsgid); /* Save BID in history file */
-		  fclose(fp);
+		(fp = kfopen(Historyfile,APPEND_TEXT)) != NULL) {
+		  kfprintf(fp,"%s\n",m->tomsgid); /* Save BID in history file */
+		  kfclose(fp);
 	     }
 	smtptick(0L);		/* wake SMTP to send that mail */
 	return 0;
@@ -856,11 +862,11 @@ void *p;
 
 	m = (struct mbx *)p;
 	if(argc < 2){
-		printf("The escape character is: ");
+		kprintf("The escape character is: ");
 		if(m->escape < 32)
-			printf("CTRL-%c\n",m->escape+'A'-1);
+			kprintf("CTRL-%c\n",m->escape+'A'-1);
 		else
-			printf("'%c'\n",m->escape);
+			kprintf("'%c'\n",m->escape);
 		return 0;
 	}
 	if(strlen(argv[1]) > 1)
@@ -880,26 +886,26 @@ char *argv[];
 void *p;
 {
 	struct mbx *m;
-	FILE *fp;
+	kFILE *fp;
 	char *file;
 
 	m = (struct mbx *)p;
 	file = pathname(m->path,argv[1]);
 	if(!permcheck(m->path,m->privs,RETR_CMD,file)){
-		printf(Noperm);
+		kprintf(Noperm);
 		return 0;
 	}
-	if((fp = fopen(file,READ_TEXT)) == NULL)
-		printf("Can't open \"%s\": %s\n",file,sys_errlist[errno]);
+	if((fp = kfopen(file,READ_TEXT)) == NULL)
+		kprintf("Can't kopen \"%s\": %s\n",file,ksys_errlist[kerrno]);
 	else
 		if(m->stype == 'U'){			/* uuencode ? */
-			fclose(fp);
-			fp = fopen(file,READ_BINARY);	/* assume non-ascii */
+			kfclose(fp);
+			fp = kfopen(file,READ_BINARY);	/* assume non-ascii */
 			uuencode(fp,m->user,file);
 		} else
-			sendfile(fp,m->user,ASCII_TYPE,0);
+			ksendfile(fp,m->user,ASCII_TYPE,0);
 	free(file);
-	fclose(fp);
+	kfclose(fp);
 	return 0;
 }
 
@@ -910,22 +916,22 @@ char *argv[];
 void *p;
 {
 	struct mbx *m;
-	FILE *fp;
+	kFILE *fp;
 	char *file, buf[LINELEN];
 
 	m = (struct mbx *)p;
 	file = pathname(m->path,argv[1]);
 	if(!permcheck(m->path,m->privs,STOR_CMD,file)){
-		printf(Noperm);
+		kprintf(Noperm);
 		return 0;
 	}
-	if((fp = fopen(file,WRITE_TEXT)) == NULL){
-		printf("Can't create \"%s\": %s\n",file,sys_errlist[errno]);
+	if((fp = kfopen(file,WRITE_TEXT)) == NULL){
+		kprintf("Can't create \"%s\": %s\n",file,ksys_errlist[kerrno]);
 		free(file);
 		return 0;
 	}
-	logmsg(fileno(m->user),"MBOX upload: %s",file);
-	printf("Send file,  %s",Howtoend);
+	logmsg(kfileno(m->user),"MBOX upload: %s",file);
+	kprintf("Send file,  %s",Howtoend);
 	for(;;){
 		if(mbxrecvline(m->user,buf,LINELEN,-1) == -1){
 			unlink(file);
@@ -933,25 +939,25 @@ void *p;
 		}
 		if(buf[0] == 0x01){  /* CTRL-A */
 			unlink(file);
-			printf("Aborted.\n");
+			kprintf("Aborted.\n");
 			break;
 		}
-		if(buf[0] == CTLZ || !stricmp("/ex",buf))
+		if(buf[0] == CTLZ || !STRICMP("/ex",buf))
 			break;
-		fputs(buf,fp);
+		kfputs(buf,fp);
 #if !defined(UNIX) && !defined(__TURBOC__) && !defined(AMIGA)
 		/* Needed only if the OS uses a CR/LF
-		 * convention and putc doesn't do
+		 * convention and kputc doesn't do
 		 * an automatic translation
 		 */
-		if(putc('\r',fp) == EOF)
+		if(kputc('\r',fp) == kEOF)
 			break;
 #endif
-		if(putc('\n',fp) == EOF)
+		if(kputc('\n',fp) == kEOF)
 			break;
 	}
 	free(file);
-	fclose(fp);
+	kfclose(fp);
 	return 0;
 }
 
@@ -962,7 +968,7 @@ char *argv[];
 void *p;
 {
 	struct mbx *m;
-	FILE *fp;
+	kFILE *fp;
 	char *file;
 
 	m = (struct mbx *)p;
@@ -971,15 +977,15 @@ void *p;
 	else
 		file = pathname(m->path,argv[1]);
 	if(!permcheck(m->path,m->privs,RETR_CMD,file)){
-		printf(Noperm);
+		kprintf(Noperm);
 		return 0;
 	}
 	if((fp = dir(file,1)) == NULL)
-		printf("Can't read directory: \"%s\": %s\n",file,sys_errlist[errno]);
+		kprintf("Can't kread directory: \"%s\": %s\n",file,ksys_errlist[kerrno]);
 	else
-		sendfile(fp,m->user,ASCII_TYPE,0);
+		ksendfile(fp,m->user,ASCII_TYPE,0);
 	free(file);
-	fclose(fp);
+	kfclose(fp);
 	return 0;
 }
 
@@ -995,12 +1001,12 @@ void *p;
 	m = (struct mbx *)p;
 	file = pathname(m->path,argv[1]);
 	if(!permcheck(m->path,m->privs,DELE_CMD,file)){
-		printf(Noperm);
+		kprintf(Noperm);
 		return 0;
 	}
 	if(unlink(file))
-		printf("Zap failed: %s\n",sys_errlist[errno]);
-	logmsg(fileno(m->user),"MBOX Zap: %s",file);
+		kprintf("Zap failed: %s\n",ksys_errlist[kerrno]);
+	logmsg(kfileno(m->user),"MBOX Zap: %s",file);
 	free(file);
 	return 0;
 }
@@ -1017,17 +1023,17 @@ void *p;
 
 	m = (struct mbx *) p;
 	if(!(m->privs & SYSOP_CMD)){
-		printf(Noperm);
+		kprintf(Noperm);
 		return 0;
 	}
 	dombescape(1,NULL,p);
 	for(;;){
-		printf("Net> ");
-		fflush(stdout);
-		c = mbxrecvline(stdin,m->line,MBXLINE,m->escape);
-		if(c == EOF || c == -2)
+		kprintf("Net> ");
+		kfflush(kstdout);
+		c = mbxrecvline(kstdin,m->line,MBXLINE,m->escape);
+		if(c == kEOF || c == -2)
 			break;
-		logmsg(fileno(m->user),"MBOX sysop: %s",m->line);
+		logmsg(kfileno(m->user),"MBOX sysop: %s",m->line);
 		cmdparse(Cmds,m->line,NULL);
 	}
 	return 0;
@@ -1061,7 +1067,7 @@ void *p;
 						free(m->path);
 						m->path = NULL;
 			  }
-		printf("Oh, hello %s.\n",m->name);
+		kprintf("Oh, hello %s.\n",m->name);
 		if(m->privs & EXCLUDED_CMD)
 			return domboxbye(0,NULL,p);
 		changearea(m,m->name);
@@ -1079,38 +1085,38 @@ char *argv[];
 void *p;
 {
 	struct mbx *m;
-	FILE *fp;
+	kFILE *fp;
 
 	m = (struct mbx *) p;
 	if(argc < 2){
-		printf("Current message area is: %s\n",m->area);
-		printf("Available areas are:\n%-15s  Your private mail area\n",
+		kprintf("Current message area is: %s\n",m->area);
+		kprintf("Available areas are:\n%-15s  Your private mail area\n",
 		  m->name);
-		if((fp = fopen(Arealist,READ_TEXT)) == NULL)
+		if((fp = kfopen(Arealist,READ_TEXT)) == NULL)
 			return 0;
-		sendfile(fp,m->user,ASCII_TYPE,0);
-		fclose(fp);
+		ksendfile(fp,m->user,ASCII_TYPE,0);
+		kfclose(fp);
 		return 0;
 	}
 	if((m->privs & SYSOP_CMD) || strcmp(m->name,argv[1]) == 0){
 		changearea(m,argv[1]);
 		if(m->nmsgs){
 			if(!strcmp(m->name,m->area))
-				printf("You have ");
+				kprintf("You have ");
 			else
-				printf("%s: ",m->area);
-			printf("%d message%s -  %d new.\n", m->nmsgs,
+				kprintf("%s: ",m->area);
+			kprintf("%d message%s -  %d new.\n", m->nmsgs,
 			  m->nmsgs == 1 ? " " : "s ", m->newmsgs);
 		}
 		return 0;
 	}
 	if(isarea(argv[1])) {
 		changearea(m,argv[1]);
-		printf("%s: %d message%s.\n", m->area, m->nmsgs,
+		kprintf("%s: %d message%s.\n", m->area, m->nmsgs,
 		  m->nmsgs == 1 ? "" : "s");
 	}
 	else
-		printf("No such message area: %s\n",argv[1]);
+		kprintf("No such message area: %s\n",argv[1]);
 	return 0;
 }
 
@@ -1134,37 +1140,37 @@ void *p;
 {
 	struct mbx *m;
 	int s, len, i;
-	struct sockaddr dsocket;
-	struct sockaddr_in fsocket;
+	struct ksockaddr dsocket;
+	struct ksockaddr_in fsocket;
 
 	m = (struct mbx *) p;
-	fsocket.sin_family = AF_INET;
+	fsocket.sin_family = kAF_INET;
 	if(argc < 3)
 		fsocket.sin_port = IPPORT_TELNET;
 	else
 		fsocket.sin_port = atoi(argv[2]);
 
 	if((fsocket.sin_addr.s_addr = resolve(argv[1])) == 0){
-		printf(Badhost,argv[1]);
+		kprintf(Badhost,argv[1]);
 		return 0;
 	}
 	/* Only local telnets are are allowed to the unprivileged user */
 	if(!(m->privs & TELNET_CMD) && !ismyaddr(fsocket.sin_addr.s_addr)){
-		printf(Noperm);
+		kprintf(Noperm);
 		return 0;
 	}
-	if((s = socket(AF_INET,SOCK_STREAM,0)) == -1){
-		printf(Nosock);
+	if((s = ksocket(kAF_INET,kSOCK_STREAM,0)) == -1){
+		kprintf(Nosock);
 		return 0;
 	}
 	if(fsocket.sin_port == IPPORT_TTYLINK) {
 		m->startmsg = mallocw(80);
 		len = MAXSOCKSIZE;
-		i = getpeername(fileno(m->user),&dsocket,&len);
+		i = kgetpeername(kfileno(m->user),&dsocket,&len);
 		sprintf(m->startmsg,"*** Incoming call from %s@%s ***\n",
 			m->name,i != -1 ? psocket(&dsocket): Hostname);
 	}
-	return gw_connect(m,s,(struct sockaddr *)&fsocket,SOCKSIZE);
+	return gw_connect(m,s,(struct ksockaddr *)&fsocket,SOCKSIZE);
 }
 
 static int
@@ -1177,7 +1183,7 @@ void *p;
 	char *host, *user = NULL, buf[8], *newargv[3];
 
 	if(argc > 2){
-		printf("Usage: F user@host  or  F @host  or  F user.\n");
+		kprintf("Usage: F user@host  or  F @host  or  F user.\n");
 		return 0;
 	}
 	host = Hostname;
@@ -1209,47 +1215,47 @@ int
 gw_connect(m,s,fsocket,len)
 struct mbx *m;
 int s;
-struct sockaddr *fsocket;
+struct ksockaddr *fsocket;
 int len;
 {
 	int c;
 	char *cp;
 	struct proc *child;
 	struct gwalarm *gwa;
-	FILE *network;
+	kFILE *network;
 
 	child = newproc("gateway supervisor",256,gw_superv,0,Curproc,m,0);
-	printf("Trying %s...  ",psocket(fsocket));
+	kprintf("Trying %s...  ",psocket(fsocket));
 	dombescape(0,NULL,(void *)m);
-	fflush(stdout);
-	if(connect(s,fsocket,len) == -1){
+	kfflush(kstdout);
+	if(kconnect(s,fsocket,len) == -1){
 		cp = sockerr(s);
-		printf("Connection failed: ");
+		kprintf("Connection failed: ");
 		if(cp != NULL)
-			printf("%s errno %d\n",cp,errno);
+			kprintf("%s kerrno %d\n",cp,kerrno);
 		else
-			printf("Escape character sent.\n");
+			kprintf("Escape character sent.\n");
 		free(m->startmsg);
 		m->startmsg = NULL;
 		killproc(&child);
 		close_s(s);
 		return 0;
 	}
-	network = fdopen(s,"r+t");
+	network = kfdopen(s,"r+t");
 	/* The user did not type the escape character */
 	killproc(&child);
-	puts("Connected.");
+	kputs("Connected.");
 	
 	if(m->startmsg != NULL){
-		fputs(m->startmsg,network);
+		kfputs(m->startmsg,network);
 		free(m->startmsg);
 		m->startmsg = NULL;
 	}
-	/* Since NOS does not flush the output socket after a certain
+	/* Since NOS does not flush the output ksocket after a certain
 	 * period of time, we have to arrange that ourselves.
 	 */
 	gwa = (struct gwalarm *) mallocw(sizeof(struct gwalarm));
-	gwa->s1 = stdout;
+	gwa->s1 = kstdout;
 	gwa->s2 = network;
 	set_timer(&gwa->t,240L);
 	gwa->t.func = gw_alarm;
@@ -1259,22 +1265,22 @@ int len;
 	child = newproc("gateway in",1024,gw_input,s,(void *)network,Curproc,0);
 	
 	for(;;){
-		if((c = getchar()) == EOF)
+		if((c = kgetchar()) == kEOF)
 			break;
 		if(c == m->escape){
-			puts("Disconnecting.");
-			if(socklen(fileno(stdin),0))
-				recv_mbuf(fileno(stdin),NULL,0,NULL,0);
+			kputs("Disconnecting.");
+			if(socklen(kfileno(kstdin),0))
+				recv_mbuf(kfileno(kstdin),NULL,0,NULL,0);
 			break;
 		}
-		if(putc(c,network) == EOF)
+		if(kputc(c,network) == kEOF)
 			break;
 	}
 	stop_timer(&gwa->t);
 	free(gwa);
-	fclose(network);
+	kfclose(network);
 	killproc(&child); /* get rid of the receive process */
-	printf("%c%c%c\n",IAC,WONT,TN_ECHO);
+	kprintf("%c%c%c\n",IAC,WONT,TN_ECHO);
 	return 0;
 }
 
@@ -1287,18 +1293,18 @@ void *p;
 	int c;
 	char *cp;
 	struct proc *parent;
-	FILE *network;
+	kFILE *network;
 
-	network = (FILE *)n;
+	network = (kFILE *)n;
 	parent = (struct proc *) p;
-	while((c = getc(network)) != EOF)
-		putchar((char)c);
-	printf("Disconnected ");
-	cp = sockerr(fileno(network));
+	while((c = kgetc(network)) != kEOF)
+		kputchar((char)c);
+	kprintf("Disconnected ");
+	cp = sockerr(kfileno(network));
 	if(cp != NULL)
-		puts(cp);
+		kputs(cp);
 	/* Tell the parent that we are no longer connected */
-	alert(parent,ENOTCONN);
+	alert(parent,kENOTCONN);
 	kwait(Curproc); /* Now wait to be killed */
 }
 
@@ -1316,14 +1322,14 @@ void *p;
 	int c;
 	parent = (struct proc *) proc;
 	m = (struct mbx *) p;
-	while((c = getchar()) != EOF)
+	while((c = kgetchar()) != kEOF)
 		if(c == m->escape){
 			/* flush anything in the input queue */
-			if(socklen(fileno(stdin),0))
-				recv_mbuf(fileno(stdin),NULL,0,NULL,0);
+			if(socklen(kfileno(kstdin),0))
+				recv_mbuf(kfileno(kstdin),NULL,0,NULL,0);
 			break;
 		}
-	alert(parent,EINTR);	 /* Tell the parent to quit */
+	alert(parent,kEINTR);	 /* Tell the parent to quit */
 	kwait(Curproc);		 /* Please kill me */
 }
 
@@ -1335,20 +1341,20 @@ void *p;
 	char oldbl;
 	struct usock *up;
 
-	/* Flush sockets s1 and s2, but first make sure that the socket
+	/* Flush sockets s1 and s2, but first make sure that the ksocket
 	 * is set to non-blocking mode, to prevent the flush from blocking
 	 * if the high water mark has been reached.
 	 */
-	if((up = itop(fileno(gwa->s1))) != NULL) {
+	if((up = itop(kfileno(gwa->s1))) != NULL) {
 		oldbl = up->noblock;
 		up->noblock = 1;
-		fflush(gwa->s1);
+		kfflush(gwa->s1);
 		up->noblock = oldbl;
 	}
-	if((up = itop(fileno(gwa->s2))) != NULL) {
+	if((up = itop(kfileno(gwa->s2))) != NULL) {
 		oldbl = up->noblock;
 		up->noblock = 1;
-		fflush(gwa->s2);
+		kfflush(gwa->s2);
 		up->noblock = oldbl;
 	}
 	start_timer(&gwa->t);
@@ -1404,7 +1410,7 @@ void *p;
 	state = LOOK_FOR_USER;
 	while(state < FINAL_STATE){
 #ifdef MBDEBUG
-		printf("State is %d, char is %c\n", state, *cp);
+		kprintf("State is %d, char is %c\n", state, *cp);
 #endif
 		switch(state){
 		case LOOK_FOR_USER:
@@ -1597,53 +1603,53 @@ char *extra;		/* optional extra header lines */
 	struct list *ap;
 	int cccnt = 0;
 	
-	if((m->tfile = tmpfile()) == NULL)
+	if((m->tfile = ktmpfile()) == NULL)
 		return -1;
 	time(&t);
-	fprintf(m->tfile,Hdrs[RECEIVED]);
+	kfprintf(m->tfile,Hdrs[RECEIVED]);
 	if(m->tofrom != NULL)
-		fprintf(m->tfile,"from %s.bbs ",m->name);
-	fprintf(m->tfile,"by %s (%s)\n\tid AA%ld ; %s",
+		kfprintf(m->tfile,"from %s.bbs ",m->name);
+	kfprintf(m->tfile,"by %s (%s)\n\tid AA%ld ; %s",
 		Hostname, Version, get_msgid(), ptime(&t));
-	fprintf(m->tfile,"%s%s",Hdrs[DATE],ptime(&t));
-	fprintf(m->tfile,Hdrs[MSGID]);
+	kfprintf(m->tfile,"%s%s",Hdrs[DATE],ptime(&t));
+	kfprintf(m->tfile,Hdrs[MSGID]);
 	if(m->tomsgid)
-		fprintf(m->tfile,"<%s@%s.bbs>\n", m->tomsgid, m->name);
+		kfprintf(m->tfile,"<%s@%s.bbs>\n", m->tomsgid, m->name);
 	else
-		fprintf(m->tfile,"<%ld@%s>\n",get_msgid(), Hostname);
-	fprintf(m->tfile,Hdrs[FROM]);
+		kfprintf(m->tfile,"<%ld@%s>\n",get_msgid(), Hostname);
+	kfprintf(m->tfile,Hdrs[FROM]);
 	if(m->tofrom)
-		fprintf(m->tfile,"%s%%%s.bbs@%s\n",
+		kfprintf(m->tfile,"%s%%%s.bbs@%s\n",
 			m->tofrom, m->name, Hostname);
 	else
-		fprintf(m->tfile,"%s@%s\n", m->name, Hostname);
-	fprintf(m->tfile,"%s%s\n",Hdrs[TO],m->origto != NULL ? m->origto : m->to);
+		kfprintf(m->tfile,"%s@%s\n", m->name, Hostname);
+	kfprintf(m->tfile,"%s%s\n",Hdrs[TO],m->origto != NULL ? m->origto : m->to);
 	/* Write Cc: line */
 	for(ap = cclist; ap != NULL; ap = ap->next) {
 		if(cccnt == 0){
-			fprintf(m->tfile,"%s",Hdrs[CC]);
+			kfprintf(m->tfile,"%s",Hdrs[CC]);
 			cccnt = 4;
 		}
 		else {
-		       fprintf(m->tfile,", ");
+		       kfprintf(m->tfile,", ");
 		       cccnt += 2;
 		}
 		if(cccnt + strlen(ap->val) > 80 - 3) {
-		       fprintf(m->tfile,"\n    ");
+		       kfprintf(m->tfile,"\n    ");
 		       cccnt = 4;
 		}
-		fputs(ap->val,m->tfile);
+		kfputs(ap->val,m->tfile);
 		cccnt += strlen(ap->val);
 	}
 	if(cccnt)
-		fputc('\n',m->tfile);
-	fprintf(m->tfile,"%s%s\n",Hdrs[SUBJECT],m->line);
+		kfputc('\n',m->tfile);
+	kfprintf(m->tfile,"%s%s\n",Hdrs[SUBJECT],m->line);
 	if(!isspace(m->stype) && ((m->stype != 'R' && m->stype != 'F') ||
 	  (m->sid & MBX_SID) !=0))
-		  fprintf(m->tfile,"%s%c\n", Hdrs[BBSTYPE],m->stype);
+		  kfprintf(m->tfile,"%s%c\n", Hdrs[BBSTYPE],m->stype);
 	if(extra != NULL)
-		fprintf(m->tfile,extra);
-	fprintf(m->tfile,"\n");
+		kfprintf(m->tfile,extra);
+	kfprintf(m->tfile,"\n");
 
 	return 0;
 }
@@ -1655,7 +1661,7 @@ static int
 msgidcheck(string)
 char *string;
 {
-     FILE *fp;
+     kFILE *fp;
      char buf[LINELEN], *cp;
      if(string == NULL)
 	  return 0;
@@ -1665,19 +1671,19 @@ char *string;
       * characters.
       */
      if((cp = strchr(string,'_')) != NULL && *(cp+1) != '\0' && 
-	strnicmp(cp+1,Hostname,strlen(cp+1)) == 0)
+	STRNICMP(cp+1,Hostname,strlen(cp+1)) == 0)
 	  return 1;
 
-     if((fp = fopen(Historyfile,READ_TEXT)) == NULL)
+     if((fp = kfopen(Historyfile,READ_TEXT)) == NULL)
 	  return 0;
-     while(fgets(buf,LINELEN,fp) != NULL) {
+     while(kfgets(buf,LINELEN,fp) != NULL) {
 	  rip(buf);
-	  if(stricmp(string,buf) == 0) {	/* found */
-	       fclose(fp);
+	  if(STRICMP(string,buf) == 0) {	/* found */
+	       kfclose(fp);
 	       return 1;
 	  }
      }
-     fclose(fp);
+     kfclose(fp);
      return 0;
 }
      
@@ -1688,8 +1694,8 @@ char *string;
 
 static int
 uuencode(infile,outfile,infilename)
-FILE *infile;
-FILE *outfile;
+kFILE *infile;
+kFILE *outfile;
 char *infilename;
 {
   int n_read_so_far = 0, n_written_so_far = 0, in_chars, n, mode = 0755;
@@ -1701,11 +1707,11 @@ char *infilename;
   if(stat(infilename,&stb) != -1)
        mode = stb.st_mode & 0777;	/* get real file protection mode */
 #endif
-  fprintf(outfile, "begin %03o %s\n", mode, infilename);
+  kfprintf(outfile, "begin %03o %s\n", mode, infilename);
 
   /* do the encode */
   for(;;) {
-    in_chars = fread(in, 1, 3, infile);
+    in_chars = kfread(in, 1, 3, infile);
     out[0] = in[0] >> 2;
     out[1] = in[0] << 6;
     out[1] = out[1] >> 2;
@@ -1723,7 +1729,7 @@ char *infilename;
     if (((in_chars != 3) || (n_written_so_far == 60)) && n_read_so_far > 0) {
       line[(n_read_so_far + 2) / 3 * 4] = '\0';
       
-      fprintf(outfile,"%c%s\n",n_read_so_far + ' ', line);
+      kfprintf(outfile,"%c%s\n",n_read_so_far + ' ', line);
       cnt += n_read_so_far;
       n_read_so_far = 0;
       n_written_so_far = 0;
@@ -1731,7 +1737,7 @@ char *infilename;
     if (in_chars == 0)
       break;
   }
-  if (fprintf(outfile," \nend\nsize %lu\n", cnt) == EOF)
+  if (kfprintf(outfile," \nend\nsize %lu\n", cnt) == kEOF)
     return 1;
   return 0;
 }

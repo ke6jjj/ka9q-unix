@@ -1,7 +1,9 @@
 /* SMTP Server state machine - see RFC 821
  *  enhanced 4/88 Dave Trulli nn2z
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <time.h>
 #ifdef UNIX
 #include <sys/types.h>
@@ -34,11 +36,11 @@ static struct list *expandalias(struct list **head,char *user);
 static int  getmsgtxt(struct smtpsv *mp);
 static struct smtpsv *mail_create(void);
 static void mail_clean(struct smtpsv *mp);
-static int mailit(FILE *data,char *from,struct list *tolist);
-static int router_queue(FILE *data,char *from,struct list *to);
+static int mailit(kFILE *data,char *from,struct list *tolist);
+static int router_queue(kFILE *data,char *from,struct list *to);
 static void smtplog(char *fmt,...);
 static void smtpserv(int s,void *unused,void *p);
-static int mailuser(FILE *data,char *from,char *to);
+static int mailuser(kFILE *data,char *from,char *to);
 
 /* Command table */
 static char *commands[] = {
@@ -74,7 +76,7 @@ static char Reset[] = "250 Reset state\n";
 static char Sent[] = "250 Sent\n";
 static char Ourname[] = "250 %s, Share and Enjoy!\n";
 static char Enter[] = "354 Enter mail, end with .\n";
-static char Ioerr[] = "452 Temp file write error\n";
+static char Ioerr[] = "452 Temp file kwrite error\n";
 static char Badcmd[] = "500 Command unrecognized\n";
 static char Lowmem[] = "421 System overloaded, try again later\n";
 static char Syntax[] = "501 Syntax error\n";
@@ -82,7 +84,7 @@ static char Needrcpt[] = "503 Need RCPT (recipient)\n";
 static char Unknown[] = "550 <%s> address unknown\n";
 static char Noalias[] = "550 No alias for <%s>\n";
 
-static int Ssmtp = -1; /* prototype socket for service */
+static int Ssmtp = -1; /* prototype ksocket for service */
 
 /* Start up SMTP receiver service */
 int
@@ -91,9 +93,9 @@ int argc;
 char *argv[];
 void *p;
 {
-	struct sockaddr_in lsocket;
+	struct ksockaddr_in lsocket;
 	int s;
-	FILE *network;
+	kFILE *network;
 
 	if(Ssmtp != -1){
 		return 0;
@@ -101,24 +103,24 @@ void *p;
 	ksignal(Curproc,0);	/* Don't keep the parser waiting */
 	chname(Curproc,"SMTP listener");
 
-	lsocket.sin_family = AF_INET;
-	lsocket.sin_addr.s_addr = INADDR_ANY;
+	lsocket.sin_family = kAF_INET;
+	lsocket.sin_addr.s_addr = kINADDR_ANY;
 	if(argc < 2)
 		lsocket.sin_port = IPPORT_SMTP;
 	else
 		lsocket.sin_port = atoi(argv[1]);
 
-	Ssmtp = socket(AF_INET,SOCK_STREAM,0);
-	bind(Ssmtp,(struct sockaddr *)&lsocket,sizeof(lsocket));
-	listen(Ssmtp,1);
+	Ssmtp = ksocket(kAF_INET,kSOCK_STREAM,0);
+	kbind(Ssmtp,(struct ksockaddr *)&lsocket,sizeof(lsocket));
+	klisten(Ssmtp,1);
 	for(;;){
-		if((s = accept(Ssmtp,NULL,(int *)NULL)) == -1)
+		if((s = kaccept(Ssmtp,NULL,(int *)NULL)) == -1)
 			break;	/* Service is shutting down */
 
-		network = fdopen(s,"r+t");
+		network = kfdopen(s,"r+t");
 		if(availmem() != 0){
-			fprintf(network,Lowmem);
-			fclose(network);
+			kfprintf(network,Lowmem);
+			kfclose(network);
 		} else {
 			/* Spawn a server */
 			newproc("SMTP server",2048,smtpserv,s,(void *)network,NULL,0);
@@ -150,30 +152,30 @@ void *p;
 	struct list *ap,*list;
 	int cnt;
 	char address_type;
-	FILE *network;
+	kFILE *network;
 
-	network = (FILE *)n;
-	sockowner(fileno(network),Curproc);		/* We own it now */
-	logmsg(fileno(network),"open SMTP");
+	network = (kFILE *)n;
+	sockowner(kfileno(network),Curproc);		/* We own it now */
+	logmsg(kfileno(network),"open SMTP");
 
 	if((mp = mail_create()) == NULL){
-		printf(Nospace);
-		logmsg(fileno(network),"close SMTP - no space");
-		fclose(network);
+		kprintf(Nospace);
+		logmsg(kfileno(network),"close SMTP - no space");
+		kfclose(network);
 		return;
 	}
 	mp->network = network;
 
-	(void) fprintf(network,Banner,Hostname);
+	(void) kfprintf(network,Banner,Hostname);
 
-loop:	if (fgets(buf,sizeof(buf),network) == NULL) {
+loop:	if (kfgets(buf,sizeof(buf),network) == NULL) {
 		/* He closed on us */
 		goto quit;
 	}
 	cnt = strlen(buf);
 	if(cnt < 4){
 		/* Can't be a legal command */
-		fprintf(network,Badcmd);
+		kfprintf(network,Badcmd);
 		goto loop;
 	}	
 	rip(buf);
@@ -188,7 +190,7 @@ loop:	if (fgets(buf,sizeof(buf),network) == NULL) {
 		if(strncmp(*cmdp,cmd,strlen(*cmdp)) == 0)
 			break;
 	if(*cmdp == NULL){
-		(void) fprintf(network,Badcmd);
+		(void) kfprintf(network,Badcmd);
 		goto loop;
 	}
 	arg = &cmd[strlen(*cmdp)];
@@ -200,26 +202,26 @@ loop:	if (fgets(buf,sizeof(buf),network) == NULL) {
 	case HELO_CMD:
 		free(mp->system);
 		mp->system = strdup(arg);
-		(void) fprintf(network,Ourname,Hostname);
+		(void) kfprintf(network,Ourname,Hostname);
 		break;
 	case NOOP_CMD:
-		(void) fprintf(network,Ok);
+		(void) kfprintf(network,Ok);
 		break;
 	case MAIL_CMD:
 		if((cp = getname(arg)) == NULL){
-			(void) fprintf(network,Syntax);
+			(void) kfprintf(network,Syntax);
 			break;
 		}
 		free(mp->from);
 		mp->from = strdup(cp);
-		(void) fprintf(network,Ok);
+		(void) kfprintf(network,Ok);
 		break;
 	case QUIT_CMD:
-		(void) fprintf(network,Closing);
+		(void) kfprintf(network,Closing);
 		goto quit;
 	case RCPT_CMD:	/* Specify recipient */
 		if((cp = getname(arg)) == NULL){
-			(void) fprintf(network,Syntax);
+			(void) kfprintf(network,Syntax);
 			break;
 		}
 
@@ -232,7 +234,7 @@ loop:	if (fgets(buf,sizeof(buf),network) == NULL) {
 
 		/* check if address is ok */
 		if ((address_type = validate_address(cp)) == BADADDR) {
-			(void) fprintf(network,Unknown,cp);
+			(void) kfprintf(network,Unknown,cp);
 			break;
 		}
 		/* if a local address check for an alias */
@@ -242,33 +244,33 @@ loop:	if (fgets(buf,sizeof(buf),network) == NULL) {
 			/* a remote address is added to the list */
 			addlist(&mp->to, cp, address_type);
 
-		(void) fprintf(network,Ok);
+		(void) kfprintf(network,Ok);
 		break;
 	case HELP_CMD:
-		(void) fprintf(network,Help);
+		(void) kfprintf(network,Help);
 		break;
 	case DATA_CMD:
 		if(mp->to == NULL)
-			(void) fprintf(network,Needrcpt);
-		else if ((mp->data = tmpfile()) == NULL)
-			(void) fprintf(network,Ioerr);
+			(void) kfprintf(network,Needrcpt);
+		else if ((mp->data = ktmpfile()) == NULL)
+			(void) kfprintf(network,Ioerr);
 		 else
 			getmsgtxt(mp);
 		break;
 	case RSET_CMD:
 		del_list(mp->to);
 		mp->to = NULL;
-		(void) fprintf(network,Reset);
+		(void) kfprintf(network,Reset);
 		break;
 	case EXPN_CMD:
 		if (*arg == '\0') {
-			(void) fprintf(network,Syntax);
+			(void) kfprintf(network,Syntax);
 			break;
 		}
 
 		list = NULL;
 		/* rewrite address if possible */
-		if((newaddr = rewrite_address(arg)) != NULL)
+		if((newaddr = rewrite_address(arg)) != NULL) {
 			if(strcmp(newaddr,arg) == 0) {
 				free(newaddr);
 				newaddr = NULL;
@@ -277,20 +279,21 @@ loop:	if (fgets(buf,sizeof(buf),network) == NULL) {
 				strcpy(buf,newaddr);
 				arg = buf;
 			}
+		}
 		list = NULL;
 		expandalias(&list,arg);
 		if (strcmp(list->val,arg) == 0 && list->next == NULL)
 			if(newaddr == NULL) {
-				(void) fprintf(network,Noalias,arg);
+				(void) kfprintf(network,Noalias,arg);
 				del_list(list);
 				break;
 			}
 		ap = list;
 		while (ap->next != NULL) {
-			(void) fprintf(network,"250-%s\n",ap->val);
+			(void) kfprintf(network,"250-%s\n",ap->val);
 			ap = ap->next;
 		}
-		fprintf(network,"250 %s\n",ap->val);
+		kfprintf(network,"250 %s\n",ap->val);
 		del_list(list);
 		free(newaddr);
 		break;
@@ -298,13 +301,13 @@ loop:	if (fgets(buf,sizeof(buf),network) == NULL) {
 	goto loop;
 
 quit:
-	logmsg(fileno(network),"close SMTP");
-	fclose(network);
+	logmsg(kfileno(network),"close SMTP");
+	kfclose(network);
 	mail_clean(mp);
 	smtptick(0L);			/* start SMTP daemon immediately */
 }
 
-/* read the message text */
+/* kread the message text */
 static int
 getmsgtxt(mp)
 struct smtpsv *mp;
@@ -312,27 +315,27 @@ struct smtpsv *mp;
 	char buf[LINELEN];
 	register char *p = buf;
 	time_t t;
-	FILE *network;
-	FILE *data;
+	kFILE *network;
+	kFILE *data;
 	char *cp;
 
 	network = mp->network;
 	data = mp->data;
 	/* Add timestamp; ptime adds newline */
 	time(&t);
-	fprintf(data,"Received: ");
+	kfprintf(data,"Received: ");
 	if(mp->system != NULL)
-		fprintf(data,"from %s ",mp->system);
-	fprintf(data,"by %s with SMTP\n\tid AA%ld ; %s",
+		kfprintf(data,"from %s ",mp->system);
+	kfprintf(data,"by %s with SMTP\n\tid AA%ld ; %s",
 			Hostname, get_msgid(), ptime(&t));
-	if(ferror(data)){
-		(void) fprintf(network,Ioerr);
+	if(kferror(data)){
+		(void) kfprintf(network,Ioerr);
 		return 1;
 	} else {
-		(void) fprintf(network,Enter);
+		(void) kfprintf(network,Enter);
 	}
 	while(1) {
-		if(fgets(p,sizeof(buf),network) == NULL){
+		if(kfgets(p,sizeof(buf),network) == NULL){
 			return 1;
 		}
 		rip(p);
@@ -341,10 +344,10 @@ struct smtpsv *mp;
 			if (*++p == '\0') {
 				/* Also sends appropriate response */
 				if (mailit(data,mp->from,mp->to) != 0)
-					(void) fprintf(network,Ioerr);
+					(void) kfprintf(network,Ioerr);
 				else
-					(void) fprintf(network,Sent);
-				fclose(data);
+					(void) kfprintf(network,Sent);
+				kfclose(data);
 				data = NULL;
 				del_list(mp->to);
 				mp->to = NULL;
@@ -358,10 +361,10 @@ struct smtpsv *mp;
 #endif
 		/* for UNIX mail compatiblity */
 		if (strncmp(p,"From ",5) == 0)
-			(void) putc('>',data);
+			(void) kputc('>',data);
 		/* Append to data file */
-		if(fprintf(data,"%s\n",p) < 0) {
-			(void) fprintf(network,Ioerr);
+		if(kfprintf(data,"%s\n",p) < 0) {
+			(void) kfprintf(network,Ioerr);
 			return 1;
 		}
 	}
@@ -389,7 +392,7 @@ register struct smtpsv *mp;
 	free(mp->system);
 	free(mp->from);
 	if(mp->data != NULL)
-		fclose(mp->data);
+		kfclose(mp->data);
 	del_list(mp->to);
 	free(mp);
 }
@@ -420,12 +423,12 @@ register char *cp;
 */
 static int
 mailit(data,from,tolist)
-FILE *data;
+kFILE *data;
 char *from;
 struct list *tolist;
 {
 	struct list *ap, *dlist = NULL;
-	register FILE *fp;
+	register kFILE *fp;
 	char	mailbox[50], *cp, *host, *qhost;
 	int	c, fail = 0;
 	time_t	t;
@@ -443,13 +446,13 @@ struct list *tolist;
 					host = Hostname;
 				if(qhost == NULL)
 			     		qhost = host;
-				if(stricmp(qhost,host) == 0) {
+				if(STRICMP(qhost,host) == 0) {
 					ap->type = BADADDR;
 					addlist(&dlist,ap->val,0);
 				}
 			}
 		if(qhost != NULL) {
-			rewind(data);
+			krewind(data);
 			queuejob(data,qhost,dlist,from);
 			del_list(dlist);
 			dlist = NULL;
@@ -461,7 +464,7 @@ struct list *tolist;
 			ap->type = DOMAIN;
 			continue;
 		}
-		rewind(data);
+		krewind(data);
 		/* strip off host name of LOCAL addresses */
 		if ((cp = strchr(ap->val,'@')) != NULL)
 			*cp = '\0';
@@ -484,24 +487,24 @@ struct list *tolist;
 			int tocnt = 0;
 			sprintf(mailbox,"%s/%s.txt",Mailspool,ap->val);
 #ifndef	AMIGA
-			if((fp = fopen(mailbox,APPEND_TEXT)) != NULL) {
+			if((fp = kfopen(mailbox,APPEND_TEXT)) != NULL) {
 #else
-			if((fp = fopen(mailbox,"r+")) != NULL) {
-				(void) fseek(fp, 0L, 2);
+			if((fp = kfopen(mailbox,"r+")) != NULL) {
+				(void) kfseek(fp, 0L, 2);
 #endif
 				time(&t);
-				fprintf(fp,"From %s %s",from,ctime(&t));
+				kfprintf(fp,"From %s %s",from,ctime(&t));
 				host = NULL;
-				while(fgets(buf,sizeof(buf),data) != NULL){
+				while(kfgets(buf,sizeof(buf),data) != NULL){
 					if(buf[0] == '\n'){
 						if(tocnt == 0)
-							fprintf(fp,"%s%s\n",
+							kfprintf(fp,"%s%s\n",
 								Hdrs[APPARTO],
 								ap->val);
-						fputc('\n',fp);
+						kfputc('\n',fp);
 						break;
 					}
-					fputs(buf,fp);
+					kfputs(buf,fp);
 					rip(buf);
 					switch(htype(buf)){
 					case TO:
@@ -517,18 +520,18 @@ struct list *tolist;
 						break;
 					}
 				}
-				while((c = fread(buf,1,sizeof(buf),data)) > 0)
-					if(fwrite(buf,1,c,fp) != c)
+				while((c = kfread(buf,1,sizeof(buf),data)) > 0)
+					if(kfwrite(buf,1,c,fp) != c)
 						break;
-				if(ferror(fp))
+				if(kferror(fp))
 					fail = 1;
 				else
-					fprintf(fp,"\n");
+					kfprintf(fp,"\n");
 				/* Leave a blank line between msgs */
-				fclose(fp);
-				printf("New mail arrived for %s\n",ap->val);
+				kfclose(fp);
+				kprintf("New mail arrived for %s\n",ap->val);
 				if(host != NULL){
-					rewind(data); /* Send return receipt */
+					krewind(data); /* Send return receipt */
 					mdaemon(data,host,NULL,0);
 					free(host);
 				}
@@ -558,11 +561,13 @@ time_t *t;
 	/* Read the system time */
 	ltm = localtime(t);
 
-	if (*tz == '\0')
-		if ((p = getenv("TZ")) == NULL)
+	if (*tz == '\0') {
+		if ((p = getenv("TZ")) == NULL) {
 			strcpy(tz,"UTC");
-		else
+		} else {
 			strncpy(tz,p,3);
+		}
+	}
 
 	/* rfc 822 format */
 	sprintf(str,"%s, %.2d %s %02d %02d:%02d:%02d %.3s\n",
@@ -583,25 +588,25 @@ get_msgid()
 	char sfilename[LINELEN];
 	char s[20];
 	register long sequence = 0;
-	FILE *sfile;
+	kFILE *sfile;
 
 	sprintf(sfilename,"%s/sequence.seq",Mailqdir);
-	sfile = fopen(sfilename,READ_TEXT);
+	sfile = kfopen(sfilename,READ_TEXT);
 
 	/* if sequence file exists, get the value, otherwise set it */
 	if (sfile != NULL) {
-		(void) fgets(s,sizeof(s),sfile);
+		(void) kfgets(s,sizeof(s),sfile);
 		sequence = atol(s);
 	/* Keep it in range of and 8 digit number to use for dos name prefix. */
 		if (sequence < 0L || sequence > 99999999L )
 			sequence = 0;
-		fclose(sfile);
+		kfclose(sfile);
 	}
 
-	/* increment sequence number, and write to sequence file */
-	sfile = fopen(sfilename,WRITE_TEXT);
-	fprintf(sfile,"%ld",++sequence);
-	fclose(sfile);
+	/* increment sequence number, and kwrite to sequence file */
+	sfile = kfopen(sfilename,WRITE_TEXT);
+	kfprintf(sfile,"%ld",++sequence);
+	kfclose(sfile);
 	return sequence;
 }
 
@@ -666,12 +671,12 @@ char *s;
 /* place a mail job in the outbound queue */
 int
 queuejob(dfile,host,to,from)
-FILE *dfile;
+kFILE *dfile;
 char *host;
 struct list *to;
 char *from;
 {
-	FILE *fp;
+	kFILE *fp;
 	struct list *ap;
 	char tmpstring[50], prefix[9], buf[LINELEN];
 	register int cnt;
@@ -679,30 +684,30 @@ char *from;
 	sprintf(prefix,"%ld",get_msgid());
 	mlock(Mailqdir,prefix);
 	sprintf(tmpstring,"%s/%s.txt",Mailqdir,prefix);
-	if((fp = fopen(tmpstring,WRITE_TEXT)) == NULL) {
+	if((fp = kfopen(tmpstring,WRITE_TEXT)) == NULL) {
 		(void) rmlock(Mailqdir,prefix);
 		return 1;
 	}
-	while((cnt = fread(buf, 1, LINELEN, dfile)) > 0)
-		if(fwrite(buf, 1, cnt, fp) != cnt)
+	while((cnt = kfread(buf, 1, LINELEN, dfile)) > 0)
+		if(kfwrite(buf, 1, cnt, fp) != cnt)
 			break;
-	if(ferror(fp)){
-		fclose(fp);
+	if(kferror(fp)){
+		kfclose(fp);
 		(void) rmlock(Mailqdir,prefix);
 		return 1;
 	}
-	fclose(fp);
+	kfclose(fp);
 	sprintf(tmpstring,"%s/%s.wrk",Mailqdir,prefix);
-	if((fp = fopen(tmpstring,WRITE_TEXT)) == NULL) {
+	if((fp = kfopen(tmpstring,WRITE_TEXT)) == NULL) {
 		(void) rmlock(Mailqdir,prefix);
 		return 1;
 	}
-	fprintf(fp,"%s\n%s\n",host,from);
+	kfprintf(fp,"%s\n%s\n",host,from);
 	for(ap = to; ap != NULL; ap = ap->next) {
-		fprintf(fp,"%s\n",ap->val);
+		kfprintf(fp,"%s\n",ap->val);
 		smtplog("queue job %s To: %s From: %s",prefix,ap->val,from);
 	}
-	fclose(fp);
+	kfclose(fp);
 	(void) rmlock(Mailqdir,prefix);
 	return 0;
 }
@@ -710,43 +715,43 @@ char *from;
 /* Deliver mail to the appropriate mail boxes */
 static int
 router_queue(data,from,to)
-FILE *data;
+kFILE *data;
 char *from;
 struct list *to;
 {
 	int c;
 	register struct list *ap;
-	FILE *fp;
+	kFILE *fp;
 	char tmpstring[50];
 	char prefix[9];
 
 	sprintf(prefix,"%ld",get_msgid());
 	mlock(Routeqdir,prefix);
 	sprintf(tmpstring,"%s/%s.txt",Routeqdir,prefix);
-	if((fp = fopen(tmpstring,WRITE_TEXT)) == NULL) {
+	if((fp = kfopen(tmpstring,WRITE_TEXT)) == NULL) {
 		(void) rmlock(Routeqdir,prefix);
 		return 1;
 	}
-	rewind(data);
-	while((c = getc(data)) != EOF)
-		if(putc(c,fp) == EOF)
+	krewind(data);
+	while((c = kgetc(data)) != kEOF)
+		if(kputc(c,fp) == kEOF)
 			break;
-	if(ferror(fp)){
-		fclose(fp);
+	if(kferror(fp)){
+		kfclose(fp);
 		(void) rmlock(Routeqdir,prefix);
 		return 1;
 	}
-	fclose(fp);
+	kfclose(fp);
 	sprintf(tmpstring,"%s/%s.wrk",Routeqdir,prefix);
-	if((fp = fopen(tmpstring,WRITE_TEXT)) == NULL) {
+	if((fp = kfopen(tmpstring,WRITE_TEXT)) == NULL) {
 		(void) rmlock(Routeqdir,prefix);
 		return 1;
 	}
-	fprintf(fp,"From: %s\n",from);
+	kfprintf(fp,"From: %s\n",from);
 	for(ap = to;ap != NULL;ap = ap->next) {
-		fprintf(fp,"To: %s\n",ap->val);
+		kfprintf(fp,"To: %s\n",ap->val);
 	}
-	fclose(fp);
+	kfclose(fp);
 	(void) rmlock(Routeqdir,prefix);
 	smtplog("rqueue job %s From: %s",prefix,from);
 	return 0;
@@ -791,7 +796,7 @@ expandalias(head, user)
 struct list **head;
 char *user;
 {
-	FILE *fp;
+	kFILE *fp;
 	register char *s,*p;
 	struct rr *rrp, *rrlp;
 	int inalias = 0;
@@ -799,7 +804,7 @@ char *user;
 	char buf[LINELEN];
 	
 	/* no alias file found */
-	if ((fp = fopen(Alias, READ_TEXT)) == NULL) {
+	if ((fp = kfopen(Alias, READ_TEXT)) == NULL) {
 		/* Try MB, MG or MR domain name records */
 		rrlp = rrp = resolve_mailb(user);
 		while(rrp != NULL){
@@ -828,7 +833,7 @@ char *user;
 			return addlist(head, user, LOCAL);
 	}
 
-	while (fgets(buf,LINELEN,fp) != NULL) {
+	while (kfgets(buf,LINELEN,fp) != NULL) {
 		p = buf;
 		if ( *p == '#' || *p == '\0')
 			continue;
@@ -867,7 +872,7 @@ char *user;
 			SKIPSPACE(p);
 		}
 	}
-	(void) fclose(fp);
+	(void) kfclose(fp);
 
 	if (inalias)	/* found and processed and alias. */
 		return tp;
@@ -882,26 +887,26 @@ smtplog(char *fmt, ...)
 	va_list ap;
 	char *cp;
 	time_t t;
-	FILE *fp;
+	kFILE *fp;
 
-	if ((fp = fopen(Maillog,APPEND_TEXT)) == NULL)
+	if ((fp = kfopen(Maillog,APPEND_TEXT)) == NULL)
 		return;
 	time(&t);
 	cp = ctime(&t);
 	rip(cp);
-	fprintf(fp,"%s ",cp);
+	kfprintf(fp,"%s ",cp);
 	va_start(ap,fmt);
-	vfprintf(fp,fmt,ap);
+	kvfprintf(fp,fmt,ap);
 	va_end(ap);
-	fprintf(fp,"\n");
-	fclose(fp);
+	kfprintf(fp,"\n");
+	kfclose(fp);
 }
 /* send mail to a single user. Can be called from the ax24 mailbox or
 ** from the return mail function in the smtp client 
 */
 static int
 mailuser(data,from,to)
-FILE *data;
+kFILE *data;
 char *from;
 char *to;
 {
@@ -928,17 +933,17 @@ char *to;
 /* Mailer daemon return mail mechanism */
 int
 mdaemon(data,to,lp,bounce)
-FILE *data;		/* pointer to rewound data file */
+kFILE *data;		/* pointer to rewound data file */
 char *to;		/* Overridden by Errors-To: line if bounce is true */
 struct list *lp;	/* error log for failed mail */
 int bounce;		/* True for failed mail, otherwise return receipt */
 {
 	time_t t;
-	FILE *tfile;
+	kFILE *tfile;
 	char buf[LINELEN], *cp, *newto = NULL;
 	int cnt;
 	if(to == NULL || (to != NULL && *to == '\0') || bounce){
-		while(fgets(buf,sizeof(buf),data) != NULL) {
+		while(kfgets(buf,sizeof(buf),data) != NULL) {
 			if(buf[0] == '\n')
 				break;
 			/* Look for Errors-To: */
@@ -952,41 +957,41 @@ int bounce;		/* True for failed mail, otherwise return receipt */
 		if(newto == NULL && ((to != NULL && *to == '\0') ||
 		   to == NULL))
 			return -1;
-		rewind(data);
+		krewind(data);
 	}
-	if((tfile = tmpfile()) == NULL)
+	if((tfile = ktmpfile()) == NULL)
 		return -1;
 	time(&t);
-	fprintf(tfile,"%s%s",Hdrs[DATE],ptime(&t));
-	fprintf(tfile,"%s<%ld@%s>\n",Hdrs[MSGID],get_msgid(),Hostname);
-	fprintf(tfile,"%sMAILER-DAEMON@%s (Mail Delivery Subsystem)\n",
+	kfprintf(tfile,"%s%s",Hdrs[DATE],ptime(&t));
+	kfprintf(tfile,"%s<%ld@%s>\n",Hdrs[MSGID],get_msgid(),Hostname);
+	kfprintf(tfile,"%sMAILER-DAEMON@%s (Mail Delivery Subsystem)\n",
 		Hdrs[FROM],Hostname);
-	fprintf(tfile,"%s%s\n",Hdrs[TO],newto != NULL ? newto : to);
-	fprintf(tfile,"%s%s\n\n",Hdrs[SUBJECT],
+	kfprintf(tfile,"%s%s\n",Hdrs[TO],newto != NULL ? newto : to);
+	kfprintf(tfile,"%s%s\n\n",Hdrs[SUBJECT],
 		bounce ? "Failed mail" : "Return receipt");
 	if(bounce) {
-		fprintf(tfile,"  ===== transcript follows =====\n\n");
+		kfprintf(tfile,"  ===== transcript follows =====\n\n");
 		for (; lp != NULL; lp = lp->next)
-			fprintf(tfile,"%s\n",lp->val);
-		fprintf(tfile,"\n");
+			kfprintf(tfile,"%s\n",lp->val);
+		kfprintf(tfile,"\n");
 	}
-	fprintf(tfile,"  ===== %s follows ====\n",
+	kfprintf(tfile,"  ===== %s follows ====\n",
 		bounce ? "Unsent message" : "Message header");
 
-	while(fgets(buf,sizeof(buf),data) != NULL){
+	while(kfgets(buf,sizeof(buf),data) != NULL){
 		if(buf[0] == '\n')
 			break;
-		fputs(buf,tfile);
+		kfputs(buf,tfile);
 	}
 	if(bounce){
-		fputc('\n',tfile);
-		while((cnt = fread(buf,1,sizeof(buf),data)) > 0)
-			fwrite(buf,1,cnt,tfile);
+		kfputc('\n',tfile);
+		while((cnt = kfread(buf,1,sizeof(buf),data)) > 0)
+			kfwrite(buf,1,cnt,tfile);
 	}
-	fseek(tfile,0L,0);
+	kfseek(tfile,0L,0);
 	/* A null From<> so no looping replys to MAIL-DAEMONS */
 	(void) mailuser(tfile,"",newto != NULL ? newto : to);
-	fclose(tfile);
+	kfclose(tfile);
 	free(newto);
 	return 0;
 }

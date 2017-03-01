@@ -4,6 +4,8 @@
  * Not needed when running as a standalone gateway.
  * Copyright 1991 Phil Karn, KA9Q
  */
+#include "top.h"
+
 #include "global.h"
 #include "mbuf.h"
 #include "timer.h"
@@ -75,7 +77,7 @@ char df				/* Don't-fragment flag */
 
 	if(bpp == NULL)
 		return -1;
-	if(source == INADDR_ANY)
+	if(source == kINADDR_ANY)
 		source = locaddr(dest);
 	if(length == 0 && *bpp != NULL)
 		length = len_p(*bpp);

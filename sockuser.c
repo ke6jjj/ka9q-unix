@@ -1,9 +1,11 @@
-/* Higher level user subroutines built on top of the socket primitives
+/* Higher level user subroutines built on top of the ksocket primitives
  * Copyright 1991 Phil Karn, KA9Q
  */
+#include "top.h"
+
 #include "global.h"
 #include <stdarg.h>
-#include <errno.h>
+#include "errno.h"
 #include "mbuf.h"
 #include "proc.h"
 #include "socket.h"
@@ -16,7 +18,7 @@
  * Can be used with datagram sockets, although the sender id is lost.
  */
 int
-recv(s,buf,len,flags)
+krecv(s,buf,len,flags)
 int s;		/* Socket index */
 void *buf;	/* User buffer */
 int len;	/* Max length to receive */
@@ -41,12 +43,12 @@ int flags;	/* Unused; will eventually select oob data, etc */
  * ignored.
  */
 int
-recvfrom(s,buf,len,flags,from,fromlen)
+krecvfrom(s,buf,len,flags,from,fromlen)
 int s;			/* Socket index */
 void *buf;		/* User buffer */
 int len;		/* Maximum length */
 int flags;		/* Unused; will eventually select oob data, etc */
-struct sockaddr *from;	/* Source address, only for datagrams */
+struct ksockaddr *from;	/* Source address, only for datagrams */
 int *fromlen;		/* Length of source address */
 {
 	struct mbuf *bp;
@@ -62,17 +64,17 @@ int *fromlen;		/* Length of source address */
 }
 /* High level send routine */
 int
-send(s,buf,len,flags)
+ksend(s,buf,len,flags)
 int s;		/* Socket index */
 const void *buf;	/* User buffer */
 int len;	/* Length of buffer */
 int flags;	/* Unused; will eventually select oob data, etc */
 {
 	struct mbuf *bp;
-	struct sockaddr sock;
+	struct ksockaddr sock;
 	int i = MAXSOCKSIZE;
 
-	if(getpeername(s,&sock,&i) == -1)
+	if(kgetpeername(s,&sock,&i) == -1)
 		return -1;
 	bp = qdata(buf,len);
 	return send_mbuf(s,&bp,flags,&sock,i);
@@ -81,12 +83,12 @@ int flags;	/* Unused; will eventually select oob data, etc */
  * connection-oriented sockets, but "to" and "tolen" are ignored.
  */
 int
-sendto(
+ksendto(
 int s,			/* Socket index */
 void *buf,		/* User buffer */
 int len,		/* Length of buffer */
 int flags,		/* Unused; will eventually select oob data, etc */
-struct sockaddr *to,	/* Destination, only for datagrams */
+struct ksockaddr *to,	/* Destination, only for datagrams */
 int tolen		/* Length of destination */
 ){
 	struct mbuf *bp;

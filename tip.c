@@ -4,7 +4,10 @@
  *	Feb '91	Bill Simpson
  *		rlsd control and improved dialer
  */
+#include "top.h"
+
 #include "global.h"
+#include "stdio.h"
 #include "mbuf.h"
 #include "proc.h"
 #include "iface.h"
@@ -32,23 +35,23 @@ void *p;
 	struct session *sp;
 	char *ifn;
 	int c;
-	FILE *asy;
+	kFILE *asy;
 
 	if((asy = asyopen(argv[1],"r+b")) == NULL){
-		printf("Can't open %s\n",argv[1]);
+		kprintf("Can't kopen %s\n",argv[1]);
 		return 1;
 	}
-	setvbuf(asy,NULL,_IONBF,0);
+	ksetvbuf(asy,NULL,_kIONBF,0);
 	/* Allocate a session descriptor */
 	if((sp = newsession(Cmdline,TIP,1)) == NULL){
-		printf("Too many sessions\n");
+		kprintf("Too many sessions\n");
 		return 1;
 	}
 	/* Put tty into raw mode */
 	sp->ttystate.echo = 0;
 	sp->ttystate.edit = 0;
-	fmode(stdin,STREAM_BINARY);
-	fmode(stdout,STREAM_BINARY);
+	kfmode(kstdin,STREAM_BINARY);
+	kfmode(kstdout,STREAM_BINARY);
 
 	/* Now fork into two paths, one rx, one tx */
 	ifn = malloc(strlen(argv[1]) + 10);
@@ -61,15 +64,15 @@ void *p;
 	chname( Curproc, ifn );
 	free( ifn );
 
-	while((c = fgetc(asy)) != EOF){
-		putchar(c);
+	while((c = kfgetc(asy)) != kEOF){
+		kputchar(c);
 		if(sp->record != NULL)
-			putc(c,sp->record);
+			kputc(c,sp->record);
 	}
-	fflush(stdout);
+	kfflush(kstdout);
 
 	killproc(&sp->proc1);
-	fclose(asy);
+	kfclose(asy);
 	keywait(NULL,1);
 	freesession(&sp);
 	return 0;
@@ -83,10 +86,10 @@ int i;
 void *n1,*n2;
 {
 	int c;
-	FILE *asy = (FILE *)n1;
+	kFILE *asy = (kFILE *)n1;
 
-	while((c = getchar()) != EOF){
-		fputc(c,asy);
+	while((c = kgetchar()) != kEOF){
+		kfputc(c,asy);
 	}
 }
 

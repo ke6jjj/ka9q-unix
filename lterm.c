@@ -1,11 +1,17 @@
 /* Support local term on com port */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "internet.h"
 #include "netuser.h"
 #include "socket.h"
 #include "session.h"
+#if defined(UNIX)
+#include "asy_unix.h"
+#else
 #include "n8250.h"
+#endif
 #include "asy.h"
 
 static void lterm_rx(int,void *,void *);
@@ -16,30 +22,30 @@ int argc;
 char *argv[];
 void *p;
 {
-	FILE *network = NULL;
+	kFILE *network = NULL;
 	struct iface *ifp;
 	int (*rawsave)(struct iface *,struct mbuf **);
-	int s;	/* Network socket */
-	struct sockaddr_in fsocket;
+	int s;	/* Network ksocket */
+	struct ksockaddr_in fsocket;
 	struct session *sp;
 	int c;
 	int otrigchar;
 
 	if((ifp = if_lookup(argv[1])) == NULL){
-		printf("Interface %s unknown\n",argv[1]);
+		kprintf("Interface %s unknown\n",argv[1]);
 		return 1;
 	}
 	if(ifp->dev >= ASY_MAX || Asy[ifp->dev].iface != ifp ){
-		printf("Interface %s not asy port\n",argv[1]);
+		kprintf("Interface %s not asy port\n",argv[1]);
 		return 1;
 	}
 	if(ifp->raw == bitbucket){
-		printf("tip or dialer session already active on %s\n",argv[1]);
+		kprintf("tip or dialer session already active on %s\n",argv[1]);
 		return 1;
 	}
-	fsocket.sin_family = AF_INET;
+	fsocket.sin_family = kAF_INET;
 	if((fsocket.sin_addr.s_addr = resolve(argv[2])) == 0){
-		printf(Badhost,argv[2]);
+		kprintf(Badhost,argv[2]);
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
@@ -51,7 +57,7 @@ void *p;
 
 	/* Allocate a session descriptor */
 	if((sp = newsession(Cmdline,TIP,1)) == NULL){
-		printf("Too many sessions\n");
+		kprintf("Too many sessions\n");
 		return 1;
 	}
 	/* Save output handler and temporarily redirect output to null */
@@ -71,17 +77,17 @@ void *p;
 	/* Wait for CD (wired to DTR from local terminal) to go high */
 	get_rlsd_asy(ifp->dev,1);
 #endif
-	if((s = socket(AF_INET,SOCK_STREAM,0)) == -1){
-		printf("Can't create socket\n");
+	if((s = ksocket(kAF_INET,kSOCK_STREAM,0)) == -1){
+		kprintf("Can't create ksocket\n");
 		keywait(NULL,1);
 		freesession(&sp);
 		goto cleanup;
 	}
 	settos(s,LOW_DELAY);
-	network = fdopen(s,"r+b");
-	setvbuf(network,NULL,_IONBF,0);
-	if(connect(s,(struct sockaddr *)&fsocket,SOCKSIZE) == -1){
-		perror("connect failed");
+	network = kfdopen(s,"r+b");
+	ksetvbuf(network,NULL,_kIONBF,0);
+	if(kconnect(s,(struct ksockaddr *)&fsocket,SOCKSIZE) == -1){
+		kperror("connect failed");
 		keywait(NULL,1);
 		freesession(&sp);
 		goto cleanup;
@@ -91,9 +97,9 @@ void *p;
 
 	/* Loop sending from the serial port to the network */
 	while((c = get_asy(ifp->dev)) != -1){
-		putchar(c);
-		putc(c,network);
-		fflush(network);
+		kputchar(c);
+		kputc(c,network);
+		kfflush(network);
 	}			
 cleanup:
 	killproc(&sp->proc1);
@@ -111,11 +117,11 @@ void *n1,*n2;
 {
 	int c;
 	char c1;
-	FILE *network = (FILE *)n1;
+	kFILE *network = (kFILE *)n1;
 
-	while((c = fgetc(network)) != EOF){
+	while((c = kfgetc(network)) != kEOF){
 		c1 = c;
-		putchar(c1);
+		kputchar(c1);
 		asy_write(dev,(uint8 *)&c1,1);
 		Asy[dev].iface->lastsent = secclock();
 	}

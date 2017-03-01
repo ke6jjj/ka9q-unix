@@ -1,6 +1,8 @@
 /* Simplified Point-to-Point Protocol
  * No negotiation, no address or ctl fields, 1-byte pids
  */
+#include "top.h"
+
 #include "global.h"
 #include "mbuf.h"
 #include "iface.h"
@@ -95,9 +97,10 @@ struct mbuf **bpp
 }
 /* Add a byte to the PPP output stream, byte stuffing for transparency */
 static uint8 *
-putbyte(cp,c)
-uint8 *cp;
-uint8 c;
+putbyte(
+  uint8 *cp,
+  uint8 c
+)
 {
 	switch(c){
 	case HDLC_FLAG:

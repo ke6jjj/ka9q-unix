@@ -8,8 +8,9 @@
  *
  *	Acknowledgements and correction history may be found in PPP.C
  */
+#include "top.h"
 
-#include <stdio.h>
+#include "stdio.h"
 #include <ctype.h>
 #include "global.h"
 #include "mbuf.h"
@@ -283,9 +284,7 @@ struct fsm_s *fsm_p;
 /************************************************************************/
 /* Send Terminate Ack */
 static int
-fsm_sendtermack(fsm_p,id)
-struct fsm_s *fsm_p;
-byte_t id;
+fsm_sendtermack(struct fsm_s *fsm_p, byte_t id)
 {
 	PPP_DEBUG_ROUTINES("fsm_sendtermack()");
 
@@ -383,11 +382,11 @@ struct mbuf **bpp
 			break;
 
 		case fsmCLOSED:
-			/* Don't accept any connections */
+			/* Don't kaccept any connections */
 			fsm_sendtermack(fsm_p, hdr.id);
 			/* fallthru */
 		case fsmTERM_Sent:
-			/* We are attempting to close connection; */
+			/* We are attempting to kclose connection; */
 			/* wait for timeout to resend a Terminate Request */
 			free_p(bpp);
 			break;
@@ -425,7 +424,7 @@ struct mbuf **bpp
 			fsm_sendtermack(fsm_p, hdr.id);
 			/* fallthru */
 		case fsmTERM_Sent:
-			/* We are attempting to close connection; */
+			/* We are attempting to kclose connection; */
 			/* wait for timeout to resend a Terminate Request */
 			free_p(bpp);
 			break;
@@ -460,7 +459,7 @@ struct mbuf **bpp
 			fsm_sendtermack(fsm_p, hdr.id);
 			/* fallthru */
 		case fsmTERM_Sent:
-			/* We are attempting to close connection; */
+			/* We are attempting to kclose connection; */
 			/* wait for timeout to resend a Terminate Request */
 			free_p(bpp);
 			break;
@@ -493,7 +492,7 @@ struct mbuf **bpp
 			fsm_sendtermack(fsm_p, hdr.id);
 			/* fallthru */
 		case fsmTERM_Sent:
-			/* We are attempting to close connection; */
+			/* We are attempting to kclose connection; */
 			/* wait for timeout to resend a Terminate Request */
 			free_p(bpp);
 			break;
@@ -685,7 +684,7 @@ void *vp;
 /*			I N I T I A L I Z A T I O N			*/
 /************************************************************************/
 
-/* Start FSM (after open event, and physical line up) */
+/* Start FSM (after kopen event, and physical line up) */
 void
 fsm_start(fsm_p)
 struct fsm_s *fsm_p;

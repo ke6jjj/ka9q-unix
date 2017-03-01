@@ -4,7 +4,6 @@
 #ifdef HOST_BSD
 #define HAVE_STDINT
 #define USE_SYSTEM_MALLOC
-#define HAVE_GETOPT
 #define HAVE_STRDUP
 #define HAVE_UNIX_TIMEOFDAY
 #define HAVE_FUNOPEN

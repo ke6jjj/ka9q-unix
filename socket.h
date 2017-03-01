@@ -20,7 +20,7 @@
 #endif
 
 /* Local IP wildcard address */
-#define	INADDR_ANY	0x0L
+#define	kINADDR_ANY	0x0L
 
 /* IP protocol numbers */
 /* now in internet.h */
@@ -49,53 +49,36 @@
 #define	IPPORT_REMOTE	1234	/* Pulled out of the air */
 #define	IPPORT_BSR	5000	/* BSR X10 interface server port (UDP) */
 
-#define	AF_INET		0
-#define	AF_AX25		1
-#define AF_NETROM	2
-#define	AF_LOCAL	3
+#define	kAF_INET		0
+#define	kAF_AX25		1
+#define kAF_NETROM	2
+#define	kAF_LOCAL	3
 #define	NAF		4
 
-#define	SOCK_STREAM	0
-#define	SOCK_DGRAM	1
-#define	SOCK_RAW	2
-#define SOCK_SEQPACKET	3
-
-#undef	EWOULDBLOCK
-#define	EWOULDBLOCK	100
-#define	ENOTCONN	101
-#define	ESOCKTNOSUPPORT	102
-#define	EAFNOSUPPORT	103
-#define	EISCONN		104
-#define	EOPNOTSUPP	105
-#define	EALARM		106
-#define	EABORT		107
-#undef	EINTR
-#define	EINTR		108
-#define	ECONNREFUSED	109
-#define EMSGSIZE	110
-#define	EADDRINUSE	111
-#define	EMIN		100
-#define	EMAX		112
+#define	kSOCK_STREAM	0
+#define	kSOCK_DGRAM	1
+#define	kSOCK_RAW	2
+#define kSOCK_SEQPACKET	3
 
 extern char *Sock_errlist[];
 
-/* In socket.c: */
+/* In ksocket.c: */
 extern int Axi_sock;	/* Socket listening to AX25 (there can be only one) */
 
-int accept(int s,struct sockaddr *peername,int *peernamelen);
-int bind(int s,struct sockaddr *name,int namelen);
+int kaccept(int s,struct ksockaddr *peername,int *peernamelen);
+int kbind(int s,struct ksockaddr *name,int namelen);
 int close_s(int s);
-int connect(int s,struct sockaddr *peername,int peernamelen);
+int kconnect(int s,struct ksockaddr *peername,int peernamelen);
 char *eolseq(int s);
 void freesock(struct proc *pp);
-int getpeername(int s,struct sockaddr *peername,int *peernamelen);
-int getsockname(int s,struct sockaddr *name,int *namelen);
-int listen(int s,int backlog);
-int recv_mbuf(int s,struct mbuf **bpp,int flags,struct sockaddr *from,int *fromlen);
-int send_mbuf(int s,struct mbuf **bp,int flags,struct sockaddr *to,int tolen);
+int kgetpeername(int s,struct ksockaddr *peername,int *peernamelen);
+int getsockname(int s,struct ksockaddr *name,int *namelen);
+int klisten(int s,int backlog);
+int recv_mbuf(int s,struct mbuf **bpp,int flags,struct ksockaddr *from,int *fromlen);
+int send_mbuf(int s,struct mbuf **bp,int flags,struct ksockaddr *to,int tolen);
 int settos(int s,int tos);
-int shutdown(int s,int how);
-int socket(int af,int type,int protocol);
+int kshutdown(int s,int how);
+int ksocket(int af,int type,int protocol);
 void sockinit(void);
 int sockkick(int s);
 int socklen(int s,int rtx);
@@ -105,10 +88,10 @@ int socketpair(int af,int type,int protocol,int sv[]);
 
 /* In sockuser.c: */
 void flushsocks(void);
-int recv(int s,void *buf,int len,int flags);
-int recvfrom(int s,void *buf,int len,int flags,struct sockaddr *from,int *fromlen);
-int send(int s,const void *buf,int len,int flags);
-int sendto(int s,void *buf,int len,int flags,struct sockaddr *to,int tolen);
+int krecv(int s,void *buf,int len,int flags);
+int krecvfrom(int s,void *buf,int len,int flags,struct ksockaddr *from,int *fromlen);
+int ksend(int s,const void *buf,int len,int flags);
+int ksendto(int s,void *buf,int len,int flags,struct ksockaddr *to,int tolen);
 
 /* In file sockutil.c: */
 char *psocket(void *p);

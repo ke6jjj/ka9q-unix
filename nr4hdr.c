@@ -2,6 +2,8 @@
  * Copyright 1989 by Daniel M. Frank, W9NK.  Permission granted for
  * non-commercial distribution only.
  */
+#include "top.h"
+
 #include "global.h"
 #include "mbuf.h"
 #include "nr4.h"
@@ -25,7 +27,7 @@ ntohnr4(struct nr4hdr *hdr,struct mbuf **bpp)
 			hdr->u.pid.family = tbuf[0];
 			hdr->u.pid.proto = tbuf[1];
 			break;
-		case NR4OPCONRQ:	/* connect request */
+		case NR4OPCONRQ:	/* kconnect request */
 			hdr->u.conreq.myindex = tbuf[0];
 			hdr->u.conreq.myid = tbuf[1];
 			if((i = PULLCHAR(bpp)) == -1)
@@ -36,7 +38,7 @@ ntohnr4(struct nr4hdr *hdr,struct mbuf **bpp)
 			if(pullup(bpp,hdr->u.conreq.node,AXALEN) < AXALEN)
 				return -1;
 			break;
-		case NR4OPCONAK:	/* connect acknowledge */
+		case NR4OPCONAK:	/* kconnect acknowledge */
 			hdr->yourindex = tbuf[0];
 			hdr->yourid = tbuf[1];
 			hdr->u.conack.myindex = tbuf[2];

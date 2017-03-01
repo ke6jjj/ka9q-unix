@@ -1,7 +1,9 @@
 /* AX25 header tracing
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "ax25.h"
@@ -14,7 +16,7 @@ static char *decode_type(uint type);
 /* Dump an AX.25 packet header */
 void
 ax25_dump(
-FILE *fp,
+kFILE *fp,
 struct mbuf **bpp,
 int check	/* Not used */
 ){
@@ -26,56 +28,56 @@ int check	/* Not used */
 	struct ax25 hdr;
 	uint8 *hp;
 
-	fprintf(fp,"AX25: ");
+	kfprintf(fp,"AX25: ");
 	/* Extract the address header */
 	if(ntohax25(&hdr,bpp) < 0){
 		/* Something wrong with the header */
-		fprintf(fp," bad header!\n");
+		kfprintf(fp," bad header!\n");
 		return;
 	}
-	fprintf(fp,"%s",pax25(tmp,hdr.source));
-	fprintf(fp,"->%s",pax25(tmp,hdr.dest));
+	kfprintf(fp,"%s",pax25(tmp,hdr.source));
+	kfprintf(fp,"->%s",pax25(tmp,hdr.dest));
 	if(hdr.ndigis > 0){
-		fprintf(fp," v");
+		kfprintf(fp," v");
 		for(hp = hdr.digis[0]; hp < &hdr.digis[hdr.ndigis][0];
 		 hp += AXALEN){
 			/* Print digi string */
-			fprintf(fp," %s%s",pax25(tmp,hp),
+			kfprintf(fp," %s%s",pax25(tmp,hp),
 			 (hp[ALEN] & REPEATED) ? "*":"");
 		}
 	}
 	if((control = PULLCHAR(bpp)) == -1)
 		return;
 
-	putc(' ',fp);
+	kputc(' ',fp);
 	type = ftype(control);
-	fprintf(fp,"%s",decode_type(type));
+	kfprintf(fp,"%s",decode_type(type));
 	/* Dump poll/final bit */
 	if(control & PF){
 		switch(hdr.cmdrsp){
 		case LAPB_COMMAND:
-			fprintf(fp,"(P)");
+			kfprintf(fp,"(P)");
 			break;
 		case LAPB_RESPONSE:
-			fprintf(fp,"(F)");
+			kfprintf(fp,"(F)");
 			break;
 		default:
-			fprintf(fp,"(P/F)");
+			kfprintf(fp,"(P/F)");
 			break;
 		}
 	}
 	/* Dump sequence numbers */
 	if((type & 0x3) != U)	/* I or S frame? */
-		fprintf(fp," NR=%d",(control>>5)&7);
+		kfprintf(fp," NR=%d",(control>>5)&7);
 	if(type == I || type == UI){	
 		if(type == I)
-			fprintf(fp," NS=%d",(control>>1)&7);
+			kfprintf(fp," NS=%d",(control>>1)&7);
 		/* Decode I field */
 		if((pid = PULLCHAR(bpp)) != -1){	/* Get pid */
 			if(pid == PID_SEGMENT){
 				unsegmented = 0;
 				seg = PULLCHAR(bpp);
-				fprintf(fp,"%s remain %u",seg & SEG_FIRST ?
+				kfprintf(fp,"%s remain %u",seg & SEG_FIRST ?
 				 " First seg;" : "",seg & SEG_REM);
 				if(seg & SEG_FIRST)
 					pid = PULLCHAR(bpp);
@@ -84,50 +86,50 @@ int check	/* Not used */
 
 			switch(pid){
 			case PID_SEGMENT:
-				putc('\n',fp);
+				kputc('\n',fp);
 				break;	/* Already displayed */
 			case PID_ARP:
-				fprintf(fp," pid=ARP\n");
+				kfprintf(fp," pid=ARP\n");
 				arp_dump(fp,bpp);
 				break;
 			case PID_NETROM:
-				fprintf(fp," pid=NET/ROM\n");
+				kfprintf(fp," pid=NET/ROM\n");
 				/* Don't verify checksums unless unsegmented */
 				netrom_dump(fp,bpp,unsegmented);
 				break;
 			case PID_IP:
-				fprintf(fp," pid=IP\n");
+				kfprintf(fp," pid=IP\n");
 				/* Don't verify checksums unless unsegmented */
 				ip_dump(fp,bpp,unsegmented);
 				break;
 			case PID_X25:
-				fprintf(fp," pid=X.25\n");
+				kfprintf(fp," pid=X.25\n");
 				break;
 			case PID_TEXNET:
-				fprintf(fp," pid=TEXNET\n");
+				kfprintf(fp," pid=TEXNET\n");
 				break;
 			case PID_NO_L3:
-				fprintf(fp," pid=Text\n");
+				kfprintf(fp," pid=Text\n");
 				break;
 			default:
-				fprintf(fp," pid=0x%x\n",pid);
+				kfprintf(fp," pid=0x%x\n",pid);
 			}
 		}
 	} else if(type == FRMR && pullup(bpp,frmr,3) == 3){
-		fprintf(fp,": %s",decode_type(ftype(frmr[0])));
-		fprintf(fp," Vr = %d Vs = %d",(frmr[1] >> 5) & MMASK,
+		kfprintf(fp,": %s",decode_type(ftype(frmr[0])));
+		kfprintf(fp," Vr = %d Vs = %d",(frmr[1] >> 5) & MMASK,
 			(frmr[1] >> 1) & MMASK);
 		if(frmr[2] & W)
-			fprintf(fp," Invalid control field");
+			kfprintf(fp," Invalid control field");
 		if(frmr[2] & X)
-			fprintf(fp," Illegal I-field");
+			kfprintf(fp," Illegal I-field");
 		if(frmr[2] & Y)
-			fprintf(fp," Too-long I-field");
+			kfprintf(fp," Too-long I-field");
 		if(frmr[2] & Z)
-			fprintf(fp," Invalid seq number");
-		putc('\n',fp);
+			kfprintf(fp," Invalid seq number");
+		kputc('\n',fp);
 	} else
-		putc('\n',fp);
+		kputc('\n',fp);
 
 }
 static char *

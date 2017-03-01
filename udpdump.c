@@ -1,7 +1,9 @@
 /* UDP packet tracing
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include "global.h"
 #include "mbuf.h"
 #include "netuser.h"
@@ -14,7 +16,7 @@
 /* Dump a UDP header */
 void
 udp_dump(fp,bpp,source,dest,check)
-FILE *fp;
+kFILE *fp;
 struct mbuf **bpp;
 int32 source,dest;
 int check;		/* If 0, bypass checksum verify */
@@ -26,7 +28,7 @@ int check;		/* If 0, bypass checksum verify */
 	if(bpp == NULL || *bpp == NULL)
 		return;
 
-	fprintf(fp,"UDP:");
+	kfprintf(fp,"UDP:");
 
 	/* Compute checksum */
 	ph.source = source;
@@ -38,16 +40,16 @@ int check;		/* If 0, bypass checksum verify */
 
 	ntohudp(&udp,bpp);
 
-	fprintf(fp," len %u",udp.length);
-	fprintf(fp," %u->%u",udp.source,udp.dest);
+	kfprintf(fp," len %u",udp.length);
+	kfprintf(fp," %u->%u",udp.source,udp.dest);
 	if(udp.length > UDPHDR)
-		fprintf(fp," Data %u",udp.length - UDPHDR);
+		kfprintf(fp," Data %u",udp.length - UDPHDR);
 	if(udp.checksum == 0)
 		check = 0;
 	if(check)
-		fprintf(fp," CHECKSUM ERROR (%u)",csum);
+		kfprintf(fp," CHECKSUM ERROR (%u)",csum);
 
-	putc('\n',fp);
+	kputc('\n',fp);
 
 	switch(udp.dest){
 	case IPPORT_RIP:

@@ -1,11 +1,14 @@
 /* Internet Telnet client
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #ifdef	__TURBOC__
 #include <io.h>
 #include <fcntl.h>
 #endif
+#include "errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "socket.h"
@@ -51,46 +54,46 @@ char *argv[];
 void *p;
 {
 	struct session *sp;
-	struct sockaddr_in fsocket;
+	struct ksockaddr_in fsocket;
 	int s;
 
 	/* Allocate a session descriptor */
 	if((sp = newsession(Cmdline,TELNET,1)) == NULL){
-		printf("Too many sessions\n");
+		kprintf("Too many sessions\n");
 		return 1;
 	}
 	sp->inproc = keychar;	/* Intercept ^C */
-	fsocket.sin_family = AF_INET;
+	fsocket.sin_family = kAF_INET;
 	fsocket.sin_port = (argc < 3) ? IPPORT_TELNET : atoi(argv[2]);
 
-	if(SETSIG(EABORT)){
+	if(SETSIG(kEABORT)){
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
 	}
-	printf("Resolving %s...\n",argv[1]);
+	kprintf("Resolving %s...\n",argv[1]);
 	if((fsocket.sin_addr.s_addr = resolve(argv[1])) == 0){
-		printf(Badhost,argv[1]);
+		kprintf(Badhost,argv[1]);
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
 	}
-	if((s = socket(AF_INET,SOCK_STREAM,0)) == -1){
-		printf("Can't create socket\n");
+	if((s = ksocket(kAF_INET,kSOCK_STREAM,0)) == -1){
+		kprintf("Can't create ksocket\n");
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
 	}
 	settos(s,LOW_DELAY);
-	sp->network = fdopen(s,"r+t");
-/*	setvbuf(sp->network,NULL,_IOLBF,BUFSIZ); */
-	return tel_connect(sp,(struct sockaddr *)&fsocket,SOCKSIZE);
+	sp->network = kfdopen(s,"r+t");
+/*	ksetvbuf(sp->network,NULL,_kIOLBF,kBUFSIZ); */
+	return tel_connect(sp,(struct ksockaddr *)&fsocket,SOCKSIZE);
 }
-/* Generic interactive connect routine, used by Telnet, AX.25, NET/ROM */
+/* Generic interactive kconnect routine, used by Telnet, AX.25, NET/ROM */
 int
 tel_connect(sp,fsocket,len)
 struct session *sp;
-struct sockaddr *fsocket;
+struct ksockaddr *fsocket;
 int len;
 {
 	struct telnet tn;
@@ -100,14 +103,14 @@ int len;
 	tn.session = sp;	/* Upward pointer */
 	sp->cb.telnet = &tn;	/* Downward pointer */
 
-	printf("Trying %s...\n",psocket(fsocket));
-	if(connect(fileno(sp->network),fsocket,len) == -1){
-		perror("connect failed");
+	kprintf("Trying %s...\n",psocket(fsocket));
+	if(kconnect(kfileno(sp->network),fsocket,len) == -1){
+		kperror("connect failed");
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
 	}
-	printf("Connected\n");
+	kprintf("Connected\n");
 	sp->inproc = NULL;	/* No longer respond to ^C */	
 	tnrecv(&tn);
 	return 0;
@@ -121,8 +124,8 @@ struct telnet *tn;
 	int c;
 	struct session *sp;
 	char *cp;
-	FILE *network;
-	char buf[BUFSIZ];
+	kFILE *network;
+	char buf[kBUFSIZ];
 
 	sp = tn->session;
 	network = sp->network;
@@ -131,53 +134,53 @@ struct telnet *tn;
 	sp->proc1 = newproc("tel_out",1024,tel_output,0,tn,NULL,0);
 
 	/* Process input on the connection */
-	while((c = getc(network)) != EOF){
+	while((c = kgetc(network)) != kEOF){
 		if(c != IAC){
 			/* Ordinary character */
-			putchar((char)c);
+			kputchar((char)c);
 			if(sp->record != NULL)
-				putc(c,sp->record);
-			/* If we're likely to block on the next getc, flush */
-			if(frrdy(network) == 0)
-				fflush(stdout);
+				kputc(c,sp->record);
+			/* If we're likely to block on the next kgetc, flush */
+			if(kfrrdy(network) == 0)
+				kfflush(kstdout);
 			continue;
 		}
 		/* IAC received, get command sequence */
-		c = getc(network);
+		c = kgetc(network);
 		switch(c){
 		case WILL:
-			c = getc(network);
+			c = kgetc(network);
 			willopt(tn,c);
 			break;
 		case WONT:
-			c = getc(network);
+			c = kgetc(network);
 			wontopt(tn,c);
 			break;
 		case DO:
-			c = getc(network);
+			c = kgetc(network);
 			doopt(tn,c);
 			break;
 		case DONT:
-			c = getc(network);
+			c = kgetc(network);
 			dontopt(tn,c);
 			break;
 		case IAC:	/* Escaped IAC */
-			putchar(IAC);
+			kputchar(IAC);
 			if(sp->record != NULL)
-				putc(IAC,sp->record);
+				kputc(IAC,sp->record);
 			break;
 		}
 	}
-quit:	/* A close was received from the remote host.
+quit:	/* A kclose was received from the remote host.
 	 * Notify the user, kill the output task and wait for a response
 	 * from the user before freeing the session.
 	 */
-	fmode(sp->output,STREAM_ASCII); /* Restore newline translation */
-	setvbuf(sp->output,NULL,_IOLBF,BUFSIZ);
-	cp = sockerr(fileno(network));
-	printf("Closed: %s\n", cp != NULL ? cp : "EOF");
+	kfmode(sp->output,STREAM_ASCII); /* Restore newline translation */
+	ksetvbuf(sp->output,NULL,_kIOLBF,kBUFSIZ);
+	cp = sockerr(kfileno(network));
+	kprintf("Closed: %s\n", cp != NULL ? cp : "kEOF");
 	killproc(&sp->proc1);
-	fclose(sp->network);
+	kfclose(sp->network);
 	sp->network = NULL;
 	keywait(NULL,1);
 	freesession(&sp);
@@ -198,10 +201,10 @@ void *p;
 	sp = tn->session;
 
 	/* Send whatever's typed on the terminal */
-	while((c = getc(sp->input)) != EOF){
-		putc(c,sp->network);
+	while((c = kgetc(sp->input)) != kEOF){
+		kputc(c,sp->network);
 		if(!tn->remote[TN_ECHO] && sp->record != NULL)
-			putc(c,sp->record);
+			kputc(c,sp->record);
 
 		/* By default, output is transparent in remote echo mode.
 		 * If eolmode is set, turn a cr into cr-null.
@@ -209,10 +212,10 @@ void *p;
 		 * the tty driver normally maps \r to \n in cooked mode.
 		 */
 		if(c == '\r' && tn->eolmode)
-			putc('\0',sp->network);
+			kputc('\0',sp->network);
 
 		if(tn->remote[TN_ECHO])
-			fflush(sp->network);
+			kfflush(sp->network);
 	}
 	/* Make sure our parent doesn't try to kill us after we exit */
 	sp->proc1 = NULL;
@@ -225,9 +228,9 @@ void *p;
 {
 	if(argc < 2){
 		if(Refuse_echo)
-			printf("Refuse\n");
+			kprintf("Refuse\n");
 		else
-			printf("Accept\n");
+			kprintf("Accept\n");
 	} else {
 		if(argv[1][0] == 'r')
 			Refuse_echo = 1;
@@ -247,16 +250,16 @@ void *p;
 {
 	if(argc < 2){
 		if(Tn_cr_mode)
-			printf("null\n");
+			kprintf("null\n");
 		else
-			printf("standard\n");
+			kprintf("standard\n");
 	} else {
 		if(argv[1][0] == 'n')
 			Tn_cr_mode = 1;
 		else if(argv[1][0] == 's')
 			Tn_cr_mode = 0;
 		else {
-			printf("Usage: %s [standard|null]\n",argv[0]);
+			kprintf("Usage: %s [standard|null]\n",argv[0]);
 			return -1;
 		}
 	}
@@ -272,11 +275,11 @@ int opt;
 	int ack;
 
 	if(Topt){
-		printf("recv: will ");
+		kprintf("recv: will ");
 		if(opt <= NOPTIONS)
-			printf("%s\n",T_options[opt]);
+			kprintf("%s\n",T_options[opt]);
 		else
-			printf("%u\n",opt);
+			kprintf("%u\n",opt);
 	}
 	switch(opt){
 	case TN_TRANSMIT_BINARY:
@@ -286,17 +289,17 @@ int opt;
 			return;		/* Already set, ignore to prevent loop */
 		if(opt == TN_ECHO){
 			if(Refuse_echo){
-				/* User doesn't want to accept */
+				/* User doesn't want to kaccept */
 				ack = DONT;
 				break;
 			} else {
 				/* Put tty into raw mode */
 				tn->session->ttystate.edit = 0;
 				tn->session->ttystate.echo = 0;
-				fmode(tn->session->network,STREAM_BINARY);
-				setvbuf(tn->session->network,NULL,_IONBF,0);
-				fmode(stdout,STREAM_BINARY);
-/*				setvbuf(stdout,NULL,_IONBF,0); */
+				kfmode(tn->session->network,STREAM_BINARY);
+				ksetvbuf(tn->session->network,NULL,_kIONBF,0);
+				kfmode(kstdout,STREAM_BINARY);
+/*				ksetvbuf(kstdout,NULL,_kIONBF,0); */
 			}
 		}
 		tn->remote[opt] = 1;
@@ -313,11 +316,11 @@ struct telnet *tn;
 int opt;
 {
 	if(Topt){
-		printf("recv: wont ");
+		kprintf("recv: wont ");
 		if(opt <= NOPTIONS)
-			printf("%s\n",T_options[opt]);
+			kprintf("%s\n",T_options[opt]);
 		else
-			printf("%u\n",opt);
+			kprintf("%u\n",opt);
 	}
 	if(opt <= NOPTIONS){
 		if(tn->remote[opt] == 0)
@@ -327,13 +330,13 @@ int opt;
 			/* Put tty into cooked mode */
 			tn->session->ttystate.edit = 1;
 			tn->session->ttystate.echo = 1;
-			fmode(tn->session->network,STREAM_ASCII);
-			setvbuf(tn->session->network,NULL,_IOLBF,BUFSIZ);
-			fmode(stdout,STREAM_ASCII);
-/*			setvbuf(stdout,NULL,_IOLBF,BUFSIZ); */
+			kfmode(tn->session->network,STREAM_ASCII);
+			ksetvbuf(tn->session->network,NULL,_kIOLBF,kBUFSIZ);
+			kfmode(kstdout,STREAM_ASCII);
+/*			ksetvbuf(kstdout,NULL,_kIOLBF,kBUFSIZ); */
 		}
 	}
-	answer(tn,DONT,opt);	/* Must always accept */
+	answer(tn,DONT,opt);	/* Must always kaccept */
 }
 void
 doopt(tn,opt)
@@ -343,11 +346,11 @@ int opt;
 	int ack;
 
 	if(Topt){
-		printf("recv: do ");
+		kprintf("recv: do ");
 		if(opt <= NOPTIONS)
-			printf("%s\n",T_options[opt]);
+			kprintf("%s\n",T_options[opt]);
 		else
-			printf("%u\n",opt);
+			kprintf("%u\n",opt);
 	}
 	switch(opt){
 	case TN_SUPPRESS_GA:
@@ -367,11 +370,11 @@ struct telnet *tn;
 int opt;
 {
 	if(Topt){
-		printf("recv: dont ");
+		kprintf("recv: dont ");
 		if(opt <= NOPTIONS)
-			printf("%s\n",T_options[opt]);
+			kprintf("%s\n",T_options[opt]);
 		else
-			printf("%u\n",opt);
+			kprintf("%u\n",opt);
 	}
 	if(opt <= NOPTIONS){
 		if(tn->local[opt] == 0){
@@ -390,25 +393,25 @@ int r1,r2;
 	if(Topt){
 		switch(r1){
 		case WILL:
-			printf("sent: will ");
+			kprintf("sent: will ");
 			break;
 		case WONT:
-			printf("sent: wont ");
+			kprintf("sent: wont ");
 			break;
 		case DO:
-			printf("sent: do ");
+			kprintf("sent: do ");
 			break;
 		case DONT:
-			printf("sent: dont ");
+			kprintf("sent: dont ");
 			break;
 		}
 		if(r2 <= NOPTIONS)
-			printf("%s\n",T_options[r2]);
+			kprintf("%s\n",T_options[r2]);
 		else
-			printf("%u\n",r2);
+			kprintf("%u\n",r2);
 	}
-	fprintf(tn->session->network,"%c%c%c",IAC,r1,r2);
-	fflush(tn->session->network);
+	kfprintf(tn->session->network,"%c%c%c",IAC,r1,r2);
+	kfflush(tn->session->network);
 }
 static int
 keychar(c)
@@ -417,7 +420,7 @@ int c;
 	if(c != CTLC)
 		return 1;	/* Ignore all but ^C */
 
-	fprintf(Current->output,"^C\n");
-	alert(Current->proc,EABORT);
+	kfprintf(Current->output,"^C\n");
+	alert(Current->proc,kEABORT);
 	return 0;
 }

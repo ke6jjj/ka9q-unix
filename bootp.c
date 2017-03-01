@@ -9,7 +9,7 @@
  * BOOTP is documented in RFC 951 and RFC 1048
  * Delinted, ANSIfied and reformatted - 5/30/91 P. Karn
  */
-
+#include "top.h"
 
 #include <time.h>
 #include "global.h"
@@ -42,7 +42,7 @@ char *argv[];
 void *p;
 {
 	struct iface *ifp = NULL;
-	struct socket lsock, fsock;
+	struct ksocket lsock, fsock;
 	struct mbuf *bp;
 	struct udp_cb *bootp_cb;
 	register uint8 *cp;
@@ -63,7 +63,7 @@ void *p;
 			else if(strncmp(argv[i], "noisy", strlen(argv[i])) == 0)
 				SilentStartup = 0;
 			else {
-				printf("bootp [net_name] [silent] [noisy]\n");
+				kprintf("bootp [net_name] [silent] [noisy]\n");
 				return 1;
 			}
 		}
@@ -96,13 +96,13 @@ void *p;
 
 		/* Stop, if time out */
 		if(now - starttime >= BOOTP_TIMEOUT){
-			printf("bootp: timed out, values not set\n");
+			kprintf("bootp: timed out, values not set\n");
 			break;
 		}
 
 		/* Don't flood the network, send in intervals */
 		if(now - lastsendtime > BOOTP_RETRANS){
-			if(!SilentStartup) printf("Requesting...\n");
+			if(!SilentStartup) kprintf("Requesting...\n");
 
 			/* Allocate BOOTP packet and fill it in */
 			if((bp = alloc_mbuf(sizeof(struct bootp))) == NULL)
@@ -145,7 +145,7 @@ void *p;
 			if(bootp_rx(ifp,bp))
 				break;
 		} else if(Net_error != WOULDBLK){
-			printf("bootp: Net_error %d, no values set\n",
+			kprintf("bootp: Net_error %d, no values set\n",
 				 Net_error);
 			break;
 		}
@@ -182,13 +182,13 @@ struct mbuf *bp;
 		return 0;
 
 	if(!SilentStartup)
-		printf("Network %s configured:\n", ifp->name);
+		kprintf("Network %s configured:\n", ifp->name);
 
 	if(ifp->addr == 0){
 		Ip_addr = (int) reply.yiaddr.s_addr;	/* yiaddr */
 		ifp->addr =  reply.yiaddr.s_addr;	/* yiaddr */
 		if(!SilentStartup)
-			printf("     IP address: %s\n",  
+			kprintf("     IP address: %s\n",  
 		inet_ntoa(ifp->addr));
 	}
 
@@ -196,7 +196,7 @@ struct mbuf *bp;
 	/* now process the vendor-specific block, check for cookie first. */
 	cp = reply.vend;
 	if(get32(cp) != 0x63825363L){
-		printf("Invalid magic cookie.\n");
+		kprintf("Invalid magic cookie.\n");
 		return(0);
 	}
 
@@ -220,7 +220,7 @@ struct mbuf *bp;
         		rt_add(ifp->addr,mask2width(ifp->netmask),0L,ifp,0L,0L,0);
 
 			if(!SilentStartup)
-				printf("     Subnet mask: %s\n", inet_ntoa(netmask));
+				kprintf("     Subnet mask: %s\n", inet_ntoa(netmask));
 			
 			/* Set the broadcast */
 			broadcast = ifp->addr | ~(ifp->netmask);
@@ -231,7 +231,7 @@ struct mbuf *bp;
         		rt_add(ifp->broadcast,32,0L,ifp,1L,0L,1);
 			
 			if(!SilentStartup)
-				printf("     Broadcast: %s\n", inet_ntoa(broadcast));
+				kprintf("     Broadcast: %s\n", inet_ntoa(broadcast));
 
 			break;
 		case BOOTP_HOSTNAME:
@@ -245,7 +245,7 @@ struct mbuf *bp;
 			cp += count;
 
 			if(!SilentStartup)
-				printf("     Hostname: %s\n", Hostname);
+				kprintf("     Hostname: %s\n", Hostname);
 			break;
 		case BOOTP_DNS:
 			count = (int) *cp;
@@ -255,7 +255,7 @@ struct mbuf *bp;
 				nameserver = get32(cp);
 				add_nameserver(nameserver);
 				if(!SilentStartup)
-					printf("     Nameserver: %s\n", inet_ntoa(nameserver));
+					kprintf("     Nameserver: %s\n", inet_ntoa(nameserver));
 				cp += 4;
 				count -= 4;
 			}
@@ -270,7 +270,7 @@ struct mbuf *bp;
 			rt_add(0,0,gateway,ifp,1,0,0);
 
 			if(!SilentStartup)
-				printf("     Default gateway: %s\n", inet_ntoa(gateway));
+				kprintf("     Default gateway: %s\n", inet_ntoa(gateway));
 			cp += count;
 			break;
 		default:		/* variable field we don't know about */

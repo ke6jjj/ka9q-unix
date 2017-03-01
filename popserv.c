@@ -5,12 +5,14 @@
  *  Modified 5/27/90 by Allen Gwinn, N5CKP, for later NOS releases.
  *  Added to NOS by PA0GRI 2/6/90 (and linted into "standard" C)
  */
+#include "top.h"
 
-#include <stdio.h>
+#include "stdio.h"
 #include <time.h>
 #include <sys/stat.h>
 #ifdef UNIX
 #include <sys/types.h>
+#include <unistd.h>
 #endif
 #if	defined(__STDC__) || defined(__TURBOC__)
 #include <stdarg.h>
@@ -38,7 +40,7 @@ int isdeleted(struct pop_scb *,int);
 /* I don't know why this isn't static, it isn't called anywhere else {was} */
 void pop_sm(struct pop_scb *scb);
 
-static int Spop = -1; /* prototype socket for service */
+static int Spop = -1; /* prototype ksocket for service */
 
 /* Start up POP receiver service */
 int
@@ -49,7 +51,7 @@ char *argv[];
 void *p;
 
 {
-	struct sockaddr_in lsocket;
+	struct ksockaddr_in lsocket;
 	int s;
 
 	if (Spop != -1) {
@@ -59,21 +61,21 @@ void *p;
 	ksignal(Curproc,0);		/* Don't keep the parser waiting */
 	chname(Curproc,"POP listener");
 
-	lsocket.sin_family = AF_INET;
-	lsocket.sin_addr.s_addr = INADDR_ANY;
+	lsocket.sin_family = kAF_INET;
+	lsocket.sin_addr.s_addr = kINADDR_ANY;
 	if(argc < 2)
 		lsocket.sin_port = IPPORT_POP;
 	else
 		lsocket.sin_port = atoi(argv[1]);
 
-	Spop = socket(AF_INET,SOCK_STREAM,0);
+	Spop = ksocket(kAF_INET,kSOCK_STREAM,0);
 
-	bind(Spop,(struct sockaddr *)&lsocket,sizeof(lsocket));
+	kbind(Spop,(struct ksockaddr *)&lsocket,sizeof(lsocket));
 
-	listen(Spop,1);
+	klisten(Spop,1);
 
 	for (;;) {
-		if((s = accept(Spop,NULL,(int *)NULL)) == -1)
+		if((s = kaccept(Spop,NULL,(int *)NULL)) == -1)
 			break;	/* Service is shutting down */
 
 		/* Spawn a server */
@@ -104,25 +106,25 @@ void *unused;
 void *p;
 {
 	struct pop_scb *scb;
-	FILE *network;
+	kFILE *network;
 
 	sockowner(s,Curproc);		/* We own it now */
 	logmsg(s,"open POP");
-	network = fdopen(s,"r+t");
+	network = kfdopen(s,"r+t");
 
 	if((scb = create_scb()) == NULL) {
-		printf(Nospace);
+		kprintf(Nospace);
 		logmsg(s,"close POP - no space");
-		fclose(network);
+		kfclose(network);
 		return;
 	}
 
 	scb->network = network;
 	scb->state  = AUTH;
 
-	(void) fprintf(network,greeting_msg,Hostname);
+	(void) kfprintf(network,greeting_msg,Hostname);
 
-loop:	if (fgets(scb->buf,BUF_LEN,network) == NULL){
+loop:	if (kfgets(scb->buf,BUF_LEN,network) == NULL){
 		/* He closed on us */
 
 		goto quit;
@@ -138,8 +140,8 @@ loop:	if (fgets(scb->buf,BUF_LEN,network) == NULL){
 	goto loop;
 
 quit:
-	logmsg(fileno(scb->network),"close POP");
-	fclose(scb->network);
+	logmsg(kfileno(scb->network),"close POP");
+	kfclose(scb->network);
 	delete_scb(scb);
 }
 
@@ -175,7 +177,7 @@ register struct pop_scb *scb;
 	if (scb == NULL)
 		return;
 	if (scb->wf != NULL)
-		fclose(scb->wf);
+		kfclose(scb->wf);
 	if (scb->msg_status  != NULL)
 		free(scb->msg_status);
 
@@ -241,13 +243,13 @@ struct pop_scb *scb;
 			sscanf(scb->buf,"HELO %s%s",scb->username,password);
 
 			if (!poplogin(scb->username,password)) {
-				logmsg(fileno(scb->network),"POP access DENIED to %s",
+				logmsg(kfileno(scb->network),"POP access DENIED to %s",
 					    scb->username);
 				state_error(scb,"Access DENIED!!");
 				return;
 			}
 
-			logmsg(fileno(scb->network),"POP access granted to %s",
+			logmsg(kfileno(scb->network),"POP access granted to %s",
 				    scb->username);
 			open_folder(scb);
 		} else if (strncmp(scb->buf,quit_cmd,strlen(quit_cmd)) == 0){
@@ -312,7 +314,7 @@ struct pop_scb *scb;
 			get_message(scb,scb->msg_num);
 		} else if (strncmp(scb->buf,nack_cmd,strlen(nack_cmd)) == 0){
 				/* NACK processing */
-			fseek(scb->wf,scb->curpos,SEEK_SET);
+			kfseek(scb->wf,scb->curpos,kSEEK_SET);
 		} else {
 			state_error(scb,"(NEXT) Expected ACKD, ACKS, or NACK command");
 			return;
@@ -339,7 +341,7 @@ struct pop_scb *scb;
 	void close_folder(struct pop_scb *);
 
 	close_folder(scb);
-	(void) fprintf(scb->network,signoff_msg);
+	(void) kfprintf(scb->network,signoff_msg);
 	scb->state = DONE;
 }
 
@@ -348,7 +350,7 @@ state_error(scb,msg)
 struct pop_scb *scb;
 char *msg;
 {
-	(void) fprintf(scb->network,error_rsp,msg);
+	(void) kfprintf(scb->network,error_rsp,msg);
 	scb->state = DONE;
 }
 
@@ -374,7 +376,7 @@ struct pop_scb *scb;
 {
 	char folder_pathname[64];
 	char line[BUF_LEN];
-	FILE *fd;
+	kFILE *fd;
 	int deleted = FALSE;
 	int msg_no = 0;
 	struct stat folder_stat;
@@ -383,9 +385,9 @@ struct pop_scb *scb;
 		return;
 
 	if (!scb->folder_modified) {
-		/* no need to re-write the folder if we have not modified it */
+		/* no need to re-kwrite the folder if we have not modified it */
 
-		fclose(scb->wf);
+		kfclose(scb->wf);
 		scb->wf = NULL;
 
 		free(scb->msg_status);
@@ -400,31 +402,31 @@ struct pop_scb *scb;
 		/* copy new mail into the work file and save the
 		   message count for later */
 
-		if ((fd = fopen(folder_pathname,"r")) == NULL) {
+		if ((fd = kfopen(folder_pathname,"r")) == NULL) {
 			state_error(scb,"Unable to add new mail to folder");
 			return;
 		}
 
-		fseek(scb->wf,0,SEEK_END);
-		fseek(fd,scb->folder_file_size,SEEK_SET);
-		while (!feof(fd)) {
-			fgets(line,BUF_LEN,fd);
-			fputs(line,scb->wf);
+		kfseek(scb->wf,0,kSEEK_END);
+		kfseek(fd,scb->folder_file_size,kSEEK_SET);
+		while (!kfeof(fd)) {
+			kfgets(line,BUF_LEN,fd);
+			kfputs(line,scb->wf);
 		}
 
-		fclose(fd);
+		kfclose(fd);
 	}
 
 	/* now create the updated mail folder */
 
-	if ((fd = fopen(folder_pathname,"w")) == NULL){
+	if ((fd = kfopen(folder_pathname,"w")) == NULL){
 		state_error(scb,"Unable to update mail folder");
 		return;
 	}
 
-	rewind(scb->wf);
-	while (!feof(scb->wf)){
-		fgets(line,BUF_LEN,scb->wf);
+	krewind(scb->wf);
+	while (!kfeof(scb->wf)){
+		kfgets(line,BUF_LEN,scb->wf);
 
 		if (isSOM(line)){
 			msg_no++;
@@ -437,17 +439,17 @@ struct pop_scb *scb;
 		if (deleted)
 			continue;
 
-		fputs(line,fd);
+		kfputs(line,fd);
 	}
 
-	fclose(fd);
+	kfclose(fd);
 
 	/* trash the updated mail folder if it is empty */
 
 	if ((stat(folder_pathname,&folder_stat) == 0) && (folder_stat.st_size == 0))
 		unlink(folder_pathname);
 
-	fclose(scb->wf);
+	kfclose(scb->wf);
 	scb->wf = NULL;
 
 	free(scb->msg_status);
@@ -460,8 +462,8 @@ struct pop_scb	*scb;
 {
 	char folder_pathname[64];
 	char line[BUF_LEN];
-	FILE *fd;
-	FILE *tmpfile();
+	kFILE *fd;
+	kFILE *ktmpfile();
 	struct stat folder_stat;
 
 
@@ -469,23 +471,23 @@ struct pop_scb	*scb;
 	scb->folder_len       = 0;
 	scb->folder_file_size = 0;
 	if (stat(folder_pathname,&folder_stat)){
-		 (void) fprintf(scb->network,no_mail_rsp);
+		 (void) kfprintf(scb->network,no_mail_rsp);
 		 return;
 	}
 
 	scb->folder_file_size = folder_stat.st_size;
-	if ((fd = fopen(folder_pathname,"r")) == NULL){
-		state_error(scb,"Unable to open mail folder");
+	if ((fd = kfopen(folder_pathname,"r")) == NULL){
+		state_error(scb,"Unable to kopen mail folder");
 		return;
 	}
 
-	if ((scb->wf = tmpfile()) == NULL) {
+	if ((scb->wf = ktmpfile()) == NULL) {
 		state_error(scb,"Unable to create work folder");
 		return;
 	}
 
-	while(!feof(fd)) {
-		fgets(line,BUF_LEN,fd);
+	while(!kfeof(fd)) {
+		kfgets(line,BUF_LEN,fd);
 
 		/* scan for begining of a message */
 
@@ -494,10 +496,10 @@ struct pop_scb	*scb;
 
 		/* now put  the line in the work file */
 
-		fputs(line,scb->wf);
+		kfputs(line,scb->wf);
 	}
 
-	fclose(fd);
+	kfclose(fd);
 
 	scb->msg_status_size = (scb->folder_len) / BITS_PER_WORD;
 
@@ -511,7 +513,7 @@ struct pop_scb	*scb;
 		return;
 	}
 
-	(void) fprintf(scb->network,count_rsp,scb->folder_len);
+	(void) kfprintf(scb->network,count_rsp,scb->folder_len);
 
 	scb->state  = MBOX;
 }
@@ -550,11 +552,11 @@ struct pop_scb	*scb;
 	}
 
 	cnt  = scb->msg_len;
-	while(!feof(scb->wf) && (cnt > 0)) {
-		fgets(line,BUF_LEN,scb->wf);
+	while(!kfeof(scb->wf) && (cnt > 0)) {
+		kfgets(line,BUF_LEN,scb->wf);
 		rrip(line);
 
-		(void) fprintf(scb->network,msg_line,line);
+		(void) kfprintf(scb->network,msg_line,line);
 		cnt -= (strlen(line)+2);	/* Compensate for CRLF */
 	}
 
@@ -578,12 +580,12 @@ int msg_no;
 	} else {
 		/* find the message and its length */
 
-		rewind(scb->wf);
-		while (!feof(scb->wf) && (msg_no > -1)) {
+		krewind(scb->wf);
+		while (!kfeof(scb->wf) && (msg_no > -1)) {
 			if (msg_no > 0)
-				scb->curpos = ftell(scb->wf);
+				scb->curpos = kftell(scb->wf);
 			
-			fgets(line,BUF_LEN,scb->wf);
+			kfgets(line,BUF_LEN,scb->wf);
 			rrip(line);
 
 			if (isSOM(line))
@@ -592,13 +594,13 @@ int msg_no;
 			if (msg_no != 0)
 				continue;
 
-			scb->nextpos  = ftell(scb->wf);
+			scb->nextpos  = kftell(scb->wf);
 			scb->msg_len += (strlen(line)+2);	/* Add CRLF */
 		}
 	}
 
 	if (scb->msg_len > 0)
-		fseek(scb->wf,scb->curpos,SEEK_SET);
+		kfseek(scb->wf,scb->curpos,kSEEK_SET);
 
 	/* we need the pointers even if the message was deleted */
 
@@ -614,15 +616,15 @@ char *username;
 	char buf[80];
 	char *cp;
 	char *cp1;
-	FILE *fp;
+	kFILE *fp;
 
-	if((fp = fopen(Popusers,"r")) == NULL) {
+	if((fp = kfopen(Popusers,"r")) == NULL) {
 		/* User file doesn't exist */
-		printf("POP users file %s not found\n",Popusers);
+		kprintf("POP users file %s not found\n",Popusers);
 		return(FALSE);
 	}
 
-	while(fgets(buf,sizeof(buf),fp),!feof(fp)) {
+	while(kfgets(buf,sizeof(buf),fp),!kfeof(fp)) {
 		if(buf[0] == '#')
 			continue;	/* Comment */
 
@@ -635,13 +637,13 @@ char *username;
 			break;		/* Found user name */
 	}
 
-	if(feof(fp)) {
+	if(kfeof(fp)) {
 		/* User name not found in file */
 
-		fclose(fp);
+		kfclose(fp);
 		return(FALSE);
 	}
-	fclose(fp);
+	kfclose(fp);
 
 	if ((cp1 = strchr(cp,':')) == NULL)
 		return(FALSE);
@@ -718,5 +720,5 @@ struct pop_scb *scb;
 	else
 		print_control_string = no_more_rsp;
 
-	(void)fprintf(scb->network,print_control_string,scb->msg_len,scb->msg_num);
+	(void)kfprintf(scb->network,print_control_string,scb->msg_len,scb->msg_num);
 }

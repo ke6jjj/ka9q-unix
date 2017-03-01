@@ -48,6 +48,8 @@ were, I'd use the code I mentioned above.
    argument. Each part of the string that matches '*' is returned as a
    null-terminated, malloced string in this array.
  */
+#include "top.h"
+
 #include "global.h"
 static int Star(char *s,char *p,char **argv);
 
@@ -126,7 +128,7 @@ register char **argv;
 #ifdef	TEST
 #include <stdio.h>
 
-extern char *gets();
+extern char *kgets();
 
 main()
 {
@@ -136,20 +138,20 @@ main()
 	int cnt;
     
 	while (TRUE){
-		printf("Enter pattern:  ");
-		if(gets(pattern) == NULL)
+		kprintf("Enter pattern:  ");
+		if(kgets(pattern) == NULL)
 			break;
 		while (TRUE){
 			bzero(argv,80*sizeof(char *);
-			printf("Enter text:  ");
-			if(gets(text) == NULL)
+			kprintf("Enter text:  ");
+			if(kgets(text) == NULL)
 				exit(0);
 			if(text[0] == '\0')
 				/* Blank line; go back and get a new pattern. */
 				break;
-			printf("      %d\n", wildmat(text, pattern, argv);
+			kprintf("      %d\n", wildmat(text, pattern, argv);
 			for(cnt = 0; argv[cnt] != NULL; ++cnt){
-				printf("String %d is: '%s'\n",cnt,argv[cnt]);
+				kprintf("String %d is: '%s'\n",cnt,argv[cnt]);
 				free(argv[cnt]);
 			}
 		}

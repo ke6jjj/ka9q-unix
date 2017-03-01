@@ -1,10 +1,18 @@
 /* Non pre-empting synchronization kernel, machine-independent portion
  * Copyright 1992 Phil Karn, KA9Q
  */
+#include "top.h"
+
 #if	defined(PROCLOG) || defined(PROCTRACE)
-#include <stdio.h>
+#include "stdio.h"
 #endif
+#if defined(MSDOS)
 #include <dos.h>
+#endif
+#ifdef UNIX
+#include <assert.h>
+#include "nosunix.h"
+#endif
 #include <setjmp.h>
 #include "global.h"
 #include "mbuf.h"
@@ -16,8 +24,8 @@
 #include "display.h"
 
 #ifdef	PROCLOG
-FILE *proclog;
-FILE *proctrace;
+kFILE *proclog;
+kFILE *proctrace;
 #endif
 
 struct proc *Curproc;		/* Currently running process */
@@ -50,9 +58,10 @@ mainproc(char *name)
 
 	/* Create name */
 	pp->name = strdup(name);
-#ifndef	AMIGA
+#if !defined(AMIGA) && !defined(UNIX)
 	pp->stksize = 0;
 #else
+	/* Allow machine-dependent layer to do some setup too */
 	init_psetup(pp);
 #endif
 	/* Make current */
@@ -60,8 +69,8 @@ mainproc(char *name)
 	Curproc = pp;
 
 #ifdef	PROCLOG
-	proclog = fopen("proclog",APPEND_TEXT);
-	proctrace = fopen("proctrace",APPEND_TEXT);
+	proclog = kfopen("proclog",APPEND_TEXT);
+	proctrace = kfopen("proctrace",APPEND_TEXT);
 #endif
 	return pp;
 }
@@ -93,11 +102,13 @@ int freeargs		/* If set, free arg list on parg1 at termination */
 	stksize += SIGQSIZE0;	/* DOS overhead */
 #endif
 	pp->stksize = max(stksize,32768);/*****/
+#ifndef	UNIX
 	if((pp->stack = malloc(sizeof(int32)*pp->stksize)) == NULL){
 		free(pp->name);
 		free(pp);
 		return NULL;
 	}
+#endif
 
 	/* Do machine-dependent initialization of stack */
 	psetup(pp,iarg,parg1,parg2,pc);
@@ -108,8 +119,8 @@ int freeargs		/* If set, free arg list on parg1 at termination */
 	pp->parg2 = parg2;
 	
 	/* Inherit creator's input and output sockets */
-	pp->input = fdup(stdin);
-	pp->output = fdup(stdout);
+	pp->input = kfdup(kstdin);
+	pp->output = kfdup(kstdout);
 
 	/* Add to ready process table */
 	pp->flags.suspend = pp->flags.waiting = 0;
@@ -126,6 +137,9 @@ killproc(struct proc **ppp)
 {
 	char **argv;
 	struct proc *pp;
+#ifdef UNIX
+	void *dummy;
+#endif
 
 	if(ppp == NULL || (pp = *ppp) == NULL)
 		return;
@@ -134,8 +148,8 @@ killproc(struct proc **ppp)
 	if(pp == Curproc)
 		killself();	/* Doesn't return */
 
-	fclose(pp->input);
-	fclose(pp->output);
+	kfclose(pp->input);
+	kfclose(pp->output);
 
 	/* Stop alarm clock in case it's running */
 	stop_timer(&pp->alarm);
@@ -147,11 +161,11 @@ killproc(struct proc **ppp)
 	delproc(pp);
 
 #ifdef	PROCLOG
-	fprintf(proclog,"id %p name %s stack %u/%u\n",pp,
+	kfprintf(proclog,"id %p name %s stack %u/%u\n",pp,
 		pp->name,stkutil(pp),pp->stksize);
-	fclose(proclog);
-	proclog = fopen("proclog",APPEND_TEXT);
-	proctrace = fopen("proctrace",APPEND_TEXT);
+	kfclose(proclog);
+	proclog = kfopen("proclog",APPEND_TEXT);
+	proctrace = kfopen("proctrace",APPEND_TEXT);
 #endif
 	/* Free allocated memory resources */
 	if(pp->flags.freeargs){
@@ -161,7 +175,16 @@ killproc(struct proc **ppp)
 		free(pp->parg1);
 	}
 	free(pp->name);
+#ifdef UNIX
+	/* Stop running the process thread. It should be asleep, waiting
+	 * for pthread_cond_wait() to return. This is a known and stable
+	 * thread cancellation point.
+	 */
+	pthread_cancel(pp->thread);
+	assert(pthread_join(pp->thread, &dummy) == 0);
+#else
 	free(pp->stack);
+#endif
 	free(pp);
 	*ppp = NULL;
 }
@@ -188,7 +211,7 @@ killer(int i,void *v1,void *v2)
 	struct mbuf *bp;
 
 	for(;;){
-		while((volatile)Killq == NULL)
+		while((volatile struct mbuf *)Killq == NULL)
 			kwait(&Killq);
 		bp = dequeue(&Killq);
 		pullup(&bp,&pp,sizeof(pp));
@@ -270,7 +293,7 @@ kwait(void *event)
 	int i_state;
 
 	if(!istate()){
-		stktrace();
+		stktrace(); /* Why is this here? Is this state an error? */
 	}
 	Ksig.kwaits++;
 
@@ -346,6 +369,25 @@ kwait(void *event)
 	oldproc->flags.istate = 0;
 	if(i_state)
 		oldproc->flags.istate = 1;
+#ifdef UNIX
+	if (oldproc != Curproc) {
+		/*
+	 	* Signal the new task's semaphore, waking it up. It will not
+	 	* be able to proceed, however, until we drop the global task
+	 	* lock.
+	 	*/
+		proc_wakeup(Curproc);
+
+		/*
+	 	* Put this process to sleep, dropping the global task lock and
+	 	* allowing the signaled process to proceed.
+	 	*/
+		proc_sleep(oldproc);
+
+		/* We're back in control again (someone has woken us up) */
+		restore(Curproc->flags.istate);
+	}
+#else
 	if(setjmp(oldproc->env) == 0){
 		/* We're still running in the old task; load new task context.
 		 * The interrupt state is restored here in case longjmp
@@ -354,6 +396,7 @@ kwait(void *event)
 		restore(Curproc->flags.istate);
 		longjmp(Curproc->env,1);
 	}
+#endif
 	/* At this point, we're running in the newly dispatched task */
 	tmp = Curproc->retval;
 	Curproc->retval = 0;
@@ -414,7 +457,7 @@ procsigs(void)
 	int i_state;
 
 	for(;;){
-		/* Atomic read and decrement of entry count */
+		/* Atomic kread and decrement of entry count */
 		i_state = disable();
 		tmp = Ksig.nentries;
 		if(tmp != 0)

@@ -25,6 +25,7 @@
  *		Improve PAP user interface and fix related bugs.
  *		Remove kwaits and "phase machine".
  */
+#include "top.h"
 
 #include "global.h"
 #include "mbuf.h"
@@ -33,7 +34,11 @@
 #include "internet.h"
 #include "ip.h"
 #include "slhc.h"
+#ifdef UNIX
+#include "asy_unix.h"
+#else
 #include "n8250.h"
+#endif
 #include "asy.h"
 #include "socket.h"
 #include "devparam.h"
@@ -168,11 +173,12 @@ char *comment
 /****************************************************************************/
 /* Send IP datagram with Point-to-Point Protocol */
 int
-ppp_send(bpp,ifp,gateway,tos)
-struct mbuf **bpp;	/* Buffer to send */
-struct iface *ifp;	/* Pointer to interface control block */
-int32 gateway;		/* Ignored (PPP is point-to-point) */
-uint8 tos;
+ppp_send(
+   struct mbuf **bpp,	/* Buffer to send */
+   struct iface *ifp,	/* Pointer to interface control block */
+   int32 gateway,	/* Ignored (PPP is point-to-point) */
+   uint8 tos
+)
 {
 	struct ppp_s *ppp_p;
 	struct ipcp_s *ipcp_p;
@@ -185,7 +191,7 @@ uint8 tos;
 	}
 
 	if (ppp_p->fsm[IPcp].state != fsmOPENED) {
-		ppp_error( ppp_p, bpp, "not open for IP traffic" );
+		ppp_error( ppp_p, bpp, "not kopen for IP traffic" );
 		ppp_p->OutError++;
 		return -1;
 	}
@@ -218,8 +224,8 @@ uint8 tos;
 int
 ppp_output(
 struct iface *ifp,	/* Pointer to interface control block */
-char *dest,		/* Dest addr (ignored; PPP is point-to-point) */
-char *source,		/* Source addr (ignored; PPP is point-to-point) */
+uint8 *dest,		/* Dest addr (ignored; PPP is point-to-point) */
+uint8 *source,		/* Source addr (ignored; PPP is point-to-point) */
 uint protocol,		/* PPP Protocol Type field */
 struct mbuf **data	/* Actual data to be sent */
 ){
@@ -599,7 +605,7 @@ struct mbuf **bpp;
 	switch(ph.protocol) {
 	case PPP_IP_PROTOCOL:	/* Regular IP */
 		if ( ppp_p->fsm[IPcp].state != fsmOPENED ) {
-			ppp_error( ppp_p, bpp, "not open for IP traffic" );
+			ppp_error( ppp_p, bpp, "not kopen for IP traffic" );
 			ppp_p->InError++;
 			break;
 		}
@@ -608,7 +614,7 @@ struct mbuf **bpp;
 
 	case PPP_COMPR_PROTOCOL:	/* Van Jacobson Compressed TCP/IP */
 		if ( ppp_p->fsm[IPcp].state != fsmOPENED ) {
-			ppp_skipped( ppp_p, bpp, "not open for Compressed TCP/IP traffic" );
+			ppp_skipped( ppp_p, bpp, "not kopen for Compressed TCP/IP traffic" );
 			ppp_p->InError++;
 			break;
 		}
@@ -630,7 +636,7 @@ struct mbuf **bpp;
 
 	case PPP_UNCOMP_PROTOCOL:	/* Van Jacobson Uncompressed TCP/IP */
 		if ( ppp_p->fsm[IPcp].state != fsmOPENED ) {
-			ppp_skipped( ppp_p, bpp, "not open for Uncompressed TCP/IP traffic" );
+			ppp_skipped( ppp_p, bpp, "not kopen for Uncompressed TCP/IP traffic" );
 			ppp_p->InError++;
 			break;
 		}

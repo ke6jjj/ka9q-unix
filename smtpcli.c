@@ -10,11 +10,13 @@
  *	Permission granted for non-commercial copying and use, provided
  *	this notice is retained.
  */
-#include <stdio.h>
+#include "top.h"
+
+#include "stdio.h"
 #include <fcntl.h>
 #include <time.h>
 #include <setjmp.h>
-#include <errno.h>
+#include "errno.h"
 #ifdef UNIX
 #include <sys/types.h>
 #endif
@@ -26,6 +28,9 @@
 #ifdef	__TURBOC__
 #include <dir.h>
 #include <io.h>
+#endif
+#ifdef MODERN_UNIX
+#include <unistd.h> /* for access() */
 #endif
 #include "global.h"
 #include <stdarg.h>
@@ -126,7 +131,7 @@ char *argv[];
 void *p;
 {
 	if (argc < 2) {
-		printf("smtp mode: %s\n",
+		kprintf("smtp mode: %s\n",
 			(Smtpmode & QUEUE) ? "queue" : "route");
 	} else {
 		switch(*argv[1]) {
@@ -137,7 +142,7 @@ void *p;
 			Smtpmode &= ~QUEUE;
 			break;
 		default:
-			printf("Usage: smtp mode [queue | route]\n");
+			kprintf("Usage: smtp mode [queue | route]\n");
 			break;
 		}
 	}
@@ -152,9 +157,9 @@ void *p;
 	int32 n;
 
 	if(argc < 2){
-		printf("%s\n",inet_ntoa(Gateway));
+		kprintf("%s\n",inet_ntoa(Gateway));
 	} else if((n = resolve(argv[1])) == 0){
-		printf(Badhost,argv[1]);
+		kprintf(Badhost,argv[1]);
 		return 1;
 	} else
 		Gateway = n;
@@ -188,14 +193,14 @@ void *p;
 	char	status;
 	struct stat stbuf;
 	struct tm *tminfo, *localtime();
-	FILE *fp;
+	kFILE *fp;
 
-	printf("S     Job    Size Date  Time  Host                 From\n");
+	kprintf("S     Job    Size Date  Time  Host                 From\n");
 	filedir(Mailqueue,0,line);
 	while(line[0] != '\0') {
 		sprintf(tstring,"%s/%s",Mailqdir,line);
-		if ((fp = fopen(tstring,READ_TEXT)) == NULL) {
-			printf("Can't open %s: %s\n",tstring,sys_errlist[errno]);
+		if ((fp = kfopen(tstring,READ_TEXT)) == NULL) {
+			kprintf("Can't open %s: %s\n",tstring,ksys_errlist[kerrno]);
 			continue;
 		}
 		if ((cp = strrchr(line,'.')) != NULL)
@@ -208,23 +213,23 @@ void *p;
 		sprintf(tstring,"%s/%s.txt",Mailqdir,line);
 		stat(tstring,&stbuf);
 		tminfo = localtime(&stbuf.st_ctime);
-		fgets(host,sizeof(host),fp);
+		kfgets(host,sizeof(host),fp);
 		rip(host);
-		fgets(from,sizeof(from),fp);
+		kfgets(from,sizeof(from),fp);
 		rip(from);
-		printf("%c %7s %7ld %02d/%02d %02d:%02d %-20s %s\n      ",
+		kprintf("%c %7s %7ld %02d/%02d %02d:%02d %-20s %s\n      ",
 			status, line, stbuf.st_size,
 			tminfo->tm_mon+1,
 			tminfo->tm_mday,
 			tminfo->tm_hour,
 			tminfo->tm_min,
 			host,from);
-		while (fgets(to,sizeof(to),fp) != NULL) {
+		while (kfgets(to,sizeof(to),fp) != NULL) {
 			rip(to);
-			printf("%s ",to);
+			kprintf("%s ",to);
 		}
-		printf("\n");
-		(void) fclose(fp);
+		kprintf("\n");
+		(void) kfclose(fp);
 		kwait(NULL);
 		filedir(Mailqueue,1,line);
 	}
@@ -252,7 +257,7 @@ void *p;
 	}
 	strcpy(cp,".wrk");
 	if (unlink(s))
-		printf("Job id %s not found\n",argv[1]);
+		kprintf("Job id %s not found\n",argv[1]);
 	strcpy(cp,".txt");
 	(void) unlink(s);
 	return 0;
@@ -266,7 +271,7 @@ char *argv[];
 void *p;
 {
 	if(argc < 2){
-		printf("%lu/%lu\n",
+		kprintf("%lu/%lu\n",
 		read_timer(&Smtpcli_t) /1000L,
 		dur_timer(&Smtpcli_t)/ 1000L);
 		return 0;
@@ -286,14 +291,14 @@ void *p;
 {
 	int32 addr = 0;
 	if(argc > 1 && (addr = resolve(argv[1])) == 0){
-		printf(Badhost,argv[1]);
+		kprintf(Badhost,argv[1]);
 		return 1;
 	}
 	smtptick(addr);
 	return 0;
 }
 
-/* This is the routine that gets called every so often to do outgoing
+/* This is the routine that kgets called every so often to do outgoing
  * mail processing. When called with a null argument, it runs the entire
  * queue; if called with a specific non-zero IP address from the remote
  * kick server, it only starts up sessions to that address.
@@ -309,11 +314,11 @@ int32 target;
 	char	from[LINELEN], to[LINELEN];
 	char *cp, *cp1;
 	int32 destaddr;
-	FILE *wfile;
+	kFILE *wfile;
 
 #ifdef SMTPTRACE
 	if (Smtptrace > 5)
-		printf("smtp daemon entered, target = %s\n",inet_ntoa(target));
+		kprintf("smtp daemon entered, target = %s\n",inet_ntoa(target));
 #endif
 	if(availmem() != 0){
 		/* Memory is tight, don't do anything */
@@ -336,7 +341,7 @@ int32 target;
 			continue;
 
 		sprintf(tmpstring,"%s/%s",Mailqdir,wfilename);
-		if ((wfile = fopen(tmpstring,READ_TEXT)) == NULL) {
+		if ((wfile = kfopen(tmpstring,READ_TEXT)) == NULL) {
 			/* probably too many open files */
 			(void) rmlock(Mailqdir,prefix);
 			/* continue to next message. The failure
@@ -344,17 +349,17 @@ int32 target;
 			continue;
 		}
 
-		(void) fgets(tmpstring,LINELEN,wfile);	/* read target host */
+		(void) kfgets(tmpstring,LINELEN,wfile);	/* kread target host */
 		rip(tmpstring);
 
 		if ((destaddr = mailroute(tmpstring)) == 0) {
-			fclose(wfile);
-			printf("** smtp: Unknown address %s\n",tmpstring);
+			kfclose(wfile);
+			kprintf("** smtp: Unknown address %s\n",tmpstring);
 			(void) rmlock(Mailqdir,prefix);
 			continue;
 		}
 		if(target != 0 && destaddr != target){
-			fclose(wfile);
+			kfclose(wfile);
 			(void) rmlock(Mailqdir,prefix);
 			continue;	/* Not the proper target of a kick */
 		}
@@ -363,15 +368,15 @@ int32 target;
 			if (Smtpsessions >= Smtpmaxcli) {
 #ifdef SMTPTRACE
 				if (Smtptrace) {
-					printf("smtp daemon: too many processes\n");
+					kprintf("smtp daemon: too many processes\n");
 				}
 #endif
-				fclose(wfile);
+				kfclose(wfile);
 				(void) rmlock(Mailqdir,prefix);
 				break;
 			}
 			if ((cb = newcb()) == NULL) {
-				fclose(wfile);
+				kfclose(wfile);
 				(void) rmlock(Mailqdir,prefix);
 				break;
 			} 
@@ -382,34 +387,34 @@ int32 target;
 				/* This system is already is sending mail lets not
 				* interfere with its send queue.
 				*/
-				fclose(wfile);
+				kfclose(wfile);
 				(void) rmlock(Mailqdir,prefix);
 				continue;
 			}
 		}
 
-		(void) fgets(from,LINELEN,wfile);	/* read from */
+		(void) kfgets(from,LINELEN,wfile);	/* kread from */
 		rip(from);
 		if ((jp = setupjob(cb,prefix,from)) == NULL) {
-			fclose(wfile);
+			kfclose(wfile);
 			(void) rmlock(Mailqdir,prefix);
 			del_session(cb);
 			break;
 		}
-		while (fgets(to,LINELEN,wfile) != NULL) {
+		while (kfgets(to,LINELEN,wfile) != NULL) {
 			rip(to);
 			if (addlist(&jp->to,to,DOMAIN) == NULL) {
-				fclose(wfile);
+				kfclose(wfile);
 				del_session(cb);
 			}
 		}
-		fclose(wfile);
+		kfclose(wfile);
 #ifdef SMTPTRACE
 		if (Smtptrace > 1) {
-			printf("queue job %s From: %s To:",prefix,from);
+			kprintf("queue job %s From: %s To:",prefix,from);
 			for (ap = jp->to; ap != NULL; ap = ap->next)
-				printf(" %s",ap->val);
-			printf("\n");
+				kprintf(" %s",ap->val);
+			kprintf("\n");
 		}
 #endif
 	}
@@ -438,7 +443,7 @@ void *p;
 {
 	register struct smtpcli *cb;
 	register struct list *tp;
-	struct sockaddr_in fsocket;
+	struct ksockaddr_in fsocket;
 	char *cp;
 	int rcode;
 	int rcpts;
@@ -448,26 +453,26 @@ void *p;
 
 	cb = (struct smtpcli *)cb1;
 	cb->lock = 1;
-	fsocket.sin_family = AF_INET;
+	fsocket.sin_family = kAF_INET;
 	fsocket.sin_addr.s_addr = cb->ipdest;
 	fsocket.sin_port = IPPORT_SMTP;
 
-	s = socket(AF_INET,SOCK_STREAM,0);
+	s = ksocket(kAF_INET,kSOCK_STREAM,0);
 #ifdef SMTPTRACE
 	if (Smtptrace) 
-		printf("SMTP client Trying...\n");
+		kprintf("SMTP client Trying...\n");
 #endif
-	if(connect(s,(struct sockaddr *)&fsocket,SOCKSIZE) == 0){
-		cb->network = fdopen(s,"r+t");
+	if(kconnect(s,(struct ksockaddr *)&fsocket,SOCKSIZE) == 0){
+		cb->network = kfdopen(s,"r+t");
 #ifdef SMTPTRACE
 		if (Smtptrace) 
-			printf("Connected\n");
+			kprintf("Connected\n");
 #endif
 	} else {
 		cp = sockerr(s);
 #ifdef SMTPTRACE
 		if (Smtptrace) 
-			printf("Connect failed: %s\n",cp != NULL ? cp : "");
+			kprintf("Connect failed: %s\n",cp != NULL ? cp : "");
 #endif
 		logmsg(s,"SMTP %s Connect failed: %s",psocket(&fsocket),
 		    cp != NULL ? cp : "");
@@ -487,7 +492,7 @@ void *p;
 	do {	/* For each message... */
 
 		/* if this file open fails, skip it */
-		if ((cb->tfile = fopen(cb->tname,READ_TEXT)) == NULL)
+		if ((cb->tfile = kfopen(cb->tname,READ_TEXT)) == NULL)
 			continue;
 
 		/* Send MAIL and RCPT commands */
@@ -578,9 +583,9 @@ quit:
 		(void) unlink(cb->wname);	/* unlink workfile */
 		(void) unlink(cb->tname);	/* unlink text */
 	}
-	(void) fclose(cb->network);
+	(void) kfclose(cb->network);
 	if(cb->tfile != NULL)
-		fclose(cb->tfile);
+		kfclose(cb->tfile);
 	cb->lock = 0;
 	del_session(cb);
 }
@@ -614,13 +619,13 @@ char *dir,*id;
 	fd = open(lockname, O_WRONLY|O_EXCL|O_CREAT,0600);
 	if(fd != -1){
 		/* Lock succeeded */
-		close(fd);
+		kclose(fd);
 		return 0;
 	}
 	/* See if the dir doesn't exist */
 	if(stat(dir,&statbuf) == -1 || (statbuf.st_mode & S_IFMT) != S_IFDIR){
-		printf("Lock directory %s missing\n",dir);
-		fflush(stdout);
+		kprintf("Lock directory %s missing\n",dir);
+		kfflush(kstdout);
 		return 0;
 	}
 	return -1;	/* lock failed */
@@ -700,16 +705,16 @@ static void
 retmail(cb)
 struct smtpcli *cb;
 {
-	FILE *infile;
+	kFILE *infile;
 #ifdef SMTPTRACE
 	if (Smtptrace > 5) {
-		printf("smtp job %s returned to sender\n",cb->wname);
+		kprintf("smtp job %s returned to sender\n",cb->wname);
 	}
 #endif
-	if ((infile = fopen(cb->tname,READ_TEXT)) == NULL)
+	if ((infile = kfopen(cb->tname,READ_TEXT)) == NULL)
 		return;
 	mdaemon(infile,cb->jobq->from,cb->errlog,1);
-	fclose(infile);
+	kfclose(infile);
 }
 
 /* look to see if a smtp control block exists for this ipdest */
@@ -768,7 +773,7 @@ execjobs()
 
 #ifdef SMTPTRACE
 		if (Smtptrace) 
-			printf("Trying Connection to %s\n",inet_ntoa(cb->ipdest));
+			kprintf("Trying Connection to %s\n",inet_ntoa(cb->ipdest));
 #endif
 
 
@@ -816,7 +821,7 @@ register struct smtpcli *cb;
 	sprintf(cb->wname,"%s/%s.wrk",Mailqdir,jp->jobname);
 #ifdef SMTPTRACE
 	if (Smtptrace > 5) {
-		printf("sending job %s\n",jp->jobname);
+		kprintf("sending job %s\n",jp->jobname);
 	}
 #endif
 		return 1;
@@ -866,13 +871,13 @@ register struct smtpcli *cb;
 	int error = 0;
 
 	strcpy(cb->buf,"\n");
-	while(fgets(cb->buf,sizeof(cb->buf),cb->tfile) != NULL) {
+	while(kfgets(cb->buf,sizeof(cb->buf),cb->tfile) != NULL) {
 		/* Escape a single '.' character at the beginning of a line */
 		if(strcmp(cb->buf,".\n") == 0)
-			putc('.',cb->network);
-		fputs(cb->buf,cb->network);
+			kputc('.',cb->network);
+		kfputs(cb->buf,cb->network);
 	}
-	fclose(cb->tfile);
+	kfclose(cb->tfile);
 	cb->tfile = NULL;
 	/* Send the end-of-message command */
 	if(cb->buf[strlen(cb->buf)-1] == '\n')
@@ -881,7 +886,7 @@ register struct smtpcli *cb;
 		sendcmd(cb,"\n.\n");
 	return error;
 }
-/* do a printf() on the network stream with optional local tracing */
+/* do a kprintf() on the network stream with optional local tracing */
 static void
 sendcmd(struct smtpcli *cb,char *fmt, ...)
 {
@@ -890,16 +895,16 @@ sendcmd(struct smtpcli *cb,char *fmt, ...)
 	va_start(args,fmt);
 #ifdef	SMTPTRACE
 	if(Smtptrace){
-		printf("smtp sent: ");
-		vprintf(fmt,args);
+		kprintf("smtp sent: ");
+		kvprintf(fmt,args);
 	}
 #endif
 	vsprintf(cb->buf,fmt,args);
-	fputs(cb->buf,cb->network);
+	kfputs(cb->buf,cb->network);
 	va_end(args);
 }
 
-/* Wait for, read and display response from server. Return the result code. */
+/* Wait for, kread and display response from server. Return the result code. */
 static int
 getresp(cb,mincode)
 struct smtpcli *cb;
@@ -908,10 +913,10 @@ int mincode;	/* Keep reading until at least this code comes back */
 	int rval;
 	char line[LINELEN];
 
-	fflush(cb->network);
+	kfflush(cb->network);
 	for(;;){
 		/* Get line */
-		if(fgets(line,LINELEN,cb->network) == NULL){
+		if(kfgets(line,LINELEN,cb->network) == NULL){
 			rval = -1;
 			break;
 		}
@@ -919,7 +924,7 @@ int mincode;	/* Keep reading until at least this code comes back */
 		rval = atoi(line);
 #ifdef	SMTPTRACE
 		if(Smtptrace)
-			printf("smtp recv: %s\n",line);/* Display to user */
+			kprintf("smtp recv: %s\n",line);/* Display to user */
 #endif
 		if(rval >= 500) {	/* Save permanent error replies */
 			char tmp[LINELEN];
