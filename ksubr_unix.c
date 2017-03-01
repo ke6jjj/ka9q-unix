@@ -158,7 +158,7 @@ struct proc *pp;
 		sprintf(outsock,"%3d",kfileno(pp->output));
 	else
 		sprintf(outsock,"   ");
-	kprintf("%-17p%-10u%-10p%c%c%c %s %s  %s\n",
+	kprintf("%-17p%-10u%-17p%c%c%c %s %s  %s\n",
 	 pp,pp->stksize,
 	 pp->event,
 	 pp->flags.istate ? 'I' : ' ',
@@ -180,6 +180,7 @@ init_psetup(struct proc *pp)
 	}
 	/* Process starts out running in whatever mode it currently is in */
 	pp->flags.run = 1;
+	pp->flags.exit = 0;
 	pp->flags.istate = istate();
 
 	/* Process gets the "current process" mutex too. */
@@ -236,6 +237,30 @@ void (*pc)(int,void*,void*);	/* Initial execution address */
 	}
 
 	pthread_attr_destroy(&attr);
+}
+
+void
+pteardown(struct proc *pp)
+{
+	void *dummy;
+
+	/* Ask the thread to exit */
+	pp->flags.exit = 1;
+
+	/* Wake it up */
+	pthread_cond_signal(&pp->cond);
+
+	/* Allow it to wake up */
+	pthread_mutex_unlock(&g_curproc_mutex);
+
+	/* Join with it */
+	assert(pthread_join(pp->thread, &dummy) == 0);
+
+	/* Take back the single process mutex */
+	pthread_mutex_lock(&g_curproc_mutex);
+
+	/* Destroy the thread's condition variable */
+	pthread_cond_destroy(&pp->cond);
 }
 
 unsigned
@@ -345,8 +370,12 @@ proc_sleep(struct proc *self)
 {
 	assert(self->flags.run == 1);
 	self->flags.run = 0;
-	while (self->flags.run == 0)
+	while (self->flags.run == 0 && self->flags.exit == 0)
 		pthread_cond_wait(&self->cond, &g_curproc_mutex);
+	if (self->flags.exit) {
+		pthread_mutex_unlock(&g_curproc_mutex);
+		pthread_exit(NULL);
+	}
 	/* We have been woken up to run at this point */
 	assert(Curproc == self);
 }

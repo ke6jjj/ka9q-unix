@@ -31,6 +31,7 @@ struct proc {
 		unsigned int freeargs:1;	/* Free args on termination */
 #ifdef UNIX
 		unsigned int run:1;		/* Process to run when awake */
+		unsigned int exit:1;		/* Process to exit when awake*/
 #endif
 	} flags;
 	int perrno;		/* Last error encountered */
@@ -113,11 +114,12 @@ void resume(struct proc *pp);
 int setsig(int val);
 void suspend(struct proc *pp);
 
-/* In ksubr.c: */
+/* In ksubr.c, ksubr_unix.c: */
 void chkstk(void);
 void kinit(void);
 unsigned phash(void *event);
 void psetup(struct proc *pp,int iarg,void *parg1,void *parg2,
 	void ((*pc)(int,void *,void *)) );
+void pteardown(struct proc *pp);
 
 #endif	/* _PROC_H */

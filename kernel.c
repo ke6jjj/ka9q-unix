@@ -137,9 +137,6 @@ killproc(struct proc **ppp)
 {
 	char **argv;
 	struct proc *pp;
-#ifdef UNIX
-	void *dummy;
-#endif
 
 	if(ppp == NULL || (pp = *ppp) == NULL)
 		return;
@@ -180,8 +177,7 @@ killproc(struct proc **ppp)
 	 * for pthread_cond_wait() to return. This is a known and stable
 	 * thread cancellation point.
 	 */
-	pthread_cancel(pp->thread);
-	assert(pthread_join(pp->thread, &dummy) == 0);
+	pteardown(pp);
 #else
 	free(pp->stack);
 #endif
