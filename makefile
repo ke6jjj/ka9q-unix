@@ -6,7 +6,7 @@
 CC= gcc
 RM= del
 LIB= ar
-CFLAGS= -O2 -g -DHOST_BSD -Werror -Wno-int-to-void-pointer-cast
+CFLAGS= -g -DHOST_BSD -Werror -Wno-int-to-void-pointer-cast
 LFLAGS= -lcurses
 
 

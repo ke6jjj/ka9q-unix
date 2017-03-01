@@ -285,7 +285,9 @@ loop:
 		case F6:	/* Toggle scroll mode */
 			if(Current == NULL)
 				break;
-			Current->scrollmode = !Current->scrollmode;
+			Current->scrollmode =
+				Current->scrollmode == SCROLL_INBAND ?
+				SCROLL_LOCAL : SCROLL_INBAND;
 			dscrollmode(Current->output->ptr,Current->scrollmode);
 			break;
 		case F5:	/* Kick current session */
