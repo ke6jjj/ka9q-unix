@@ -260,14 +260,18 @@ void *p2;
 			raw_dump(sp->iface,IF_TRACE_IN,bp);
 
 		if ((c = bp->data[0]) & SL_TYPE_COMPRESSED_TCP) {
-			if ( slhc_uncompress(sp->slcomp, &bp) <= 0 ) {
+			if ( sp->slcomp == NULL ||
+			     slhc_uncompress(sp->slcomp, &bp) <= 0 )
+			{
 				free_p(&bp);
 				sp->errors++;
 				continue;
 			}
 		} else if (c >= SL_TYPE_UNCOMPRESSED_TCP) {
 			bp->data[0] &= 0x4f;
-			if ( slhc_remember(sp->slcomp, &bp) <= 0 ) {
+			if ( sp->slcomp == NULL ||
+			     slhc_remember(sp->slcomp, &bp) <= 0 )
+			{
 				free_p(&bp);
 				sp->errors++;
 				continue;
