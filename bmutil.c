@@ -519,7 +519,7 @@ struct mbx *m;
 	int c, cnt = 0;
 
 	while(mlock(Mailspool,m->area)) {
-		ppause(1000L/MSPTICK);	/* Wait one second */
+		ppause(1000);	/* Wait one second */
 		if(++cnt == 10) {
 			cnt = 0;
 			c = tkeywait("Mail file is busy, Abort or Retry ? ",1);
