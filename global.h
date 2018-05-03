@@ -57,7 +57,7 @@ typedef unsigned long long uint64;	/* 64-bit unsigned integer */
 #define	NBBY	8		/* 8 bits/byte */
 #else
 #include <stdint.h>
-#include <sys/limits.h>
+#include <limits.h>
 typedef int32_t int32;		/* 32-bit signed integer */
 typedef unsigned int uint;	/* 16 or 32-bit unsigned integer */
 typedef uint32_t uint32;	/* 32-bit unsigned integer */
@@ -67,7 +67,9 @@ typedef uint8_t uint8;		/* 8-bit unsigned integer */
 typedef uint64_t uint64;	/* 64-bit unsigned integer */
 #define	MAXINT16 UINT16_MAX	/* Largest 16-bit integer */
 #define	MAXINT32 UINT32_MAX 	/* Largest 32-bit integer */
+#ifndef NBBY
 #define NBBY CHAR_BIT           /* Number of bits per byte */
+#endif
 #endif
 
 
