@@ -261,6 +261,8 @@ struct mbx *m;
 			++cp;
 		}
 		anony = 1;
+		/* Attempt authentication with blank password */
+		buf[0] = '\0';
 		/* Try to find the privileges of this user from the userfile */
 		if((m->privs = userlogin(m->name,buf,&m->path,MBXLINE,&anony)) == -1)
 			if((m->privs = userlogin("bbs",buf,&m->path,MBXLINE,&anony)) == -1)
