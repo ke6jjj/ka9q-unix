@@ -116,7 +116,7 @@ uint len
 	uint cnt, total;
 	int32 sum, csum;
 	uint8 *up;
-	uint csum1;
+	uint16 csum1;
 	int swap = 0;
 
 	sum = 0;
