@@ -35,6 +35,7 @@ void *p;
 	/* bind() is done automatically */
 	if(klisten(Axi_sock,1) == -1){
 		close_s(Axi_sock);
+		Axi_sock = -1;
 		return -1;
 	}
 	for(;;){
