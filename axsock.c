@@ -386,6 +386,7 @@ int cnt
 			/* Allocate new memory for the name areas */
 			nup->name = mallocw(sizeof(struct ksockaddr_ax));
 			nup->peername = mallocw(sizeof(struct ksockaddr_ax));
+			nup->index = ns;
 			/* Store the new ksocket # in the old one */
 			up->rdysock = ns;
 			up = nup;
