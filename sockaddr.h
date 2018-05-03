@@ -17,7 +17,7 @@ struct ksockaddr {
 
 /* This is a structure for "historical" reasons (whatever they are) */
 struct kin_addr {
-	uint32_t s_addr;
+	uint32 s_addr;
 };
 
 /* Socket address, DARPA Internet style */
