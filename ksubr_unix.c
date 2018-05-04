@@ -332,6 +332,21 @@ interrupt_enter()
 	pthread_setspecific(g_interrupts_disabled, (const void *)1);
 }
 
+/*
+ * This is a POSIX-specific routine for NOS drivers which wish to use
+ * the pthread system more efficiently to communicate with their top
+ * halves using the interrupt lock and a pthread condition variable.
+ *
+ * Caller MUST be holding the interrupt lock (via interrupt_enter).
+ */
+void
+interrupt_cond_wait(pthread_cond_t *cond)
+{
+	pthread_setspecific(g_interrupts_disabled, (const void *)0);
+	pthread_cond_wait(cond, &g_interrupt_mutex);
+	pthread_setspecific(g_interrupts_disabled, (const void *)1);
+}
+
 void
 interrupt_leave()
 {

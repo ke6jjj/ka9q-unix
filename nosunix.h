@@ -22,6 +22,7 @@ void init_psetup(struct proc *);
 void proc_sleep(struct proc *);
 void proc_wakeup(struct proc *);
 void interrupt_enter(void);
+void interrupt_cond_wait(pthread_cond_t *cond);
 void interrupt_leave(void);
 
 #endif	/* _UNIX_HARDWARE_H */
