@@ -415,6 +415,7 @@ static int dozap(int argc,char *argv[],void *p);
 static int dosend(int argc,char *argv[],void *p);
 static int dosid(int argc,char *argv[],void *p);
 static int dosysop(int argc,char *argv[],void *p);
+static int dologin(int argc, char *argv[],void *p);
 static int dostars(int argc,char *argv[],void *p);
 static int dombhelp(int argc,char *argv[],void *p);
 static int dombtelnet(int argc,char *argv[],void *p);
@@ -462,6 +463,7 @@ static struct cmds Mbcmds[] = {
 #endif
 	"@",		dosysop,	0, 0, NULL,
 	"***",		dostars,	0, 0, NULL,
+	"login", 	dologin,	0, 0, NULL,   
 	NULL,	NULL,		0, 0, "Huh?",
 };
 
@@ -1038,6 +1040,32 @@ void *p;
 		logmsg(kfileno(m->user),"MBOX sysop: %s",m->line);
 		cmdparse(Cmds,m->line,NULL);
 	}
+	return 0;
+}
+
+/*
+ * Attempt to reauthenticate.
+ */
+static int
+dologin(int argc, char *argv[],void *p)
+{
+	struct mbx *m = (struct mbx *) p;
+	int newprivs, isanon;
+
+	if (argc < 2) {
+		kprintf("Need password\n");
+		return 0;
+	}
+
+	newprivs = userlogin(m->name,argv[1],NULL,0,&isanon);
+	if (newprivs == -1) {
+		kprintf("Failed.\n");
+		return 0;
+	}
+
+	m->privs = newprivs;
+	kprintf("Authenticated.\n");
+
 	return 0;
 }
 
