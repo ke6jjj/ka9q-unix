@@ -254,12 +254,12 @@ tstat()
 	if((j % 2) == 0)
 		kprintf("\n");
 
-	kprintf("     &TCB Rcv-Q Snd-Q            Local ksocket         Remote ksocket State\n");
+	kprintf(__FWPTR"  Rcv-Q  Snd-Q           Local socket          Remote socket State\n", "&TCB");
 	for(tcb=Tcbs;tcb != NULL;tcb = tcb->next){
-		kprintf("%9p%6u%6u  ",tcb,tcb->rcvcnt,tcb->sndcnt);
-		kprintf("%22s",pinet(&tcb->conn.local));
-		kprintf("%22s",pinet(&tcb->conn.remote));
-		kprintf(" %s",Tcpstates[tcb->state]);
+		kprintf(__PRPTR" %6u %6u ",tcb,tcb->rcvcnt,tcb->sndcnt);
+		kprintf("%22s ",pinet(&tcb->conn.local));
+		kprintf("%22s ",pinet(&tcb->conn.remote));
+		kprintf("%s",Tcpstates[tcb->state]);
 		if(tcb->state == TCP_LISTEN && tcb->flags.clone)
 			kprintf(" (S)");
 		kprintf("\n");

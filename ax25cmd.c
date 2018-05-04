@@ -262,9 +262,9 @@ void *p;
 	char tmp[AXBUF];
 
 	if(argc < 2){
-		kprintf("&AXB      Snd-Q   Rcv-Q   Remote    State\n");
+		kprintf(__FWPTR" Snd-Q   Rcv-Q   Remote    State\n", "&AXB");
 		for(axp = Ax25_cb;axp != NULL; axp = axp->next){
-			kprintf("%9p %-8d%-8d%-10s%s\n",
+			kprintf(__PRPTR" %-8d%-8d%-10s%s\n",
 			 axp,
 			 len_q(axp->txq),len_p(axp->rxq),
 			 pax25(tmp,axp->remote),
@@ -289,9 +289,9 @@ struct ax25_cb *axp;
 
 	if(axp == NULL)
 		return;
-	kprintf("     &AXB Remote   RB V(S) V(R) Unack P Retry State\n");
+	kprintf(__FWPTR" Remote   RB V(S) V(R) Unack P Retry State\n", "&AXB");
 
-	kprintf("%9p %-9s%c%c",axp,pax25(tmp,axp->remote),
+	kprintf(__PRPTR" %-9s%c%c",axp,pax25(tmp,axp->remote),
 	 axp->flags.rejsent ? 'R' : ' ',
 	 axp->flags.remotebusy ? 'B' : ' ');
 	kprintf(" %4d %4d",axp->vs,axp->vr);

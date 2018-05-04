@@ -126,7 +126,8 @@ void *p;
 	Ksig.maxentries = 0;
 	kprintf("kwaits %lu nops %lu from int %lu\n",
 	 Ksig.kwaits,Ksig.kwaitnops,Ksig.kwaitints);
-	kprintf("PID              stksize   event     fl  in  out  name\n");
+	kprintf(__FWPTR" stksize   "__FWPTR" fl  in  out  name\n", "PID",
+		"event");
 
 	for(pp = Susptab;pp != NULL;pp = pp->next)
 		pproc(pp);
@@ -158,7 +159,7 @@ struct proc *pp;
 		sprintf(outsock,"%3d",kfileno(pp->output));
 	else
 		sprintf(outsock,"   ");
-	kprintf("%-17p%-10u%-17p%c%c%c %s %s  %s\n",
+	kprintf(__PRPTR" %-9u "__PRPTR" %c%c%c %s %s  %s\n",
 	 pp,pp->stksize,
 	 pp->event,
 	 pp->flags.istate ? 'I' : ' ',

@@ -860,14 +860,14 @@ void *p;
 	char luser[AXBUF], ruser[AXBUF], node[AXBUF] ;
 	
 	if (argc < 2) {
-		kprintf("&CB       Snd-W Snd-Q Rcv-Q     LUser      RUser @Node     State\n");
+		kprintf(__FWPTR" Snd-W Snd-Q Rcv-Q     LUser      RUser @Node     State\n", "&CB");
 		for (i = 0 ; i < NR4MAXCIRC ; i++) {
 			if ((cb = Nr4circuits[i].ccb) == NULL)
 				continue ;
 			pax25(luser,cb->local.user) ;
 			pax25(ruser,cb->remote.user) ;
 			pax25(node,cb->remote.node) ;
-			kprintf("%9p   %3d %5d %5d %9s  %9s %-9s %s\n",
+			kprintf(__PRPTR" %3d %5d %5d %9s  %9s %-9s %s\n",
 			 cb, cb->nbuffered, len_q(cb->txq),
 			 len_p(cb->rxq), luser, ruser, node,
 			 Nr4states[cb->state]);

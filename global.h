@@ -55,6 +55,9 @@ typedef unsigned long long uint64;	/* 64-bit unsigned integer */
 #define	MAXINT16 0xffff		/* Largest 16-bit integer */
 #define	MAXINT32 0xffffffff	/* Largest 32-bit integer */
 #define	NBBY	8		/* 8 bits/byte */
+#define __SZPTR	9		/* Number of characters in a '%p' output */
+#define __PRPTR "%-9p"
+#define __FWPTR "%-9s"
 #else
 #include <stdint.h>
 #include <limits.h>
@@ -69,6 +72,15 @@ typedef uint64_t uint64;	/* 64-bit unsigned integer */
 #define	MAXINT32 UINT32_MAX 	/* Largest 32-bit integer */
 #ifndef NBBY
 #define NBBY CHAR_BIT           /* Number of bits per byte */
+#endif
+#ifdef __LP64__
+#define __SZPTR	18		/* Number of characters in a '%p' output */
+#define __PRPTR "%-18p"
+#define __FWPTR "%-18s"
+#else
+#define __SZPTR	10		/* Number of characters in a '%p' output */
+#define __PRPTR "%-10p"
+#define __FWPTR "%-10s"
 #endif
 #endif
 

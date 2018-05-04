@@ -250,11 +250,11 @@ free(void *blk)
 		Invalid++;
 		if(istate()){
 			ptr = (unsigned short *)&blk;
-			kprintf("free: WARNING! invalid pointer (%p) proc %s\n",
+			kprintf("free: WARNING! invalid pointer ("__PTPTR") proc %s\n",
 			 blk,Curproc->name);
-			kprintf("p = %p, p->s.ptr = %p\n",p,p->s.ptr);
+			kprintf("p = "__PRPTR", p->s.ptr = "__PRPTR"\n",p,p->s.ptr);
 
-			logmsg(-1,"free: WARNING! invalid pointer (%p) pc = 0x%x %x proc %s\n",
+			logmsg(-1,"free: WARNING! invalid pointer ("__PRPTR") pc = 0x%x %x proc %s\n",
 			 blk,ptr[-1],ptr[-2],Curproc->name);
 			kfflush(kstdout); ppause(1000L);
 			abort();
@@ -450,9 +450,9 @@ void *envp
 			restore(i_state);
 		}
 		if(corrupt)
-			kprintf("%8p %7lu C: %u",p,p->s.size * ABLKSIZE,corrupt);
+			kprintf(__PRPTR" %7lu C: %u",p,p->s.size * ABLKSIZE,corrupt);
 		else
-			kprintf("%8p %7lu",p,p->s.size * ABLKSIZE);
+			kprintf(__PRPTR" %7lu",p,p->s.size * ABLKSIZE);
 
 		if(++i == 4){
 			i = 0;

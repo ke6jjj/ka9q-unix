@@ -1239,9 +1239,9 @@ dofiles(int argc,char *argv[],void *p)
 	kFILE *fp;
 	int i;
 
-	kprintf("       fp   fd   ref      eol   type mod buf  flags\n");
+	kprintf(__FWPTR"   fd   ref      eol   type mod buf  flags\n", "fp");
 	for(fp = _Files;fp != NULL;fp = fp->next){
-		kprintf("%9p ",fp);
+		kprintf(__PRPTR" ",fp);
 		if(fp->fd != -1)
 			kprintf("%4d",fp->fd);
 		else
