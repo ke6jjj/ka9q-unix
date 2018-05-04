@@ -80,6 +80,9 @@ struct asy {
 
 	long rxchar;		/* Received characters */
 	long txchar;		/* Transmitted characters */
+
+	struct proc *txproc;
+	struct mbuf *txq;
 };
 
 extern int Nasy;		/* Actual number of asynch lines */

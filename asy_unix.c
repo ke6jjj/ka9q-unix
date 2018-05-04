@@ -54,6 +54,8 @@ static int asy_modem_bits(int fd, int setbits, int clearbits, int *readbits);
 static void pasy(struct asy *asyp);
 static void *asy_io_read_proc(void *asyp);
 static void *asy_io_write_proc(void *asyp);
+static void asy_tx(int dummy0, void *app, void *dummy1);
+static int asy_write_int(struct asy *asyp, const void *buf,unsigned short cnt);
 
 /* Initialize asynch port "dev" */
 int
@@ -69,6 +71,7 @@ int cts		/* Use CTS flow control */
 	int ttyfd;
 	struct asy *ap;
 	void *dummy;
+	char *procname;
 
 	if(dev >= ASY_MAX)
 		return -1;
@@ -131,13 +134,25 @@ int cts		/* Use CTS flow control */
 	ap->dma.cnt = 0;
 	ap->dma.busy = 0;
 	ap->write_exit = 0;
+	ap->txq = NULL;
 
 	/* drop read and write locks, which will start I/O */
 	pthread_mutex_unlock(&ap->read_lock);
 	pthread_mutex_unlock(&ap->write_lock);
 
+	/* Spawn the transmit deque process */
+	procname = if_name(ifp, " asytx");
+        ap->txproc = newproc(procname, 768, asy_tx, 0, ap, NULL, 0);
+	free(procname);
+	if (ap->txproc == NULL) {
+		kprintf("Can't start asy tx process.\n");
+		goto CantStartTxProc;
+	}
+
+
 	return 0;
 
+CantStartTxProc:
 CantStartWriteThread:
 	pthread_cancel(ap->read_thread);
 	pthread_join(ap->read_thread, &dummy);
@@ -260,6 +275,7 @@ asy_open(char *name)
 	/* Suspend the packet drivers */
 	suspend(ifp->rxproc);
 	suspend(ifp->txproc);
+	suspend(Asy[dev].txproc);
 
 	/* bring the line up (just in case) */
 	if(ifp->ioctl != NULL)
@@ -283,6 +299,7 @@ asy_close(int dev)
 	}
 	resume(ifp->rxproc);
 	resume(ifp->txproc);
+	resume(Asy[dev].txproc);
 	return 0;
 }
 
@@ -293,14 +310,22 @@ int dev,
 const void *buf,
 unsigned short cnt
 ){
-	struct dma *dp;
 	struct asy *asyp;
-	int tmp, i_state;
-	struct iface *ifp;
 
 	if(dev < 0 || dev >= ASY_MAX)
 		return -1;
 	asyp = &Asy[dev];
+
+	return asy_write_int(asyp, buf, cnt);
+}
+
+static int
+asy_write_int(struct asy *asyp, const void *buf, unsigned short cnt)
+{
+	int tmp, i_state;
+	struct iface *ifp;
+	struct dma *dp;
+
 	if((ifp = asyp->iface) == NULL)
 		return -1;
 
@@ -428,16 +453,16 @@ asy_send(dev,bpp)
 int dev;
 struct mbuf **bpp;
 {
+	struct asy *asyp;
+	int wasempty;
+
 	if(dev < 0 || dev >= ASY_MAX){
 		free_p(bpp);
 		return -1;
 	}
-	while(*bpp != NULL){
-		/* Send the buffer */
-		asy_write(dev,(*bpp)->data,(*bpp)->cnt);
-		/* Now do next buffer on chain */
-		free_mbuf(bpp);
-	}
+
+	enqueue(&Asy[dev].txq, bpp);
+
 	return 0;
 }
 
@@ -711,6 +736,25 @@ asy_io_write_proc(void *asyp)
 	return NULL;
 }
 
+static void
+asy_tx(int dummy0, void *asyp, void *dummy1)
+{
+	struct asy *ap = (struct asy *)asyp;
+	struct mbuf *bp;
+
+	for (;;) {
+		while ((bp = dequeue(&ap->txq)) == NULL)
+			kwait(&ap->txq);
+	
+		while(bp != NULL) {
+			/* Send the buffer */
+			asy_write_int(ap, bp->data, bp->cnt);
+			/* Now do next buffer on chain */
+			free_mbuf(&bp);
+		}
+	}
+}
+
 int
 asy_shutdown(int dev)
 {
@@ -749,6 +793,8 @@ asy_shutdown(int dev)
 	close(ap->ttyfd);
 
 	free(ap->fifo.buf);
+
+	killproc(&ap->txproc);
 
 	return 0;
 }
