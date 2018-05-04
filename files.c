@@ -264,7 +264,7 @@ int
 userlogin(name,pass,path,len,pwdignore)
 char *name;
 char *pass;
-char **path;
+char **path;			/* Can be NULL if not interested */
 int len;			/* Length of buffer pointed at by *path */
 int *pwdignore;
 {
@@ -301,11 +301,13 @@ int *pwdignore;
 			return -1;
 		}
 	}
-	if ( strlen( directory ) + 1 > len ) {
-		/* not enough room for path */
-		free(buf);
-		return -1;
-	}
+
+	if ( path != NULL ) {
+		if (strlen( directory ) + 1 > len ) {
+			/* not enough room for path */
+			free(buf);
+			return -1;
+		}
 
 #if   defined(AMIGA)
 	/*
@@ -316,20 +318,21 @@ int *pwdignore;
 	 * allocate the buffer and return a pointer to it, since the caller
 	 * really doesn't have a good idea how long the path string is..
 	 */
-	if ( (directory = pathname("", directory)) != NULL ) {
-		strcpy(*path, directory);
-		free(directory);
-	} else {
-		**path = '\0';
-	}
+		if ( (directory = pathname("", directory)) != NULL ) {
+			strcpy(*path, directory);
+			free(directory);
+		} else {
+			**path = '\0';
+		}
 #else
-	strcpy(*path,directory);
-	/* Convert any backslashes to forward slashes, for backward
-	 * compatibility with the old NET
-	 */
-	while((cp = strchr(*path,'\\')) != NULL)
-		*cp = '/';
+		strcpy(*path,directory);
+		/* Convert any backslashes to forward slashes, for backward
+	 	* compatibility with the old NET
+	 	*/
+		while((cp = strchr(*path,'\\')) != NULL)
+			*cp = '/';
 #endif
+	}
 	free(buf);
 	*pwdignore = anonymous;
 	/* Finally return the permission bits */
