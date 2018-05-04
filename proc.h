@@ -18,7 +18,7 @@
 #define	SIGQSIZE	200	/* Entries in ksignal queue */
 
 /* Kernel process control block */
-#define	PHASH	16		/* Number of wait table hash chains */
+#define	PHASH	15		/* Number of wait table hash chains */
 struct proc {
 	struct proc *prev;	/* Process table pointers */
 	struct proc *next;	
