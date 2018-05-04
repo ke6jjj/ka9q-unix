@@ -36,7 +36,9 @@
 #undef	HAPN			/* Hamilton Area Packet Network driver code */
 #undef	EAGLE			/* Eagle card driver */
 #undef	PI			/* PI card driver */
-#undef	PACKET			/* FTP Software's Packet Driver interface */
+#define	PACKET		1	/* General (Ethernet) packet support */
+				/* On MS-DOS this also enables
+				   FTP Software's Packet Driver interface */
 #undef	PC100			/* PAC-COM PC-100 driver code */
 #undef	APPLETALK		/* Appletalk interface (Macintosh) */
 #undef	DRSI			/* DRSI PCPA slow-speed driver */

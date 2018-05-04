@@ -37,6 +37,7 @@
 #include "nr4.h"
 #include "nrs.h"
 #include "netrom.h"
+#include "tapdrvr.h"
 #include "pktdrvr.h"
 #include "ppp.h"
 #include "slip.h"
@@ -439,9 +440,16 @@ struct cmds Attab[] = {
 	"attach netrom [ip_addr]",
 #endif
 #ifdef	PACKET
+#ifdef	MSDOS
 	/* FTP Software's packet driver spec */
 	"packet", pk_attach, 0, 4,
 	"attach packet <int#> <label> <buffers> <mtu> [ip_addr]",
+#endif
+#ifdef	UNIX
+	/* BSD Ethernet TAP device */
+	"tap", tap_attach, 0, 4,
+	"attach tap <path> <label> <ethaddr> <mtu>",
+#endif
 #endif
 #ifdef	HS
 	/* Special high speed driver for DRSI PCPA or Eagle cards */
