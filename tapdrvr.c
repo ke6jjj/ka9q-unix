@@ -215,6 +215,8 @@ tap_raw(struct iface *iface, struct mbuf **bpp)
 
 	/* Transmit the packet via the gather vector */
 	res = writev(tap->fd, &tap->write_vec[0], i);
+
+	free_p(bpp);
 	
 	return res > 0 ? 0 : -1;
 }
