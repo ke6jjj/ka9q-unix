@@ -67,7 +67,7 @@ msclock(void)
 	int64_t duration_u;
 
 	gettimeofday(&now, NULL);
-	duration_u = (now.tv_sec - g_start_time.tv_sec) * 1000000;
+	duration_u = ((int64_t)(now.tv_sec - g_start_time.tv_sec)) * 1000000;
 	duration_u += (now.tv_usec - g_start_time.tv_usec);
 	return duration_u / 1000;
 }
