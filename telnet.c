@@ -86,7 +86,7 @@ void *p;
 	}
 	settos(s,LOW_DELAY);
 	sp->network = kfdopen(s,"r+t");
-/*	ksetvbuf(sp->network,NULL,_kIOLBF,kBUFSIZ); */
+	ksetvbuf(sp->network,NULL,_kIOLBF,kBUFSIZ);
 	return tel_connect(sp,(struct ksockaddr *)&fsocket,SOCKSIZE);
 }
 /* Generic interactive kconnect routine, used by Telnet, AX.25, NET/ROM */
