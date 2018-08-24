@@ -855,7 +855,7 @@ kFILE *fp
 	struct mbuf *bp;
 	size_t bytes;
 	size_t cnt;
-	int c;
+	int c, tmp;
 	size_t tot = 0;
 	uint8 *ocp;
 	uint8 *cp;
@@ -872,11 +872,13 @@ kFILE *fp
 		 && fp->type == _FL_FILE && !fp->flags.ascii
 		 && bytes >= kBUFSIZ){
 			_LSEEK(fp->fd,fp->offset,kSEEK_SET);
-			tot = _READ(fp->fd,ocp,bytes);
-			if(tot > 0)
-				fp->offset += tot;
-			if(tot != bytes)
-				return tot/size;
+			tmp = _READ(fp->fd,ocp,bytes);
+			if(tmp < 0)
+				return 0;
+			if(tmp > 0)
+				fp->offset += tmp;
+			if(tmp != bytes)
+				return tmp/size;
 			return n;
 		}
 		/* Replenish input buffer if necessary */
