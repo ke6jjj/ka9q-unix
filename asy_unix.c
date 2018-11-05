@@ -554,7 +554,7 @@ asy_open_socket(const char *spec)
 {
 	char *hostname, *service;
 	const char *sep;
-	struct addrinfo hints, *res;
+	struct addrinfo hints, *res0, *res;
 	int fd, error;
 	
 	sep = (const char *) strrchr(spec, ':');
@@ -587,21 +587,30 @@ asy_open_socket(const char *spec)
 	hints.ai_canonname = NULL;
 	hints.ai_next = NULL;
 
-	error = getaddrinfo(hostname, service, &hints, &res);
+	error = getaddrinfo(hostname, service, &hints, &res0);
 	if (error != 0) {
 		kprintf("getaddrinfo() failure: %s\n", gai_strerror(error));
 		goto GetAddrInfoFailed;
 	}
 
-	fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
-	if (fd == -1) {
-		kprintf("socket() failed.\n");
-		goto SocketFailed;
+	/* Try each provided address in turn */
+
+	for (res = res0; res != NULL; res = res->ai_next) {
+		fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+		if (fd == -1) {
+			kprintf("socket() failed.\n");
+			goto SocketFailed;
+		}
+
+		error = connect(fd, res->ai_addr, res->ai_addrlen);
+		if (error >= 0)
+			break;
+
+		close(fd);
 	}
 
-	error = connect(fd, res->ai_addr, res->ai_addrlen);
 	if (error < 0) {
-		kprintf("connect() failed.\n");
+		kprintf("connect() failed: %s\n", strerror(errno));
 		goto ConnectFailed;
 	}
 
