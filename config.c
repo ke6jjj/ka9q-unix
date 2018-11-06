@@ -38,6 +38,7 @@
 #include "nrs.h"
 #include "netrom.h"
 #include "tapdrvr.h"
+#include "tundrvr.h"
 #include "pktdrvr.h"
 #include "ppp.h"
 #include "slip.h"
@@ -449,6 +450,10 @@ struct cmds Attab[] = {
 	/* BSD Ethernet TAP device */
 	"tap", tap_attach, 0, 4,
 	"attach tap <path> <label> <ethaddr> <mtu>",
+
+	/* BSD IP TUN device */
+	"tun", tun_attach, 0, 4,
+	"attach tun <path> <label> <mtu>",
 #endif
 #endif
 #ifdef	HS
