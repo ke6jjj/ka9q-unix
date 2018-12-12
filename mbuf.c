@@ -10,6 +10,7 @@
 #include "global.h"
 #include "mbuf.h"
 #include "proc.h"
+#include "crc.h"
 
 static int32 Pushdowns;		/* Total calls to pushdown() */
 static int32 Pushalloc;		/* Calls to pushalloc() that call malloc */
@@ -238,6 +239,20 @@ trim_mbuf(struct mbuf **bpp,uint length)
 	}
 }
 /* Duplicate/enqueue/dequeue operations based on mbufs */
+
+/* Increment the reference count on a packet, duplicating it without
+ * making any memory allocations.
+ */
+void
+incref_p(struct mbuf *bp)
+{
+	for(;bp != NULL;bp = bp->next){
+		if(bp->dup != NULL)
+			bp->dup->refcnt++;
+		else
+			bp->refcnt++;
+	}
+}
 
 /* Duplicate first 'cnt' bytes of packet starting at 'offset'.
  * This is done without copying data; only the headers are duplicated,
@@ -537,6 +552,62 @@ pull8(struct mbuf **bpp)
 		return -1;		/* Nothing left */
 	return c;
 }
+
+int
+crc_mbuf(struct mbuf *bp, uint offset, uint len, uint16 *pcrc)
+{
+	uint16 crc;
+	uint actual;
+
+	/* Skip over offset if greater than first mbuf(s) */
+	while(bp != NULL && offset >= bp->cnt){
+		offset -= bp->cnt;
+		bp = bp->next;
+	}
+	crc_init(&crc);
+	while (bp != NULL && len > 0) {
+		actual = min(len, bp->cnt - offset);
+		crc_update(&bp->data[offset], actual, &crc);
+		len -= actual;
+		offset = 0;
+		bp = bp->next;
+	}
+	if (len > 0)
+		/* Ran out of data */
+		return -1;
+	*pcrc = crc;
+	return 0;
+}
+
+int
+crc_check_mbuf(struct mbuf *bp, uint offset, uint len)
+{
+	uint16 crc;
+
+	if (crc_mbuf(bp, offset, len, &crc) != 0)
+		return -1;
+
+	return crc_final_check(crc);
+}
+
+int
+crc_append_mbuf(struct mbuf **bpp, uint offset, uint len)
+{
+	uint16 crc;
+	struct mbuf *ap;
+
+	if (crc_mbuf(*bpp, offset, len, &crc) != 0)
+		return -1;
+	if ((ap = alloc_mbuf(2)) == NULL)
+		return -2;
+	ap->cnt = 2;
+	crc_final_write(ap->data, crc);
+	append(bpp, &ap);
+
+	return 0;
+}
+
+
 int
 write_p(kFILE *fp,struct mbuf *bp)
 {

@@ -173,7 +173,7 @@ char *putlqhdr(char *cp,uint version,int32 ip_addr);
 struct lq *al_lookup(struct iface *ifp,uint8 *addr,int sort);
 
 /* In ax25subr.c: */
-int addreq(uint8 *a,uint8 *b);
+int addreq(const uint8 *a, const uint8 *b);
 char *pax25(char *e,uint8 *addr);
 int setcall(uint8 *out,char *call);
 

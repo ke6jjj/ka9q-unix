@@ -67,6 +67,7 @@
 #ifdef	SOUND
 #include "sb.h"
 #endif
+#include "axip.h"
 
 static int dostart(int argc,char *argv[],void *p);
 static int dostop(int argc,char *argv[],void *p);
@@ -110,6 +111,9 @@ struct cmds Cmds[] = {
 		"attach <hardware> <hw specific options>",
 #ifdef	AX25
 	"ax25",		doax25,		0, 0, NULL,
+#endif
+#ifdef	AXIP
+	"axudp",	doaxudp,	0, 2, "axudp <interface> <subcmd> ...",
 #endif
 #ifdef	BOOTP
 	"bootp",	dobootp,	0, 0, NULL,
@@ -280,6 +284,9 @@ struct cmds Remcmds[] = {
 		"attach <hardware> <hw specific options>",
 #ifdef	AX25
 	"ax25",		doax25,		0, 0, NULL,
+#endif
+#ifdef	AXIP
+	"axudp",	doaxudp,	0, 2, "axudp <interface> <subcmd> ...",
 #endif
 #ifdef	BOOTP
 	"bootp",	dobootp,	0, 0, NULL,
@@ -474,6 +481,10 @@ struct cmds Attab[] = {
 #ifdef	KSP
 	"ksp", ksp_attach, 0, 5,
 	"attach ksp <base> <irq> <label> <mtu>",
+#endif
+#ifdef AXIP
+	"axudp", axudp_attach, 0, 4,
+	"attach axudp <listenip> <port> <label> [automap] [autobroadcast]",
 #endif
 
 	NULL,

@@ -31,6 +31,7 @@ void free_mbuf(struct mbuf **bpp);
 
 struct mbuf *ambufw(uint size);
 struct mbuf *copy_p(struct mbuf *bp,uint cnt);
+void incref_p(struct mbuf *hp);
 uint dup_p(struct mbuf **hp,struct mbuf *bp,uint offset,uint cnt);
 uint extract(struct mbuf *bp,uint offset,void *buf,uint len);
 struct mbuf *free_p(struct mbuf **bpp);
@@ -59,6 +60,13 @@ uint get16(uint8 *cp);
 int32 get32(uint8 *cp);
 uint8 *put16(uint8 *cp,uint x);
 uint8 *put32(uint8 *cp,int32 x);
+
+/* Non-destructive CRC compute */
+int crc_mbuf(struct mbuf *bp, uint offset, uint len, uint16 *pcrc);
+/* Non-destructive CRC check */
+int crc_check_mbuf(struct mbuf *bp, uint offset, uint len);
+/* Calculate and append CRC-16 value to mbuf */
+int crc_append_mbuf(struct mbuf **bpp, uint offset, uint len);
 
 void iqstat(void);
 void refiq(void);

@@ -177,7 +177,7 @@ setcall(uint8 *out,char *call)
 	return 0;
 }
 int
-addreq(uint8 *a,uint8 *b)
+addreq(const uint8 *a,const uint8 *b)
 {
 	if(memcmp(a,b,ALEN) != 0 || ((a[ALEN] ^ b[ALEN]) & SSID) != 0)
 		return 0;

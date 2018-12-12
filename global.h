@@ -58,9 +58,11 @@ typedef unsigned long long uint64;	/* 64-bit unsigned integer */
 #define __SZPTR	9		/* Number of characters in a '%p' output */
 #define __PRPTR "%-9p"
 #define __FWPTR "%-9s"
+#define PRIu32 "ul"
 #else
 #include <stdint.h>
 #include <limits.h>
+#include <inttypes.h>
 typedef int32_t int32;		/* 32-bit signed integer */
 typedef unsigned int uint;	/* 16 or 32-bit unsigned integer */
 typedef uint32_t uint32;	/* 32-bit unsigned integer */

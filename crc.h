@@ -5,7 +5,11 @@
 
 #define FCS(fcs, c)		(((uint16)fcs >> 8) ^ Fcstab[((fcs) ^ (c)) & 0xff])
 
-extern unsigned short Fcstab[];
-int crc_check(unsigned char *buf,unsigned int len);
-void crc_gen(unsigned char *buf,unsigned int len);
+extern uint16 Fcstab[];
+int crc_check(uint8 *buf,uint len);
+void crc_gen(uint8 *buf,uint len);
 
+void crc_init(uint16 *crc);
+void crc_update(uint8 *buf, uint len, uint16 *crc);
+int crc_final_check(uint16 crc);
+void crc_final_write(uint8 *buf, uint16 crc);

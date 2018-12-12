@@ -46,12 +46,13 @@
 #define	ASY		1	/* Asynch driver code */
 #undef	SLFP			/* SLFP packet driver class supported */
 #undef	KSP			/* Kitchen Sink Protocol */
+#define AXIP		1	/* Tunnel AX.25 over UDP (later, IP also) */
 
 #if defined(NRS) && !defined(NETROM)
 #define	NETROM		1	/* NRS implies NETROM */
 #endif
 
-#if (defined(HS)||defined(NETROM)||defined(KISS)||defined(HAPN)||defined(EAGLE)||defined(PC100)||defined(PI)||defined(SCC))
+#if (defined(HS)||defined(NETROM)||defined(KISS)||defined(HAPN)||defined(EAGLE)||defined(PC100)||defined(PI)||defined(SCC)||defined(AXIP))
 #define	AX25		1	/* AX.25 subnet code */
 #endif
 
