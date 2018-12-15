@@ -365,7 +365,6 @@ axudp_stop(struct iface *iface)
 	size_t i;
 
 	dev = &Axudp_dev[iface->dev];
-	kclose(dev->s);
 
 	/*
 	 * Shutdown the DNS lookup process cleanly; it may have
@@ -395,6 +394,8 @@ axudp_rx(int dev_i,void *p1,void *p2)
 	int cnt, numaddrs, fromlen;
 	uint plen, bucket;
 	const uint8 *srccall;
+
+	sockowner(dev->s, Curproc);
 
 	for (;;) {
         	cnt = recv_mbuf(dev->s, &bp, 0, &from, &fromlen);
