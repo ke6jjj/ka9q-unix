@@ -8,9 +8,10 @@
 #include "socket.h"
 
 char Inet_eol[] = "\r\n";
+static uint Lport = 1024;
 
 static void rip_recv(struct raw_ip *rp);
-static void autobind(struct usock *up);
+static uint16 next_ephem_port();
 
 int
 so_ip_sock(up,protocol)
@@ -29,7 +30,7 @@ so_ip_conn(up)
 struct usock *up;
 {
 	if(up->name == NULL)
-		autobind(up);
+		return so_ip_autobind(up);
 	return 0;
 }
 int
@@ -78,8 +79,12 @@ struct ksockaddr *to
 ){
 	struct ksockaddr_in *local,*remote;
 
-	if(up->name == NULL)
-		autobind(up);
+	if(up->name == NULL) {
+		if (so_ip_autobind(up) != 0) {
+			free_p(bpp);
+			return -1;
+		}
+	}
 	local = (struct ksockaddr_in *)up->name;
 	if(to != NULL){
 		remote = (struct ksockaddr_in *)to;
@@ -140,18 +145,25 @@ struct raw_ip *rp;
 	kwait(NULL);
 }
 /* Issue an automatic bind of a local address */
-static void
-autobind(up)
+int
+so_ip_autobind(up)
 struct usock *up;
 {
 	struct ksockaddr_in local;
-	int s;
+	int s, i, r;
 
 	s = up->index;
 	local.sin_family = kAF_INET;
 	local.sin_addr.s_addr = kINADDR_ANY;
-	local.sin_port = Lport++;
-	kbind(s,(struct ksockaddr *)&local,sizeof(struct ksockaddr_in));
+	for (i = 0; i < 64512; i++) {
+		local.sin_port = next_ephem_port();
+		r = kbind(s,(struct ksockaddr *)&local,
+			sizeof(struct ksockaddr_in));
+		if (r != -1 || kerrno != kEOPNOTSUPP)
+			break;
+		/* Try next port */
+	}
+	return r;
 }
 char *
 ippsocket(p)
@@ -167,4 +179,31 @@ struct ksockaddr *p;
 	strcpy(buf,pinet(&socket));
 
 	return buf;
+}
+
+/* Calculate the next ephemeral port to use in the psuedo-random port
+ * allocation scheme.
+ *
+ * Traditionally, NOS used to allocate ephemeral ports from a monotonically
+ * increasing set, without any regard to established connections in the system
+ * and without any wrap-around once reaching port 65535.
+ *
+ * This new code attempts to generate a pseudo-random sequence which provably
+ * will cover all ephemeral (>= 1024) ports, but not sequentially. It is
+ * a Linear Congruential Generator (LCG). All LCGs have the form:
+ *
+ * Xnew = a*X + c mod m
+ *
+ * m - The size of the set. 64512 in this case (65536 - 1024)
+ * a - The multiplier. Must fit several rules. For this 'm', the smallest 'a'
+ *     is 85.
+ * c - The increment. Can be any number relatively prime with n. The smallest
+ *     'c' here is 1.
+ */
+static uint16
+next_ephem_port()
+{
+	uint16 last = Lport;
+	Lport = ((((uint32)Lport - 1024) * 85) + 1) % 64512 + 1024;
+	return last;
 }

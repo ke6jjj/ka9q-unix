@@ -114,10 +114,10 @@ extern char Badsocket[];
 extern char *Socktypes[];
 extern struct usock **Usock;
 extern unsigned Nsock;
-extern uint Lport;
 
 struct usock *itop(int s);
 void st_garbage(int red);
+int so_ip_autobind(struct usock *up);
 
 /* In axsocket.c: */
 int so_ax_sock(struct usock *up,int protocol);

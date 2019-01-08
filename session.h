@@ -90,7 +90,6 @@ struct session *newsession(char *name,int type,int makecur);
 void sesflush(void);
 void upload(int unused,void *sp1,void *p);
 
-extern uint Lport;
 #define	ALERT_EOF	1
 
 #endif  /* _SESSION_H */

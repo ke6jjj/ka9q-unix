@@ -10,9 +10,6 @@ static void s_trcall(struct tcb *tcb,int32 cnt);
 static void s_tscall(struct tcb *tcb,int old,int new);
 static void s_ttcall(struct tcb *tcb,int32 cnt);
 static void trdiscard(struct tcb *tcb,int32 cnt);
-static void autobind(struct usock *up);
-
-uint Lport = 1024;
 
 int
 so_tcp(struct usock *up,int protocol)
@@ -26,8 +23,11 @@ so_tcp_listen(struct usock *up,int backlog)
 	struct ksockaddr_in *local;
 	struct ksocket lsock;
 
-	if(up->name == NULL)
-		autobind(up);
+	if(up->name == NULL){
+		if (so_ip_autobind(up) != 0){
+			return -1;
+		}
+	}
 
 	local = (struct ksockaddr_in *)up->name;
 	lsock.address = local->sin_addr.s_addr;
@@ -46,7 +46,9 @@ so_tcp_conn(struct usock *up)
 	struct ksockaddr_in *local,*remote;
 
 	if(up->name == NULL){
-		autobind(up);
+		if (so_ip_autobind(up) != 0){
+			return -1;
+		}
 	}
 	
 	if(checkipaddr(up->peername,up->peernamelen) == -1){
@@ -303,17 +305,6 @@ trdiscard(struct tcb *tcb,int32 cnt)
 	free_p(&bp);
 }
 
-/* Issue an automatic bind of a local address */
-static void
-autobind(struct usock *up)
-{
-	struct ksockaddr_in local;
-
-	local.sin_family = kAF_INET;
-	local.sin_addr.s_addr = kINADDR_ANY;
-	local.sin_port = Lport++;
-	kbind(up->index,(struct ksockaddr *)&local,sizeof(struct ksockaddr_in));
-}
 char *
 tcpstate(struct usock *up)
 {
@@ -433,4 +424,3 @@ stop_tcp(uint port)
 	free(in);
 	return 0;
 }
-

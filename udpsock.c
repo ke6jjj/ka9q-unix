@@ -7,7 +7,6 @@
 #include "usock.h"
 
 static void s_urcall(struct iface *iface,struct udp_cb *udp,int cnt);
-static void autobind(struct usock *up);
 
 int
 so_udp(up,protocol)
@@ -37,7 +36,7 @@ so_udp_conn(up)
 struct usock *up;
 {
 	if(up->name == NULL){
-		autobind(up);
+		return so_ip_autobind(up);
 	}
 	return 0;
 }
@@ -85,8 +84,12 @@ struct ksockaddr *to
 	struct ksockaddr_in *local,*remote;
 	struct ksocket lsock,fsock;
 
-	if(up->name == NULL)
-		autobind(up);
+	if(up->name == NULL) {
+		if (so_ip_autobind(up) != 0) {
+			free_p(bpp);
+			return -1;
+		}
+	}
 	local = (struct ksockaddr_in *)up->name;
 	lsock.address = local->sin_addr.s_addr;
 	lsock.port = local->sin_port;
@@ -150,20 +153,6 @@ int cnt;
 	kwait(NULL);
 }
 
-/* Issue an automatic bind of a local address */
-static void
-autobind(up)
-struct usock *up;
-{
-	struct ksockaddr_in local;
-	int s;
-
-	s = up->index;
-	local.sin_family = kAF_INET;
-	local.sin_addr.s_addr = kINADDR_ANY;
-	local.sin_port = Lport++;
-	kbind(s,(struct ksockaddr *)&local,sizeof(struct ksockaddr_in));
-}
 int
 so_udp_stat(up)
 struct usock *up;
