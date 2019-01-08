@@ -27,7 +27,7 @@ static int asy_detach(struct iface *ifp);
 #ifdef UNIX
 /* Attach a serial interface to the system
  * argv[0]: hardware type, must be "asy"
- * argv[1]: device pathname
+ * argv[1]: device pathname OR host:port specification
  * argv[2]: mode, may be:
  *		"slip" (point-to-point SLIP)
  *		"kissui" (AX.25 UI frame format in SLIP for raw TNC)

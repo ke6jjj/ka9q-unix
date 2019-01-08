@@ -25,10 +25,13 @@
 #endif
 
 #include <sys/ioctl.h>
+#include <sys/socket.h>
+#include <netdb.h>
 #include <termios.h>
 #include <fcntl.h>
 #include <pthread.h>
 #include <unistd.h>
+#include <string.h>
 
 #include "stdio.h"
 #include <errno.h>
@@ -45,6 +48,8 @@
 
 struct asy Asy[ASY_MAX];
 
+static int asy_open_dev(const char *path, int cts, long speed);
+static int asy_open_socket(const char *spec);
 static int asy_modem_bits(int fd, int setbits, int clearbits, int *readbits);
 static void pasy(struct asy *asyp);
 static void *asy_io_read_proc(void *asyp);
@@ -62,7 +67,6 @@ long speed,
 int cts		/* Use CTS flow control */
 ){
 	int ttyfd;
-	struct termios tc;
 	struct asy *ap;
 	void *dummy;
 
@@ -71,25 +75,16 @@ int cts		/* Use CTS flow control */
 
 	ap = &Asy[dev];
 
-	if ((ttyfd = open(path, O_RDWR)) == -1) {
-		kprintf("Can't open '%s': %s\n",path,strerror(errno));
-		goto CantOpenDevice;
-	}
-	if (tcgetattr(ttyfd, &tc) != 0) {
-		kprintf("Can't get terminal attributes: %s\n", strerror(errno));
-		goto CantFetchTc;
-	}
-	cfmakeraw(&tc);
-	tc.c_cflag = CS8|CREAD|CLOCAL;
-	if (cts)
-		tc.c_cflag |= CRTSCTS;
-	if (cfsetspeed(&tc, speed) != 0) {
-		kprintf("Can't set baud rate: %s\n", strerror(errno));
-		goto InvalidSpeed;
-	}
-	if (tcsetattr(ttyfd, TCSANOW, &tc) != 0) {
-		kprintf("Can't set terminal attributes: %s\n", strerror(errno));
-		goto CantSetTc;
+	if (strchr(path, ':') == NULL) {
+		if ((ttyfd = asy_open_dev(path, cts, speed)) == -1) {
+			goto CantOpenDevice;
+		}
+		ap->is_real_tty = 1;
+	} else {
+		if ((ttyfd = asy_open_socket(path)) == -1) {
+			goto CantOpenDevice;
+		}
+		ap->is_real_tty = 0;
 	}
 
 	/* Set up receiver FIFO */
@@ -156,10 +151,6 @@ CantInitReadLock:
 	free(ap->fifo.buf);
 	ap->fifo.buf = NULL;
 CantAllocReadBuf:
-CantSetTc:
-InvalidSpeed:
-CantFetchTc:
-	close(ttyfd);
 CantOpenDevice:
 	return -1;
 }
@@ -190,12 +181,14 @@ long bps
 	if(bps == 0)
 		return -1;
 
-	if (tcgetattr(asyp->ttyfd, &tc) != 0)
-		return -1;
-	if (cfsetspeed(&tc, bps) != 0)
-		return -1;
-	if (tcsetattr(asyp->ttyfd, TCSAFLUSH, &tc) != 0)
-		return -1;
+	if (asyp->is_real_tty) {
+		if (tcgetattr(asyp->ttyfd, &tc) != 0)
+			return -1;
+		if (cfsetspeed(&tc, bps) != 0)
+			return -1;
+		if (tcsetattr(asyp->ttyfd, TCSAFLUSH, &tc) != 0)
+			return -1;
+	}
 
 	asyp->speed = bps;
 
@@ -222,18 +215,26 @@ int32 val
 	case PARAM_DTR:
 		setbits = (set && val) ? TIOCM_DTR : 0;
 		clearbits = (set && !val) ? 0 : TIOCM_DTR;
-		asy_modem_bits(ap->ttyfd,setbits,clearbits,&bits);
-		return (bits & TIOCM_DTR) ? TRUE : FALSE;
+		if (ap->is_real_tty) {
+			asy_modem_bits(ap->ttyfd,setbits,clearbits,&bits);
+			return (bits & TIOCM_DTR) ? TRUE : FALSE;
+		}
+		return TRUE;
 	case PARAM_RTS:
 		setbits = (set && val) ? TIOCM_RTS : 0;
 		clearbits = (set && !val) ? 0 : TIOCM_RTS;
-		asy_modem_bits(ap->ttyfd,setbits,clearbits,&bits);
-		return (bits & TIOCM_RTS) ? TRUE : FALSE;
+		if (ap->is_real_tty) {
+			asy_modem_bits(ap->ttyfd,setbits,clearbits,&bits);
+			return (bits & TIOCM_RTS) ? TRUE : FALSE;
+		}
+		return TRUE;
 	case PARAM_DOWN:
-		asy_modem_bits(ap->ttyfd,0,TIOCM_RTS|TIOCM_DTR,NULL);
+		if (ap->is_real_tty)
+			asy_modem_bits(ap->ttyfd,0,TIOCM_RTS|TIOCM_DTR,NULL);
 		return FALSE;
 	case PARAM_UP:
-		asy_modem_bits(ap->ttyfd,TIOCM_RTS|TIOCM_DTR,0,NULL);
+		if (ap->is_real_tty)
+			asy_modem_bits(ap->ttyfd,TIOCM_RTS|TIOCM_DTR,0,NULL);
 		return TRUE;
 	}
 	return -1;
@@ -397,17 +398,21 @@ pasy(struct asy *asyp)
 
 	kprintf(" %lu bps\n",asyp->speed);
 
-	if (asy_modem_bits(asyp->ttyfd, 0, 0, &mcr) != 0)
-		kprintf("modem bits error: %s\n", strerror(errno));
-		return;
+	if (asyp->is_real_tty) {
+		if (asy_modem_bits(asyp->ttyfd, 0, 0, &mcr) != 0)
+			kprintf("modem bits error: %s\n", strerror(errno));
+			return;
 
-	kprintf(" MC: DTR %s  RTS %s  CTS %s  DSR %s  RI %s  CD %s\n",
-	 (mcr & TIOCM_DTR) ? "On" : "Off",
-	 (mcr & TIOCM_RTS) ? "On" : "Off",
-	 (mcr & TIOCM_CTS) ? "On" : "Off",
-	 (mcr & TIOCM_DSR) ? "On" : "Off",
-	 (mcr & TIOCM_RI) ? "On" : "Off",
-	 (mcr & TIOCM_CD) ? "On" : "Off");
+		kprintf(" MC: DTR %s  RTS %s  CTS %s  DSR %s  RI %s  CD %s\n",
+	 	(mcr & TIOCM_DTR) ? "On" : "Off",
+	 	(mcr & TIOCM_RTS) ? "On" : "Off",
+	 	(mcr & TIOCM_CTS) ? "On" : "Off",
+	 	(mcr & TIOCM_DSR) ? "On" : "Off",
+	 	(mcr & TIOCM_RI) ? "On" : "Off",
+	 	(mcr & TIOCM_CD) ? "On" : "Off");
+	} else {
+		kprintf(" TCP socket, no control bits.\n");
+	}
 	
 	kprintf(" RX: chars %lu", asyp->rxchar);
 	kprintf(" sw over %lu sw hi %u\n",asyp->fifo.overrun,asyp->fifo.hiwat);
@@ -480,6 +485,118 @@ unsigned short cnt
 	restore(i_state);
 
 	return cnt;
+}
+
+static int
+asy_open_dev(const char *path, int cts, long speed)
+{
+	int ttyfd;
+	struct termios tc;
+
+	if ((ttyfd = open(path, O_RDWR)) == -1) {
+		kprintf("Can't open '%s': %s\n",path,strerror(errno));
+		goto CantOpenDevice;
+	}
+	if (tcgetattr(ttyfd, &tc) != 0) {
+		kprintf("Can't get terminal attributes: %s\n", strerror(errno));
+		goto CantFetchTc;
+	}
+	cfmakeraw(&tc);
+	tc.c_cflag = CS8|CREAD|CLOCAL;
+	if (cts)
+		tc.c_cflag |= CRTSCTS;
+	if (cfsetspeed(&tc, speed) != 0) {
+		kprintf("Can't set baud rate: %s\n", strerror(errno));
+		goto InvalidSpeed;
+	}
+	if (tcsetattr(ttyfd, TCSANOW, &tc) != 0) {
+		kprintf("Can't set terminal attributes: %s\n", strerror(errno));
+		goto CantSetTc;
+	}
+
+	return ttyfd;
+
+CantSetTc:
+InvalidSpeed:
+CantFetchTc:
+	close(ttyfd);
+CantOpenDevice:
+	return -1;
+}
+
+static int
+asy_open_socket(const char *spec)
+{
+	char *hostname, *service;
+	const char *sep;
+	struct addrinfo hints, *res;
+	int fd, error;
+	
+	sep = (const char *) strrchr(spec, ':');
+	if (sep == NULL) {
+		kprintf("Host specification missing port\n");
+		goto BadChar;
+	}
+
+	service = strdup(sep+1);
+	if (service == NULL) {
+		kprintf("Out of memory.\n");
+		goto BadServiceAlloc;
+	}
+
+	hostname = (char *) malloc(sep - spec + 1);
+	if (hostname == NULL) {
+		kprintf("Out of memory.\n");
+		goto BadHostnameAlloc;
+	}
+
+	memcpy(hostname, spec, sep - spec);
+	hostname[sep - spec] = '\0';
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = AF_UNSPEC;
+	hints.ai_socktype = SOCK_STREAM;
+	hints.ai_flags =
+		AI_ADDRCONFIG | /* Use IPv4/IPv6 depending on availability */
+		AI_NUMERICSERV; /* Port should be a number */
+	hints.ai_canonname = NULL;
+	hints.ai_next = NULL;
+
+	error = getaddrinfo(hostname, service, &hints, &res);
+	if (error != 0) {
+		kprintf("getaddrinfo() failure: %s\n", gai_strerror(error));
+		goto GetAddrInfoFailed;
+	}
+
+	fd = socket(res->ai_family, res->ai_socktype, res->ai_protocol);
+	if (fd == -1) {
+		kprintf("socket() failed.\n");
+		goto SocketFailed;
+	}
+
+	error = connect(fd, res->ai_addr, res->ai_addrlen);
+	if (error < 0) {
+		kprintf("connect() failed.\n");
+		goto ConnectFailed;
+	}
+
+	freeaddrinfo(res);
+	free(hostname);
+	free(service);
+
+	return fd;
+
+ConnectFailed:
+	close(fd);
+SocketFailed:
+	freeaddrinfo(res);
+GetAddrInfoFailed:
+	free(hostname);
+BadHostnameAlloc:
+	free(service);
+BadServiceAlloc:
+BadChar:
+	return -1;
 }
 
 static int

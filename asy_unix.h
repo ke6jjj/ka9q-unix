@@ -74,6 +74,7 @@ struct asy {
 	struct dma dma;
 
 	int ttyfd;		/* Device file descriptor */
+	int is_real_tty; 	/* tty vs. socket */     
 	int cts;		/* CTS/RTS handshaking enabled */
 	int speed;		/* current baudrate */
 
