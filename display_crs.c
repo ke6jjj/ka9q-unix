@@ -337,8 +337,8 @@ int size	/* Size of virtual screen, lines */
 	for(i=0;i<cols;i+= 8)
 		dp->tabstops[i] = 1;
 
-	/* Start with normal white color on black background */
-	dp->fcolor = 7;
+	/* Start with green color on black background */
+	dp->fcolor = 2;
 	dp->bcolor = 0;
 
 	/* Lock out other CURSES threads temporarily */
@@ -350,6 +350,9 @@ int size	/* Size of virtual screen, lines */
 		wcolor_set(dp->window, pcPAIR(dp->fcolor, dp->bcolor), NULL);
 	wclear(dp->window);	/* Start with a clean slate */
 	wmove(dp->window, dp->padtop, 0); /* Position cursor at top of act. */
+
+	/* Turn on intensity */
+	wattron(dp->window, A_BOLD);
 
 	pthread_mutex_unlock(&g_curses_mutex);
 
