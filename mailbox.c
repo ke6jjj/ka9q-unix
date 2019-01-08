@@ -171,7 +171,7 @@ void *p;
 		if((m = Mbox[i]) != NULL){
 			len = MAXSOCKSIZE;
 			j = kgetpeername(kfileno(m->user),&fsocket,&len);
-			kprintf("%-11s%-9s%-4u%s\n",m->name,
+			kprintf("%-11s%-9s%-6u%s\n",m->name,
 			 states[m->state],kfileno(m->user),
 			 j != -1 ? psocket(&fsocket): "");
 		}
