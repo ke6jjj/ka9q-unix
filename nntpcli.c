@@ -34,7 +34,6 @@
 #include "stdio.h"
 #include <sys/types.h>
 #include <time.h>
-#include <sys/timeb.h>
 #include <ctype.h>
 #include <string.h>  /* for strchr() */
 #ifdef	__TURBOC__
@@ -661,10 +660,10 @@ char *msgid;
 	newgl[0] = '\0';
 	while(kfgets(buf,NNTPMAXLEN,tmpf) != NULL) {
 		if(strncmp(buf,"From: ",6) == 0) {
-			struct timeb t;
-			ftime(&t);
+			time_t t;
+			time(&t);
 			rip(&buf[6]);
-			sprintf(froml,"From %s %ld\n",&buf[6], t.time);
+			sprintf(froml,"From %s %ld\n",&buf[6], (long)t);
 			if(newgl[0] != '\0')
 				break;
 		}
