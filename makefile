@@ -42,7 +42,7 @@ IPSEC=	ipsec.o esp.o deskey.o des3port.o desport.o desspa.o ah.o
 
 AX25=	ax25cmd.o axsock.o ax25user.o ax25.o \
 	axheard.o lapbtime.o \
-	lapb.o kiss.o ax25subr.o ax25hdr.o ax25mail.o
+	lapb.o kiss.o ax25subr.o ax25hdr.o ax25mail.o axip.o
 
 NETROM=	nrcmd.o nrsock.o nr4user.o nr4timer.o nr4.o nr4subr.o \
 	nr4hdr.o nr3.o nrs.o nrhdr.o nr4mail.o
