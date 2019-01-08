@@ -109,9 +109,6 @@ main(int argc,char *argv[])
 		}
 	}
 
-	printf("waiting gdb...\n");
-	fgets(cmdbuf, sizeof(cmdbuf)-1, stdin);
-
 	kinit();
 	ioinit(hinit);
 	sockinit();
