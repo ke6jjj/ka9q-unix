@@ -23,7 +23,8 @@ extern const char *ksys_errlist[];
 #define	kEBADF		14
 #define	kEMFILE		15
 #define	kEFAULT		16
-#define	kEMAX		16
+#define	kENOMEM		17
+#define	kEMAX		17
 
 /* Translate native error numbers to KA9Q kerrno */
 int translate_sys_errno(int);

@@ -205,7 +205,6 @@ int namelen		/* Length of name */
 
 	/* a bind routine is optional - don't fail if it isn't present */
 	if(sp->bind != NULL && (*sp->bind)(up) == -1){
-		kerrno = kEOPNOTSUPP;
 		free(up->name);
 		up->name = NULL;
 		return -1;

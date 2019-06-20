@@ -1,5 +1,6 @@
 /* Internet User Data Protocol (UDP)
  * Copyright 1991 Phil Karn, KA9Q
+ * Copyright 2019 Jeremy Cooper, KE6JJJ
  */
 #include "top.h"
 
@@ -41,6 +42,10 @@ void (*r_upcall)();
 		return NULL;
 	}
 	up = (struct udp_cb *)callocw(1,sizeof (struct udp_cb));
+	if (up == NULL) {
+		Net_error = NO_MEM;
+		return NULL;
+	}
 	up->socket.address = lsocket->address;
 	up->socket.port = lsocket->port;
 	up->r_upcall = r_upcall;

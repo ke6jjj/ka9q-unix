@@ -27,7 +27,20 @@ struct usock *up;
 	sp = (struct ksockaddr_in *)up->name;
 	lsock.address = sp->sin_addr.s_addr;
 	lsock.port = sp->sin_port;
-	up->cb.udp = open_udp(&lsock,s_urcall);
+	if ((up->cb.udp = open_udp(&lsock,s_urcall)) == NULL) {
+		switch (Net_error) {
+		case NO_MEM:
+			kerrno = kENOMEM;
+			break;
+		case CON_EXISTS:
+			kerrno = kEADDRINUSE;
+			break;
+		default:
+			kerrno = kEOPNOTSUPP;
+			break;
+		}
+		return -1;
+	}
 	up->cb.udp->user = s;
 	return 0;
 }

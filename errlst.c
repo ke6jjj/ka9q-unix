@@ -1,7 +1,7 @@
 /* System error list
  *
  * Copyright 1991 Phil Karn, KA9Q
- * Copyright 2017 Jeremy Cooper, KE6JJJ
+ * Copyright 2017, 2019 Jeremy Cooper, KE6JJJ
  */
 #include "top.h"
 
@@ -26,5 +26,6 @@ const char *ksys_errlist[] = {
 	"address in use",               /* 13 - kEADDRINUSE */
 	"bad file descriptor",          /* 14 - kEBADF */
 	"too many files open",          /* 15 - kEMFILE */
-	"bad address"                   /* 16 - kEFAULT */
+	"bad address",                  /* 16 - kEFAULT */
+	"out of memory"                 /* 17 - kENOMEM */
 };

@@ -26,6 +26,7 @@ translate_sys_errno(int err)
 	case EBADF: return kEBADF;
 	case EMFILE: return kEMFILE;
 	case EFAULT: return kEFAULT;
+	case ENOMEM: return kENOMEM;
 	default:
 		return kEINVAL;
 	}
