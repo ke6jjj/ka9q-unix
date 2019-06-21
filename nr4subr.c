@@ -106,8 +106,8 @@ struct nr4cb *cb ;
 	Nr4circuits[circ].cid++ ;
 }
 
-/* See if any kopen circuit matches the given parameters.  This is used
- * to prevent opening multiple circuits on a duplicate kconnect request.
+/* See if any open circuit matches the given parameters.  This is used
+ * to prevent opening multiple circuits on a duplicate connect request.
  * Returns the control block address if a match is found, or NULL
  * otherwise.
  */
@@ -124,7 +124,7 @@ uint8 *node ;	/* address of originating node */
 
 	for (i = 0 ; i < NR4MAXCIRC ; i++) {
 		if ((cb = Nr4circuits[i].ccb) == NULL)
-			continue ;		/* not an kopen circuit */
+			continue ;		/* not an open circuit */
 		if (cb->yournum == index && cb->yourid == id
 		    && addreq(cb->remote.user,user)
 		    && addreq(cb->remote.node,node))

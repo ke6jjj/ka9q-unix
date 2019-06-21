@@ -139,7 +139,7 @@ main(int argc,char *argv[])
 	if(koptind < argc){
 		/* Read startup file named on command line */
 		if((fp = kfopen(argv[koptind],READ_TEXT)) == NULL){
-			kprintf("Can't kread config file %s",argv[koptind]);
+			kprintf("Can't read config file %s",argv[koptind]);
 			kperror("");
 		}
 	} else {
@@ -698,7 +698,7 @@ void *p
 	setbool(&Kdebug,"kernel debug",argc,argv);
 	return 0;
 }
-/* Set temp file wipe-on-kclose flag */
+/* Set temp file wipe-on-close flag */
 int
 dowipe(
 int argc,
@@ -720,7 +720,7 @@ void *p
 }
 
 /* Log messages of the form
- * Tue Jan 31 00:00:00 1987 44.64.0.7:1003 kopen FTP
+ * Tue Jan 31 00:00:00 1987 44.64.0.7:1003 open FTP
  */
 void
 logmsg(int s,char *fmt, ...)

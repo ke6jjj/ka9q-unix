@@ -8,7 +8,7 @@ enum ftp_type {
 	LOGICAL_TYPE
 };
 
-/* Verbosity levels for ksendfile and krecvfile in ftpsubr.c */
+/* Verbosity levels for sendfile and recvfile in ftpsubr.c */
 enum verb_level {
 	V_QUIET,	/* Error messages only */
 	V_SHORT,	/* Final message only */

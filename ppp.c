@@ -191,7 +191,7 @@ ppp_send(
 	}
 
 	if (ppp_p->fsm[IPcp].state != fsmOPENED) {
-		ppp_error( ppp_p, bpp, "not kopen for IP traffic" );
+		ppp_error( ppp_p, bpp, "not open for IP traffic" );
 		ppp_p->OutError++;
 		return -1;
 	}
@@ -605,7 +605,7 @@ struct mbuf **bpp;
 	switch(ph.protocol) {
 	case PPP_IP_PROTOCOL:	/* Regular IP */
 		if ( ppp_p->fsm[IPcp].state != fsmOPENED ) {
-			ppp_error( ppp_p, bpp, "not kopen for IP traffic" );
+			ppp_error( ppp_p, bpp, "not open for IP traffic" );
 			ppp_p->InError++;
 			break;
 		}
@@ -614,7 +614,7 @@ struct mbuf **bpp;
 
 	case PPP_COMPR_PROTOCOL:	/* Van Jacobson Compressed TCP/IP */
 		if ( ppp_p->fsm[IPcp].state != fsmOPENED ) {
-			ppp_skipped( ppp_p, bpp, "not kopen for Compressed TCP/IP traffic" );
+			ppp_skipped( ppp_p, bpp, "not open for Compressed TCP/IP traffic" );
 			ppp_p->InError++;
 			break;
 		}
@@ -636,7 +636,7 @@ struct mbuf **bpp;
 
 	case PPP_UNCOMP_PROTOCOL:	/* Van Jacobson Uncompressed TCP/IP */
 		if ( ppp_p->fsm[IPcp].state != fsmOPENED ) {
-			ppp_skipped( ppp_p, bpp, "not kopen for Uncompressed TCP/IP traffic" );
+			ppp_skipped( ppp_p, bpp, "not open for Uncompressed TCP/IP traffic" );
 			ppp_p->InError++;
 			break;
 		}

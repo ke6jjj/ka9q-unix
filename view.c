@@ -24,21 +24,21 @@ void *p;
 	kFILE *fp;
 
 	if((fp = kfopen(argv[1],READ_TEXT)) == NULL){
-		kprintf("Can't kread %s\n",argv[1]);
+		kprintf("Can't read %s\n",argv[1]);
 		return 1;
 	}
 	newproc("view",512,view,0,(void *)fp,strdup(Cmdline),0);
 	return 0;	
 }
-/* Random-access file display program. Used both to kread local
+/* Random-access file display program. Used both to read local
  * files with the "view" command, and by the FTP client to view
- * directory listings, temporary copies of kread files, etc.
+ * directory listings, temporary copies of read files, etc.
  *
  */
 void
 view(s,p1,p2)
 int s;		/* If non-zero, poll interval for a changing file */
-void *p1;	/* Open file pointer to kread from */
+void *p1;	/* Open file pointer to read from */
 void *p2;	/* If non-null, name to give to session. We free it */
 {
 	struct session *sp;
@@ -114,7 +114,7 @@ void *p2;	/* If non-null, name to give to session. We free it */
 #endif
 		kfflush(kstdout);
 		/* If we hit the end of the file and the file may be
-		 * growing, then set an alarm to time out the kgetchar()
+		 * growing, then set an alarm to time out the getchar()
 		 */
 		do {
 			if(kfeof(fp) && polldelay != 0){
@@ -125,8 +125,8 @@ void *p2;	/* If non-null, name to give to session. We free it */
 			if(c != -1 || kerrno != kEALARM)
 				break;	/* User hit key */
 			/* Alarm timeout; see if more data arrived by
-			 * clearing the kEOF flag, trying to kread
-			 * another byte, and then testing kEOF again
+			 * clearing the EOF flag, trying to read
+			 * another byte, and then testing EOF again
 			 */
 			kclearerr(fp);
 			(void)kgetc(fp);
@@ -182,7 +182,7 @@ void *p2;	/* If non-null, name to give to session. We free it */
 done:	kfclose(fp);
 	freesession(&sp);
 }
-/* Given a starting offset into an kopen file stream, scan forwards
+/* Given a starting offset into an open file stream, scan forwards
  * or backwards the specified number of lines and return a pointer to the
  * new offset.
  */
@@ -227,7 +227,7 @@ int width;	/* Screen width (max line size) */
 			if(newlines >= nlines)
 				break;	/* Found requested count */
 		}
-		return kftell(fp);	/* Could be kEOF */
+		return kftell(fp);	/* Could be EOF */
 	}
 	/* Backwards scan (the hardest)
 	 * Start back up at most (width + 2) chars/line from the start.

@@ -18,7 +18,7 @@
 
 struct cmds Ripcmds[] = {
 	"accept",	dodroprefuse,	0,	2,
-		"rip kaccept <gateway> ",
+		"rip accept <gateway> ",
 	"add",		doripadd,	0,	3,
 		"rip add <dest> <interval> [<flags>]",
 	"drop",		doripdrop,	0,	2,

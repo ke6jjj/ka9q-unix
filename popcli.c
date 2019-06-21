@@ -374,7 +374,7 @@ struct pop_ccb	*ccb;
 		switch (ccb->buf[0]) {
 		case '#':
 			if ((fd = kfopen(Workfile_name,"a+")) == NULL) {
-				kperror("Unable to kopen work file");
+				kperror("Unable to open work file");
 				quit_session(ccb);
 				return;
 			}
@@ -389,7 +389,7 @@ struct pop_ccb	*ccb;
 
 			/* If there is no mail (the only time we get a "+"
 			 * response back at this stage of the game),
-			 * then just kclose out the connection, because
+			 * then just close out the connection, because
 			 * there is nothing more to do!! */
 
 		default:
@@ -421,7 +421,7 @@ struct pop_ccb	*ccb;
 				sprintf(mailbox_pathname,"%s/%s.txt",Mailspool,
 					mailbox_name);
 				if ((mf = kfopen(mailbox_pathname,"a+")) == NULL) {
-					kprintf("\n*** Unable to kopen local mailbox, new mail in file %s\n",
+					kprintf("\n*** Unable to open local mailbox, new mail in file %s\n",
 					       Workfile_name);
 					quit_session(ccb);
 					return;

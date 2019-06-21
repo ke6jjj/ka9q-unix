@@ -41,7 +41,7 @@ struct iface *ifp;
 
 	/* First entry is for ourselves. Since we're examining the Axsent
 	 * variable before we've sent this frame, add one to it so it'll
-	 * match the receiver's count after he kgets this frame.
+	 * match the receiver's count after he gets this frame.
 	 */
 	cp = putlqentry(cp,ifp->hwaddr,Axsent+1);
 	nentries++;

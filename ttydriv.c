@@ -25,7 +25,7 @@
  * recording (if enabled) of locally typed info to be done by the session
  * itself so that edited output instead of raw input is recorded.
  *
- * Returns the number of cooked characters ready to be kread from the buffer.
+ * Returns the number of cooked characters ready to be read from the buffer.
  */
 int
 ttydriv(

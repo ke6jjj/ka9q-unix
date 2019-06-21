@@ -87,7 +87,7 @@ void *p;
 			kprintf("Session %s not active\n",argv[1]);
 		return 0;
 	}
-	kprintf(" #  S#  Snd-Q State     Remote ksocket         Command\n");
+	kprintf(" #  S#  Snd-Q State     Remote socket         Command\n");
 	for(ses=0;ses<Nsessions;ses++){
 		sp = Sessions[ses];
 		if(sp == NULL || sp->type == COMMAND)
@@ -333,7 +333,7 @@ void *p;
 				mode = APPEND_BINARY;
 
 			if((sp->record = kfopen(argv[1],mode)) == NULL)
-				kprintf("Can't kopen %s: %s\n",argv[1],ksys_errlist[kerrno]);
+				kprintf("Can't open %s: %s\n",argv[1],ksys_errlist[kerrno]);
 		}
 	}
 	if(sp->record != NULL)
@@ -372,7 +372,7 @@ void *p;
 	}
 	/* Open upload file */
 	if((sp->upload = kfopen(argv[1],READ_TEXT)) == NULL){
-		kprintf("Can't kread %s: %s\n",argv[1],ksys_errlist[kerrno]);
+		kprintf("Can't read %s: %s\n",argv[1],ksys_errlist[kerrno]);
 		return 1;
 	}
 	/* All set, invoke the upload process */
@@ -403,7 +403,7 @@ void *p;
 	sp->proc2 = NULL;
 }
 
-/* Print prompt and kread one character */
+/* Print prompt and read one character */
 int
 keywait(prompt,flush)
 char *prompt;	/* Optional prompt */

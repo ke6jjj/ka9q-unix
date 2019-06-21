@@ -227,7 +227,7 @@ struct ppp_s *ppp_p;
 	kprintf("%s", PPPStatus[ppp_p->phase]);
 
 	if (ppp_p->phase == pppREADY) {
-		kprintf("\t(kopen for %s)",
+		kprintf("\t(open for %s)",
 			tformat(secclock() - ppp_p->upsince));
 	}
 	kprintf("\n");

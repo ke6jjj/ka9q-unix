@@ -40,7 +40,7 @@ int isdeleted(struct pop_scb *,int);
 /* I don't know why this isn't static, it isn't called anywhere else {was} */
 void pop_sm(struct pop_scb *scb);
 
-static int Spop = -1; /* prototype ksocket for service */
+static int Spop = -1; /* prototype socket for service */
 
 /* Start up POP receiver service */
 int
@@ -385,7 +385,7 @@ struct pop_scb *scb;
 		return;
 
 	if (!scb->folder_modified) {
-		/* no need to re-kwrite the folder if we have not modified it */
+		/* no need to re-write the folder if we have not modified it */
 
 		kfclose(scb->wf);
 		scb->wf = NULL;
@@ -477,7 +477,7 @@ struct pop_scb	*scb;
 
 	scb->folder_file_size = folder_stat.st_size;
 	if ((fd = kfopen(folder_pathname,"r")) == NULL){
-		state_error(scb,"Unable to kopen mail folder");
+		state_error(scb,"Unable to open mail folder");
 		return;
 	}
 

@@ -51,8 +51,8 @@ struct proc {
 	char *name;		/* Arbitrary user-assigned name */
 	int retval;		/* Return value from next kwait() */
 	struct timer alarm;	/* Alarm clock timer */
-	kFILE *input;		/* Process kstdin */
-	kFILE *output;		/* Process kstdout */
+	kFILE *input;		/* Process stdin */
+	kFILE *output;		/* Process stdout */
 #ifdef UNIX
 	void (*pc)(int, void *, void *);
 #endif

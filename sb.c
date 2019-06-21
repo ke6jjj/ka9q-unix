@@ -527,7 +527,7 @@ sb_send(struct mbuf **bpp)
 		return -1;
 
 	while(*bpp != NULL){
-		/* Wait for space to kopen up in DMA buffer */
+		/* Wait for space to open up in DMA buffer */
 		disable();
 		while(Sb.bufcnt >= Sb.dmasize)
 			kwait(&Sb);
@@ -610,7 +610,7 @@ sb_reset(int base)
 		return -1;
 	return 0;
 }
-/* Wait for kread data to become available, then kread it. Return -1 on timeout */
+/* Wait for read data to become available, then read it. Return -1 on timeout */
 static int
 sb_read_data(int base)
 {

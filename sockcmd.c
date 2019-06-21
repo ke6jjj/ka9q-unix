@@ -26,7 +26,7 @@ void *p;
 	char *cp;
 
 	if(argc < 2){
-		kprintf("S#   Type    PCB       Remote ksocket         Owner\n");
+		kprintf("S#   Type    PCB       Remote socket         Owner\n");
 		for(n=0;n<Nsock;n++){
 			s = _mk_fd(n,_FL_SOCK);
 			up = itop(s);
@@ -47,7 +47,7 @@ void *p;
 	}
 	s = atoi(argv[1]);
 	if(_fd_type(s) != _FL_SOCK){
-		kprintf("Not a valid ksocket\n");
+		kprintf("Not a valid socket\n");
 		return 1;
 	}
 	up = itop(s);

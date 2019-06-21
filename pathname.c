@@ -85,7 +85,7 @@ register char *path;
 	register char *cp;
 	
 
-	cp = buf + strlen(buf);	/* Start kwrite at end of current buffer */
+	cp = buf + strlen(buf);	/* Start write at end of current buffer */
 	
 	/* Now start crunching the pathname argument */
 	for(;;){

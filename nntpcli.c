@@ -60,7 +60,7 @@ struct nntpservers {
 	struct timer nntpcli_t;
 	char *name;
 	char *groups;
-	int lowtime, hightime;  /* for kconnect window */
+	int lowtime, hightime;  /* for connect window */
 	struct nntpservers *next;
 };
 
@@ -336,7 +336,7 @@ void *p;
 	return 0;
 }
 
-/* This is the routine that kgets called every so often to kconnect to
+/* This is the routine that gets called every so often to connect to
  * NNTP servers.
  */
 static void
@@ -377,14 +377,14 @@ void *tp, *v1;
 	if (np->lowtime < np->hightime) {  /* doesn't cross midnight */
 		if (now < np->lowtime || now >= np->hightime) {
 			if (nntptrace >= 3)
-				kprintf("NNTP window to '%s' not kopen\n", np->name);
+				kprintf("NNTP window to '%s' not open\n", np->name);
 			start_timer(&np->nntpcli_t);
 			return;
 		}
 	} else {
 		if (now < np->lowtime && now >= np->hightime) {
 			if (nntptrace >= 3)
-				kprintf("NNTP window to '%s' not kopen\n", np->name);
+				kprintf("NNTP window to '%s' not open\n", np->name);
 			start_timer(&np->nntpcli_t);
 			return;
 		}
@@ -429,15 +429,15 @@ void *tp, *v1;
 	}
 	sprintf(buf,"%s/nntp.dat",Newsdir);
 	if((fp = kfopen(buf,APPEND_TEXT)) == NULL) {
-		logmsg(kfileno(network),"NNTP %s Connect failed: Cannot kopen %s",psocket(&fsocket),
+		logmsg(kfileno(network),"NNTP %s Connect failed: Cannot open %s",psocket(&fsocket),
 			buf);
 		if (nntptrace >= 1)
-			kprintf("NNTP %s Connect failed: Cannot kopen %s\n",psocket(&fsocket), buf);
+			kprintf("NNTP %s Connect failed: Cannot open %s\n",psocket(&fsocket), buf);
 		rmlock(Newsdir, "nntp");
 		goto quit;
 	}
 	krewind(fp);
-/*	for(pos=0L; kfgets(buf,NNTPMAXLEN,fp) != NULL;pos=kftell(fp)) { */
+/*	for(pos=0L; fgets(buf,NNTPMAXLEN,fp) != NULL;pos=ftell(fp)) { */
 	for(; kfgets(buf,NNTPMAXLEN,fp) != NULL;) {
 		if((cp = strchr(buf,' ')) == NULL)
 			continue;	/* something wrong with this line, skip it */
@@ -477,7 +477,7 @@ void *tp, *v1;
 	}
 	if((tmpf = ktmpfile()) == NULL) {
 		if (nntptrace >= 1)
-			kprintf("NNTP %s Cannot kopen temp file\n", psocket(&fsocket));
+			kprintf("NNTP %s Cannot open temp file\n", psocket(&fsocket));
 		goto quit;
 	}
 	if(gettxt(network,tmpf) == -1) {
@@ -497,9 +497,9 @@ void *tp, *v1;
 	}
 	sprintf(buf,"%s/history",Newsdir);
 	if((fp = kfopen(buf,APPEND_TEXT)) == NULL) {
-		logmsg(kfileno(network),"NNTP %s Connect failed: Cannot kopen %s",psocket(&fsocket), buf);
+		logmsg(kfileno(network),"NNTP %s Connect failed: Cannot open %s",psocket(&fsocket), buf);
 		if (nntptrace >= 1)
-			kprintf("NNTP %s Connect failed: Cannot kopen %s\n",psocket(&fsocket), buf);
+			kprintf("NNTP %s Connect failed: Cannot open %s\n",psocket(&fsocket), buf);
 		kfclose(tmpf);
 		goto quit;
 	}
@@ -647,7 +647,7 @@ char *msgid;
 		return 0;
 	if((tmpf = ktmpfile()) == NULL) {
 		if (nntptrace >= 1)
-			kprintf("NNTP Cannot kopen temp file for article\n");
+			kprintf("NNTP Cannot open temp file for article\n");
 		return -1;
 	}
 	if(gettxt(network,tmpf) == -1) {
@@ -674,7 +674,7 @@ char *msgid;
 		}
 		/* invalid article - missing 'From:' line or 'Newsgroups:' line */
 		if(strcmp(buf,"\n") == 0 && (froml[0] == '\0' || newgl[0] == '\0')) {
-/*			kfclose(fp); */
+/*			fclose(fp); */
 			kfclose(tmpf);
 			return 0;
 		}
@@ -703,7 +703,7 @@ char *msgid;
 				return -1;
 			}
 			strcat(buf,".txt");
-			/* kopen the mail file */
+			/* open the mail file */
 			if (nntptrace >= 3)
 				kprintf("Writing article to '%s'\n", buf);
 			if((fp = kfopen(buf,APPEND_TEXT)) != NULL) {

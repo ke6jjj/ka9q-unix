@@ -78,8 +78,8 @@ static char badtype[] = "501 Unknown type \"%s\"\n";
 static char badport[] = "501 Bad port syntax\n";
 static char unimp[] = "502 Command not yet implemented\n";
 static char bye[] = "221 Goodbye!\n";
-static char nodir[] = "553 Can't kread directory \"%s\": %s\n";
-static char cantopen[] = "550 Can't kread file \"%s\": %s\n";
+static char nodir[] = "553 Can't read directory \"%s\": %s\n";
+static char cantopen[] = "550 Can't read file \"%s\": %s\n";
 static char sending[] = "150 Opening data connection for %s %s\n";
 static char cantmake[] = "553 Can't create \"%s\": %s\n";
 static char writerr[] = "552 Write error: %s\n";
@@ -553,19 +553,19 @@ char *file;
 
 	switch(op){
 	case RETR_CMD:
-		/* User must have permission to kread files */
+		/* User must have permission to read files */
 		if(perms & FTP_READ)
 			return 1;
 		return 0;
 	case DELE_CMD:
 	case RMD_CMD:
-		/* User must have permission to (over)kwrite files */
+		/* User must have permission to (over)write files */
 		if(perms & FTP_WRITE)
 			return 1;
 		return 0;
 	case STOR_CMD:
 	case MKD_CMD:
-		/* User must have permission to (over)kwrite files, or permission
+		/* User must have permission to (over)write files, or permission
 		 * to create them if the file doesn't already exist
 		 */
 		if(perms & FTP_WRITE)

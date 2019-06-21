@@ -121,7 +121,7 @@ struct mbx *m;
 }
 
 /* readnotes assumes that ifile is pointing to the first
- * message that needs to be kread.  For initial reads of a
+ * message that needs to be read.  For initial reads of a
  * notesfile, this will be the beginning of the file.  For
  * rereads when new mail arrives, it will be the first new
  * message.
@@ -130,7 +130,7 @@ static int
 readnotes(m,ifile,update)
 struct mbx *m;
 kFILE *ifile ;
-int update;	/* true if this is not the initial kread of the notesfile */
+int update;	/* true if this is not the initial read of the notesfile */
 {
 	char 	tstring[LINELEN];
 	long	cpos;
@@ -313,7 +313,7 @@ int
 msgtofile(m,msg,tfile,noheader)
 struct mbx *m;
 int msg;
-kFILE *tfile;   /* already kopen for kwrite */
+kFILE *tfile;   /* already open for write */
 int noheader;
 {
 	char	tstring[LINELEN];
@@ -378,7 +378,7 @@ void *p;
 	}
 	return 0;
 }
-/* kclose the temp file while coping mail back to the mailbox */
+/* close the temp file while coping mail back to the mailbox */
 int
 closenotes(m)
 struct mbx *m;
@@ -399,7 +399,7 @@ struct mbx *m;
 		return 0;
 	}
 	/* If this area is a public message area, then we will not add a
-	 * Status line to indicate that the message has been kread.
+	 * Status line to indicate that the message has been read.
 	 */
 	nostatus = isarea(m->area);
 
@@ -411,8 +411,8 @@ struct mbx *m;
 	else
 		nodelete = 0;
 
-	/* See if any messages have been forwarded, otherwise just kclose
-	 * the file and return since there is nothing to kwrite back.
+	/* See if any messages have been forwarded, otherwise just close
+	 * the file and return since there is nothing to write back.
 	 */
 	if(nostatus && nodelete) {
 		for(i=1; i <= m->nmsgs; ++i)
@@ -532,7 +532,7 @@ struct mbx *m;
 	return 0;
 }
 
-/* kread the next message or the current one if new */
+/* read the next message or the current one if new */
 int
 doreadnext(argc,argv,p)
 int argc;
@@ -849,7 +849,7 @@ struct mbx *m;
 	if ((nfile = kfopen(buf,READ_TEXT)) == NULL)
 		kprintf(Noaccess,buf);
 	else {
-		/* krewind tempfile */
+		/* rewind tempfile */
 		kfseek(m->mfile,0L,0);
 		cnt = m->nmsgs;
 		/* Reread all messages since size they may have changed
@@ -913,7 +913,7 @@ char *name;
 	return cnt;
 }
 
-/* kclose the temporary mail file */
+/* close the temporary mail file */
 static void
 mfclose(m)
 struct mbx *m;
@@ -928,7 +928,7 @@ struct mbx *m;
 }
 
 
-/* Print prompt and kread one character, telnet version */
+/* Print prompt and read one character, telnet version */
 static int
 tkeywait(prompt,flush)
 char *prompt;	/* Optional prompt */

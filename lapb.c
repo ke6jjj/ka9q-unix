@@ -75,7 +75,7 @@ struct mbuf **bpp		/* Rest of frame, starting with ctl */
 	case LAPB_DISCONNECTED:
 		switch(type){
 		case SABM:	/* Initialize or reset link */
-			sendctl(axp,LAPB_RESPONSE,UA|pf);	/* Always kaccept */
+			sendctl(axp,LAPB_RESPONSE,UA|pf);	/* Always accept */
 			clr_ex(axp);
 			axp->unack = axp->vr = axp->vs = 0;
 			lapbstate(axp,LAPB_CONNECTED);/* Resets state counters */
@@ -94,7 +94,7 @@ struct mbuf **bpp		/* Rest of frame, starting with ctl */
 		break;
 	case LAPB_SETUP:
 		switch(type){
-		case SABM:	/* Simultaneous kopen */
+		case SABM:	/* Simultaneous open */
 			sendctl(axp,LAPB_RESPONSE,UA|pf);
 			break;
 		case DISC:
@@ -190,7 +190,7 @@ struct mbuf **bpp		/* Rest of frame, starting with ctl */
 		case I:
 			ackours(axp,nr); /** == -1) */
 			if(len_p(axp->rxq) >= axp->window){
-				/* Too bad he didn't klisten to us; he'll
+				/* Too bad he didn't listen to us; he'll
 				 * have to resend the frame later. This
 				 * drastic action is necessary to avoid
 				 * deadlock.
@@ -314,7 +314,7 @@ struct mbuf **bpp		/* Rest of frame, starting with ctl */
 			if(!run_timer(&axp->t1))
 				start_timer(&axp->t1);
 			if(len_p(axp->rxq) >= axp->window){
-				/* Too bad he didn't klisten to us; he'll
+				/* Too bad he didn't listen to us; he'll
 				 * have to resend the frame later. This
 				 * drastic action is necessary to avoid
 				 * memory deadlock.

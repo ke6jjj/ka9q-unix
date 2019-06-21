@@ -76,7 +76,7 @@ static char Reset[] = "250 Reset state\n";
 static char Sent[] = "250 Sent\n";
 static char Ourname[] = "250 %s, Share and Enjoy!\n";
 static char Enter[] = "354 Enter mail, end with .\n";
-static char Ioerr[] = "452 Temp file kwrite error\n";
+static char Ioerr[] = "452 Temp file write error\n";
 static char Badcmd[] = "500 Command unrecognized\n";
 static char Lowmem[] = "421 System overloaded, try again later\n";
 static char Syntax[] = "501 Syntax error\n";
@@ -84,7 +84,7 @@ static char Needrcpt[] = "503 Need RCPT (recipient)\n";
 static char Unknown[] = "550 <%s> address unknown\n";
 static char Noalias[] = "550 No alias for <%s>\n";
 
-static int Ssmtp = -1; /* prototype ksocket for service */
+static int Ssmtp = -1; /* prototype socket for service */
 
 /* Start up SMTP receiver service */
 int
@@ -307,7 +307,7 @@ quit:
 	smtptick(0L);			/* start SMTP daemon immediately */
 }
 
-/* kread the message text */
+/* read the message text */
 static int
 getmsgtxt(mp)
 struct smtpsv *mp;
@@ -603,7 +603,7 @@ get_msgid()
 		kfclose(sfile);
 	}
 
-	/* increment sequence number, and kwrite to sequence file */
+	/* increment sequence number, and write to sequence file */
 	sfile = kfopen(sfilename,WRITE_TEXT);
 	kfprintf(sfile,"%ld",++sequence);
 	kfclose(sfile);

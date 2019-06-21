@@ -11,21 +11,21 @@ int ksys_nerr = kEMAX + 1;
 
 const char *ksys_errlist[] = {
 	"no error",                     /*  0 */
-	"invalid argument",             /*  1 - kEINVAL */
-	"operation would block",        /*  2 - kEWOULDBLOCK */
-	"not connected",                /*  3 - kENOTCONN */
-	"socket type not supported",    /*  4 - kESOCKTNOSUPPORT */
-	"address family not supported", /*  5 - kEAFNOSUPPORT */
-	"is connected",                 /*  6 - kEISCONN */
-	"operation not supported",      /*  7 - kEOPNOTSUPP */
-	"alarm",                        /*  8 - kEALARM */
-	"abort",                        /*  9 - kEABORT */
-	"interrupt",                    /* 10 - kEINTR */
-	"connection refused",           /* 11 - kECONNREFUSED */
-	"message size",                 /* 12 - kEMSGSIZE */
-	"address in use",               /* 13 - kEADDRINUSE */
-	"bad file descriptor",          /* 14 - kEBADF */
-	"too many files open",          /* 15 - kEMFILE */
-	"bad address",                  /* 16 - kEFAULT */
+	"invalid argument",             /*  1 - EINVAL */
+	"operation would block",        /*  2 - EWOULDBLOCK */
+	"not connected",                /*  3 - ENOTCONN */
+	"socket type not supported",    /*  4 - ESOCKTNOSUPPORT */
+	"address family not supported", /*  5 - EAFNOSUPPORT */
+	"is connected",                 /*  6 - EISCONN */
+	"operation not supported",      /*  7 - EOPNOTSUPP */
+	"alarm",                        /*  8 - EALARM */
+	"abort",                        /*  9 - EABORT */
+	"interrupt",                    /* 10 - EINTR */
+	"connection refused",           /* 11 - ECONNREFUSED */
+	"message size",                 /* 12 - EMSGSIZE */
+	"address in use",               /* 13 - EADDRINUSE */
+	"bad file descriptor",          /* 14 - EBADF */
+	"too many files open",          /* 15 - EMFILE */
+	"bad address",                  /* 16 - EFAULT */
 	"out of memory"                 /* 17 - kENOMEM */
 };

@@ -1,15 +1,15 @@
 #ifndef _SOCKADDR_H
 #define _SOCKADDR_H
 
-/* Berkeley format ksocket address structures. These things were rather
+/* Berkeley format socket address structures. These things were rather
  * poorly thought out, but compatibility is important (or so they say).
- * Note that all the ksockaddr variants must be of the same size, 16 bytes
+ * Note that all the sockaddr variants must be of the same size, 16 bytes
  * to be specific. Although attempts have been made to account for alignment
- * requirements (notably in ksockaddr_ax), porters should check each
+ * requirements (notably in sockaddr_ax), porters should check each
  * structure.
  */
 
-/* Generic ksocket address structure */
+/* Generic socket address structure */
 struct ksockaddr {
 	short sa_family;
 	char sa_data[14];

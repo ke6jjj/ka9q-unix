@@ -405,7 +405,7 @@ struct mbuf **bpp;
 		comp->sls_i_error++;
 		return 0;
 	}
-	/* We've got a compressed packet; kread the change byte */
+	/* We've got a compressed packet; read the change byte */
 	comp->sls_i_compressed++;
 	if(len_p(*bpp) < 3){
 		comp->sls_i_error++;

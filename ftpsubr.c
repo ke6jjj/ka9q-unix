@@ -14,7 +14,7 @@
 
 #define	MD5BLOCK	64	/* Preferred MD5 block size */
 
-/* Send a file (opened by caller) on a network ksocket.
+/* Send a file (opened by caller) on a network socket.
  * Normal return: count of bytes sent
  * Error return: -1
  */
@@ -32,7 +32,7 @@ enum verb_level verb;	/* Verbosity level */
 	char cmdbuf[50];
 
 	if(verb >= V_STAT){
-		sprintf(cmdbuf,"repeat ksocket %d",kfileno(network));
+		sprintf(cmdbuf,"repeat socket %d",kfileno(network));
 		cmdparse(Cmds,cmdbuf,NULL);
 	}
 	switch(mode){
@@ -83,7 +83,7 @@ enum verb_level verb;
 	char cmdbuf[50];
 
 	if(verb >= V_STAT){
-		sprintf(cmdbuf,"repeat ksocket %d",kfileno(network));
+		sprintf(cmdbuf,"repeat socket %d",kfileno(network));
 		cmdparse(Cmds,cmdbuf,NULL);
 	}
 	if(fp == NULL)
@@ -109,7 +109,7 @@ enum verb_level verb;
 			total = -1;
 			break;
 		}
-		/* Detect an abnormal kclose */
+		/* Detect an abnormal close */
 		if(socklen(kfileno(network),0) == -1){
 			total = -1;
 			break;

@@ -113,7 +113,7 @@ int32 val
 	case PARAM_FULLDUP:
 	case PARAM_HW:
 		if(!set){
-			rval = -1;	/* Can't kread back */
+			rval = -1;	/* Can't read back */
 			break;
 		}
 		/* Allocate space for cmd and arg */

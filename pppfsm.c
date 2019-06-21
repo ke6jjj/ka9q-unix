@@ -382,11 +382,11 @@ struct mbuf **bpp
 			break;
 
 		case fsmCLOSED:
-			/* Don't kaccept any connections */
+			/* Don't accept any connections */
 			fsm_sendtermack(fsm_p, hdr.id);
 			/* fallthru */
 		case fsmTERM_Sent:
-			/* We are attempting to kclose connection; */
+			/* We are attempting to close connection; */
 			/* wait for timeout to resend a Terminate Request */
 			free_p(bpp);
 			break;
@@ -424,7 +424,7 @@ struct mbuf **bpp
 			fsm_sendtermack(fsm_p, hdr.id);
 			/* fallthru */
 		case fsmTERM_Sent:
-			/* We are attempting to kclose connection; */
+			/* We are attempting to close connection; */
 			/* wait for timeout to resend a Terminate Request */
 			free_p(bpp);
 			break;
@@ -459,7 +459,7 @@ struct mbuf **bpp
 			fsm_sendtermack(fsm_p, hdr.id);
 			/* fallthru */
 		case fsmTERM_Sent:
-			/* We are attempting to kclose connection; */
+			/* We are attempting to close connection; */
 			/* wait for timeout to resend a Terminate Request */
 			free_p(bpp);
 			break;
@@ -492,7 +492,7 @@ struct mbuf **bpp
 			fsm_sendtermack(fsm_p, hdr.id);
 			/* fallthru */
 		case fsmTERM_Sent:
-			/* We are attempting to kclose connection; */
+			/* We are attempting to close connection; */
 			/* wait for timeout to resend a Terminate Request */
 			free_p(bpp);
 			break;
@@ -684,7 +684,7 @@ void *vp;
 /*			I N I T I A L I Z A T I O N			*/
 /************************************************************************/
 
-/* Start FSM (after kopen event, and physical line up) */
+/* Start FSM (after open event, and physical line up) */
 void
 fsm_start(fsm_p)
 struct fsm_s *fsm_p;

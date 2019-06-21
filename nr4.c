@@ -60,7 +60,7 @@ struct mbuf **bpp;
 	
 	op = hdr->opcode & NR4OPCODE;	/* Mask off flags */
 	
-	if(op == NR4OPCONRQ){			/* process kconnect request first */
+	if(op == NR4OPCONRQ){			/* process connect request first */
 		acceptc = 1;
 		newconn = 0;
 
@@ -68,7 +68,7 @@ struct mbuf **bpp;
 		rhdr.yourindex = hdr->u.conreq.myindex;
 		rhdr.yourid = hdr->u.conreq.myid;
 
-		/* Check to see if we have already received a kconnect */
+		/* Check to see if we have already received a connect */
 		/* request for this circuit. */
 		if((cb = match_n4circ(hdr->u.conreq.myindex,
 		 hdr->u.conreq.myid,hdr->u.conreq.user,hdr->u.conreq.node))
@@ -80,7 +80,7 @@ struct mbuf **bpp;
 			/* See if we have any listening sockets */
 			for(i = 0; i < NR4MAXCIRC; i++){
 				if((cb2 = Nr4circuits[i].ccb) == NULL)
-				continue;/* not an kopen circuit */
+				continue;/* not an open circuit */
 				if(cb2->state == NR4STLISTEN)
 					/* A listener was found */
 					break;
@@ -151,7 +151,7 @@ struct mbuf **bpp;
 			
 		free_p(bpp);
 		return;
-	} /* end kconnect request code */
+	} /* end connect request code */
 
 	/* validate circuit number */
 	if((cb = get_n4circ(hdr->yourindex, hdr->yourid)) == NULL){
@@ -165,7 +165,7 @@ struct mbuf **bpp;
 	else
 		gotchoke = 0;
 	
-	/* Here's where the interesting stuff kgets done */
+	/* Here's where the interesting stuff gets done */
 	switch(cb->state){
 	case NR4STCPEND:
 		switch(op){
@@ -173,7 +173,7 @@ struct mbuf **bpp;
 			/* Save the round trip time for later use */
 			i = dur_timer(&cb->tcd) - read_timer(&cb->tcd);
 			stop_timer(&cb->tcd);
-			if(gotchoke){		/* kconnect rejected */
+			if(gotchoke){		/* connect rejected */
 				cb->dreason = NR4RREFUSED;
 				nr4state(cb, NR4STDISC);
 				break;
@@ -346,7 +346,7 @@ struct mbuf **bpp
 	 * condition, another NAK, and the process would repeat indefinitely.
 	 * Therefore, if the frame is out-of-sequence, but within the last
 	 * 'n' frames by sequence number ('n' being the window size), just
-	 * kaccept it and discard it.  Else, NAK it if we haven't already.
+	 * accept it and discard it.  Else, NAK it if we haven't already.
 	 *	(Modified by Rob Stampfli, kd8wk, 9 Jan 1990)
 	 */
 	if(rxseq != cb->rxpected && !cb->naksent){
@@ -452,7 +452,7 @@ unsigned seq;
 	/* Notice that we use copy_p instead of dup_p.  This is because
 	 * a frame can still be sitting on the AX.25 send queue when it
 	 * get acknowledged, and we don't want to deallocate its data
-	 * before it kgets sent!
+	 * before it gets sent!
 	 */
 	if((bp = copy_p(bufbp, len_p(bufbp))) == NULL){
 		free_mbuf(&bp);
@@ -574,7 +574,7 @@ int gotchoke;	/* The choke flag is set in the received frame */
 }
 
 
-/* If the send window is kopen and there are frames on the txq,
+/* If the send window is open and there are frames on the txq,
  * move as many as possible to the transmit buffers and send them.
  * Return the number of frames sent.
  */
@@ -591,7 +591,7 @@ struct nr4cb *cb;
 		return 0;		/* No sending if not connected */
 					/* or if choked */
 		
-	/* See if the window is kopen */
+	/* See if the window is open */
 	if(cb->nbuffered >= cb->window)
 		return 0;
 
@@ -670,7 +670,7 @@ int newstate;
 
 		/* The following loop will only be executed if the
 		 * window was set, since when the control block is
-		 * calloc'd the window field kgets a 0 in it.  This
+		 * calloc'd the window field gets a 0 in it.  This
 		 * protects us from dereferencing an unallocated
 		 * window buffer pointer
 		 */
@@ -737,7 +737,7 @@ struct nr4cb *cb;
 		q = bp;
 	 }
 
-	cb->nextosend = cb->ackxpected;	/* kclose the window */
+	cb->nextosend = cb->ackxpected;	/* close the window */
 	cb->nbuffered = 0;		/* nothing in the window */
 	cb->txq = q;			/* Replace the txq with the one that has */
 					/* the purged packets prepended */

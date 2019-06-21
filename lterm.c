@@ -25,7 +25,7 @@ void *p;
 	kFILE *network = NULL;
 	struct iface *ifp;
 	int (*rawsave)(struct iface *,struct mbuf **);
-	int s;	/* Network ksocket */
+	int s;	/* Network socket */
 	struct ksockaddr_in fsocket;
 	struct session *sp;
 	int c;
@@ -78,7 +78,7 @@ void *p;
 	get_rlsd_asy(ifp->dev,1);
 #endif
 	if((s = ksocket(kAF_INET,kSOCK_STREAM,0)) == -1){
-		kprintf("Can't create ksocket\n");
+		kprintf("Can't create socket\n");
 		keywait(NULL,1);
 		freesession(&sp);
 		goto cleanup;

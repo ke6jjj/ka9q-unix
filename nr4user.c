@@ -43,7 +43,7 @@ int user ;			/* user linkage area */
 	/* Stuff what info we can into control block */
 
 	ASSIGN(cb->remote,*remote) ;
-	/* Save local address for kconnect retries */
+	/* Save local address for connect retries */
 	ASSIGN(cb->local,*local) ;
 
 	cb->r_upcall = r_upcall ;
@@ -61,7 +61,7 @@ int user ;			/* user linkage area */
 	case AX_ACTIVE:
 		break;
 	}    
-	/* Format kconnect request header */
+	/* Format connect request header */
 
 	hdr.opcode = NR4OPCONRQ ;
 	hdr.u.conreq.myindex = cb->mynum ;
@@ -72,7 +72,7 @@ int user ;			/* user linkage area */
 	/* If I have a unique callsign per interface, then a layer violation */
 	/* will be required to determine the "real" callsign for my */
 	/* (virtual) node.  This suggests that callsign-per-interface is not */
-	/* desirable, which answers *that* particular kopen question. */
+	/* desirable, which answers *that* particular open question. */
 	
 	memcpy(hdr.u.conreq.node,local->node,AXALEN);
 
@@ -85,7 +85,7 @@ int user ;			/* user linkage area */
 	cb->tcd.arg = cb ;
 	start_timer(&cb->tcd) ;
 	
-	/* Send kconnect request packet */
+	/* Send connect request packet */
 
 	nr4sframe(remote->node,&hdr,NULL) ;
 
@@ -175,7 +175,7 @@ struct nr4cb *cb ;
 		reset_nr4(cb);
 		return;
 	}
-	/* Connection established, try to kclose it gracefully */
+	/* Connection established, try to close it gracefully */
 	/* Signal state change.  nr4state will take care of stopping */
 	/* the appropriate timers and resetting window pointers. */
 	nr4state(cb, NR4STDPEND) ;
@@ -210,7 +210,7 @@ struct nr4cb *cb ;
 		break ;
 
 	  case NR4STCON:
-	    if (cb->nextosend != cb->ackxpected) {	/* if send window is kopen: */
+	    if (cb->nextosend != cb->ackxpected) {	/* if send window is open: */
 			for (seq = cb->ackxpected ;
 				 nr4between(cb->ackxpected, seq, cb->nextosend) ;
 				 seq = (seq + 1) & NR4SEQMASK) {

@@ -48,7 +48,7 @@ char *Sock_errlist[] = {
 char Badsocket[] = "Bad socket";
 struct usock **Usock;		/* Socket entry array */
 
-/* Initialize user ksocket array */
+/* Initialize user socket array */
 void
 sockinit(void)
 {
@@ -57,7 +57,7 @@ sockinit(void)
 	Usock = (struct usock **)callocw(Nsock,sizeof(struct usock *));
 }
 
-/* Create a user ksocket, return ksocket index
+/* Create a user socket, return socket index
  * The mapping to actual protocols is as follows:
  *		
  *		
@@ -167,8 +167,8 @@ int protocol	/* Used for raw IP sockets */
 	return s;
 }
 
-/* Attach a local address/port to a ksocket. If not issued before a kconnect
- * or klisten, will be issued automatically
+/* Attach a local address/port to a socket. If not issued before a connect
+ * or listen, will be issued automatically
  */
 int
 kbind(
@@ -211,7 +211,7 @@ int namelen		/* Length of name */
 	}
 	return 0;
 }
-/* Post a klisten on a ksocket */
+/* Post a listen on a socket */
 int
 klisten(
 int s,		/* Socket index */
@@ -229,14 +229,14 @@ int backlog	/* 0 for a single connection, !=0 for multiple connections */
 		return -1;
 	}
 	sp = up->sp;
-	/* Fail if klisten routine isn't present */
+	/* Fail if listen routine isn't present */
 	if(sp->klisten == NULL || (*sp->klisten)(up,backlog) == -1){
 		kerrno = kEOPNOTSUPP;
 		return -1;
 	}
 	return 0;
 }
-/* Initiate active kopen. For datagram sockets, merely bind the remote address. */
+/* Initiate active open. For datagram sockets, merely bind the remote address. */
 int
 kconnect(
 int s,			/* Socket index */
@@ -267,7 +267,7 @@ int peernamelen		/* Length of peer name */
 	memcpy(up->peername,peername,peernamelen);
 	up->peernamelen = peernamelen;
 
-	/* a kconnect routine is optional - don't fail if it isn't present */
+	/* a connect routine is optional - don't fail if it isn't present */
 	if(sp->kconnect != NULL && (*sp->kconnect)(up) == -1){
 		return -1;
 	}
@@ -293,7 +293,7 @@ int *peernamelen	/* Length of peer name */
 		return -1;
 	}
 	sp = up->sp;
-	/* Fail if kaccept flag isn't set */
+	/* Fail if accept flag isn't set */
 	if(sp->kaccept == FALSE){
 		kerrno = kEOPNOTSUPP;
 		return -1;
@@ -423,7 +423,7 @@ int *namelen	/* Length of same */
 	}
 	return 0;
 }
-/* Get remote name, returning result of earlier kconnect() call. */
+/* Get remote name, returning result of earlier connect() call. */
 int
 kgetpeername(
 int s,			/* Socket index */
@@ -501,7 +501,7 @@ int s	/* Socket index */
 	return 0;
 }
 
-/* Change owner of ksocket, return previous owner */
+/* Change owner of socket, return previous owner */
 struct proc *
 sockowner(
 int s,			/* Socket index */
@@ -519,7 +519,7 @@ struct proc *newowner	/* Process table address of new owner */
 		up->owner = newowner;
 	return pp;
 }
-/* Close down a ksocket three ways. Type 0 means "no more receives"; this
+/* Close down a socket three ways. Type 0 means "no more receives"; this
  * replaces the incoming data upcall with a routine that discards further
  * data. Type 1 means "no more sends", and obviously corresponds to sending
  * a TCP FIN. Type 2 means "no more receives or sends". This I interpret
@@ -542,7 +542,7 @@ int how		/* (see above) */
 		return -1;
 	}
 	sp = up->sp;
-	/* Just kclose the ksocket if special kshutdown routine not present */
+	/* Just close the socket if special shutdown routine not present */
 	if(sp->shut == NULL){
 		close_s(s);
 	} else if((*sp->shut)(up,how) == -1){
@@ -551,8 +551,8 @@ int how		/* (see above) */
 	ksignal(up,0);
 	return 0;
 }
-/* Close a ksocket, freeing it for reuse. Try to do a graceful kclose on a
- * TCP ksocket, if possible
+/* Close a socket, freeing it for reuse. Try to do a graceful close on a
+ * TCP socket, if possible
  */
 int
 close_s(
@@ -567,19 +567,19 @@ int s		/* Socket index */
 	}
 	if(--up->refcnt > 0)
 		return 0;	/* Others are still using it */
-	/* Call proto-specific kclose routine if there is one */
+	/* Call proto-specific close routine if there is one */
 	if((sp = up->sp) != NULL && sp->kclose != NULL)
 		(*sp->kclose)(up);
 
 	free(up->name);
 	free(up->peername);
 
-	ksignal(up,0);	/* Wake up anybody doing an kaccept() or recv() */
+	ksignal(up,0);	/* Wake up anybody doing an accept() or recv() */
 	Usock[_fd_seq(up->index)] = NULL;
 	free(up);
 	return 0;
 }
-/* Increment reference count for specified ksocket */
+/* Increment reference count for specified socket */
 int
 usesock(int s)
 {
@@ -652,7 +652,7 @@ int sv[]
 	up1->cb.local->peer = up0;
 	return sv[1];
 }
-/* Return end-of-line convention for ksocket */
+/* Return end-of-line convention for socket */
 char *
 eolseq(int s)
 {

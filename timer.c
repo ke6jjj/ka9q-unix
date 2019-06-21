@@ -34,7 +34,7 @@ timerproc(int i,void *v1,void *v2)
 	int32 clock;
 
 	for(;;){
-		/* Atomic kread and decrement of Tick */
+		/* Atomic read and decrement of Tick */
 		for(;;){
 			i_state = disable();
 			tmp = Tick;

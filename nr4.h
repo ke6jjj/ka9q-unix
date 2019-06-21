@@ -67,7 +67,7 @@ struct nr4hdr {
 			uint8 proto ;	/* protocol within family */
 		} pid ;
 
-		struct {				/* kconnect request */
+		struct {				/* connect request */
 			uint8 myindex ;	/* sender's circuit index */
 			uint8 myid ;	/* sender's circuit ID */
 			uint8 window ;	/* sender's proposed window size */
@@ -75,7 +75,7 @@ struct nr4hdr {
 			uint8 node[AXALEN] ;	/* callsign of originating node */
 		} conreq ;
 
-		struct {				/* kconnect acknowledge */
+		struct {				/* connect acknowledge */
 			uint8 myindex ;	/* sender's circuit index */
 			uint8 myid ;	/* sender's circuit ID */
 			uint8 window ; 	/* accepted window size */
@@ -145,7 +145,7 @@ struct nr4cb {
 
 	/* flags */
 
-	char clone ;				/* clone this cb upon kconnect */
+	char clone ;				/* clone this cb upon connect */
 	char choked ;				/* choke received from remote */
 	char qfull ;				/* receive queue is full, and we have */
 								/* choked the other end */
@@ -187,8 +187,8 @@ struct nr4cb {
 	struct timer tchoke ;		/* choke timeout */
 	struct timer tack ;		/* ack delay timer */
 
-	struct timer tcd ;		/* kconnect/disconnect timer */
-	unsigned cdtries ;		/* Number of kconnect/disconnect tries */
+	struct timer tcd ;		/* connect/disconnect timer */
+	unsigned cdtries ;		/* Number of connect/disconnect tries */
 
 	void (*r_upcall)(struct nr4cb *,uint);
 					/* receive upcall */

@@ -103,7 +103,7 @@ setup_dma(chan,physaddr,length,mode)
 int chan;
 int32 physaddr;
 uint length;
-int mode;	/* Read/kwrite, etc */
+int mode;	/* Read/write, etc */
 {
 	int dmaport;
 	int i_state;

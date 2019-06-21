@@ -26,7 +26,7 @@ extern const char *ksys_errlist[];
 #define	kENOMEM		17
 #define	kEMAX		17
 
-/* Translate native error numbers to KA9Q kerrno */
+/* Translate native error numbers to KA9Q errno */
 int translate_sys_errno(int);
 
 #endif	/* _ERRNO_H */

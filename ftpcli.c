@@ -130,7 +130,7 @@ void *p;
 	}
 	/* Open the control connection */
 	if((s = ksocket(kAF_INET,kSOCK_STREAM,0)) == -1){
-		kprintf("Can't create ksocket\n");
+		kprintf("Can't create socket\n");
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
@@ -314,7 +314,7 @@ void *p;
 		return -1;
 	kfprintf(ftp->control,"QUIT\n");
 	getresp(ftp,200);	/* Get the closing message */
-	getresp(ftp,200);	/* Wait for the server to kclose */
+	getresp(ftp,200);	/* Wait for the server to close */
 	return -1;
 }
 
@@ -467,7 +467,7 @@ void *p;
 		break;
 	}
 	if((fp = kfopen(localname,mode)) == NULL){
-		kprintf("Can't kwrite %s",localname);
+		kprintf("Can't write %s",localname);
 		kperror("");
 		return 1;
 	}
@@ -475,7 +475,7 @@ void *p;
 	kfclose(fp);
 	return 0;
 }
-/* Read file direct to screen. Syntax: kread <remote name> */
+/* Read file direct to screen. Syntax: read <remote name> */
 static int
 doread(argc,argv,p)
 int argc;
@@ -536,7 +536,7 @@ void *p;
 			rip(buf);
 			if(!ftp->update || compsub(ftp,buf,buf) != 0){
 				if((fp = kfopen(buf,mode)) == NULL){
-					kprintf("Can't kwrite %s",buf);
+					kprintf("Can't write %s",buf);
 					kperror("");
 					continue;
 				}
@@ -582,7 +582,7 @@ void *p;
 		fp = kstdout;
 
 	if(fp == NULL){
-		kprintf("Can't kwrite local file");
+		kprintf("Can't write local file");
 		kperror("");
 		return 1;
 	}
@@ -611,7 +611,7 @@ void *p;
 		fp = kstdout;
 
 	if(fp == NULL){
-		kprintf("Can't kwrite local file");
+		kprintf("Can't write local file");
 		kperror("");
 		return 1;
 	}
@@ -774,7 +774,7 @@ char *remotename;
 		break;
 	}
 	if((fp = kfopen(localname,mode)) == NULL){
-		kprintf("Can't kread local file %s\n",localname);
+		kprintf("Can't read local file %s\n",localname);
 		return 1;
 	}
 	if(ftp->typesent != ftp->type){
@@ -935,7 +935,7 @@ kFILE *fp;
 	if(resp == -1 || resp >= 400)
 		goto failure;
 
-	/* Wait for the server to kopen the data connection */
+	/* Wait for the server to open the data connection */
 	cnt = 0;
 	d = kaccept(d,NULL,&cnt);
 	startclk = msclock();
@@ -945,8 +945,8 @@ kFILE *fp;
 	if(vsave >= V_HASH && fp == NULL)
 		ftp->verbose = V_NORMAL;
 	total = krecvfile(fp,ftp->data,ftp->type,ftp->verbose);
-	/* Immediately kclose the data connection; some servers (e.g., TOPS-10)
-	 * wait for the data connection to kclose completely before returning
+	/* Immediately close the data connection; some servers (e.g., TOPS-10)
+	 * wait for the data connection to close completely before returning
 	 * the completion message on the control channel
 	 */
 	kfclose(ftp->data);
@@ -1079,7 +1079,7 @@ char *remotename,*localname;
 
 	/* Open the file */
 	if((fp = kfopen(localname,mode)) == NULL){
-		kprintf("Can't kread %s: %s\n",localname,ksys_errlist[kerrno]);
+		kprintf("Can't read %s: %s\n",localname,ksys_errlist[kerrno]);
 		return -1;
 	}
 	if(ftp->type == ASCII_TYPE && isbinary(fp)){
@@ -1155,7 +1155,7 @@ char *remotename,*localname;
 		goto failure;
 	}
 
-	/* Wait for the data connection to kopen. Otherwise the first
+	/* Wait for the data connection to open. Otherwise the first
 	 * block of data would go out with the SYN, and this may confuse
 	 * some other TCPs
 	 */
@@ -1165,7 +1165,7 @@ char *remotename,*localname;
 
 	total = ksendfile(fp,ftp->data,ftp->type,ftp->verbose);
 	kfflush(ftp->data);
-	kshutdown(kfileno(ftp->data),1);	/* Send kEOF (FIN) */
+	kshutdown(kfileno(ftp->data),1);	/* Send EOF (FIN) */
 	kfclose(fp);
 
 	/* Wait for control channel ack before calculating transfer time;
@@ -1217,7 +1217,7 @@ struct ksockaddr_in *ksocket;
 		lobyte(ksocket->sin_port));
 }
 
-/* Wait for, kread and display response from FTP server. Return the result code.
+/* Wait for, read and display response from FTP server. Return the result code.
  */
 static int
 getresp(ftp,mincode)
@@ -1245,7 +1245,7 @@ int mincode;	/* Keep reading until at least this code comes back */
 	return rval;
 }
 
-/* Issue a prompt and kread a line from the user */
+/* Issue a prompt and read a line from the user */
 static int
 ftgetline(sp,prompt,buf,n)
 struct session *sp;
@@ -1274,7 +1274,7 @@ int c;
 		alert(Current->proc,kEABORT);
 		break;
 	case SENDING_STATE:
-		/* Send a premature kEOF.
+		/* Send a premature EOF.
 		 * Unfortunately we can't just reset the connection
 		 * since the remote side might end up waiting forever
 		 * for us to send something.
@@ -1283,7 +1283,7 @@ int c;
 		ftp->abort = 1;
 		break;
 	case RECEIVING_STATE:
-		/* Just blow away the receive ksocket */
+		/* Just blow away the receive socket */
 		kshutdown(kfileno(ftp->data),2);	/* Note fall-thru */
 		ftp->abort = 1;
 		break;

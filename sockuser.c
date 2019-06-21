@@ -1,4 +1,4 @@
-/* Higher level user subroutines built on top of the ksocket primitives
+/* Higher level user subroutines built on top of the socket primitives
  * Copyright 1991 Phil Karn, KA9Q
  */
 #include "top.h"

@@ -125,7 +125,7 @@ void *p ;
 			set_timer(&cb->tcd,dur_timer(&cb->tcd)*2);
 			start_timer(&cb->tcd) ;
 
-			/* Send kconnect request packet */
+			/* Send connect request packet */
 
 			nr4sframe(cb->remote.node,&hdr, NULL) ;
 		}

@@ -162,7 +162,7 @@ void *p;
 #endif
 
 		if(socketpair(kAF_LOCAL,kSOCK_STREAM,0,s) == -1){
-			kprintf("Could not create ksocket pair, kerrno %d\n",kerrno);
+			kprintf("Could not create socket pair, errno %d\n",kerrno);
 			tip0(2,buf,p);
 			return 1;
 		}

@@ -43,13 +43,13 @@ struct lcp_value_s {
  *			Contains desired value.
  *			Only non-default options need to be negotiated.
  *			Initially, all are default.
- *	local.will:	Options to kaccept in a NAK from remote.
+ *	local.will:	Options to accept in a NAK from remote.
  *	local.work:	Options currently being negotiated.
  *			Value is valid only when negotiate bit is set.
  *
  *	remote.want:	Options to suggest by NAK if not present in REQ.
  *			Contains desired value.
- *	remote.will:	Options to kaccept in a REQ from remote.
+ *	remote.will:	Options to accept in a REQ from remote.
  *	remote.work:	Options currently being negotiated.
  *			Value is valid only when negotiate bit is set.
  */

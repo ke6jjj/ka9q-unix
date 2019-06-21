@@ -376,7 +376,7 @@ closedisplay(struct display *dp)
  */
 void
 statwrite(
-int col,		/* Starting column of kwrite */
+int col,		/* Starting column of write */
 void *buf,		/* Data to be written */
 int cnt,		/* Count */
 int attrib		/* Screen attribute to be used */
@@ -388,7 +388,7 @@ int attrib		/* Screen attribute to be used */
 	if(Kdebug && cnt > DCOL - col - 1)
 		cnt = DCOL - col - 1;
 	else if(cnt > COLS-col)
-		cnt = COLS - col;	/* Limit kwrite to line length */
+		cnt = COLS - col;	/* Limit write to line length */
 
 	while(cnt-- != 0){
 		if(sp[0] != *buf1 || sp[1] != attrib){

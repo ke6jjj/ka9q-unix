@@ -206,7 +206,7 @@ int bulletin;		/* True if message is in public message area */
    if(m->mfile == NULL)
 	return -1;
    if(!bulletin && (m->mbox[msgn].status & BM_READ))
-	return -1;	/* the message was already kread */
+	return -1;	/* the message was already read */
    kfseek(m->mfile,m->mbox[msgn].start,0);
    *bid = *to = *atbbs = *from = '\0';
    if(subj != NULL)
@@ -479,7 +479,7 @@ struct mbx *m;
 			if(STRICMP(m->name,host) == 0) {
 				if(!timeok(m->line))
 					break;
-				/* eat the kconnect command line */
+				/* eat the connect command line */
 				kfgets(m->line,MBXLINE,m->tfile);
 				return 0;
 			}
@@ -518,7 +518,7 @@ struct mbx *m;
 			strcpy(m->name,host);
 			if(!timeok(m->line))
 				continue;	/* too late or too early */
-			/* get the kconnect command line */
+			/* get the connect command line */
 			kfgets(m->line,MBXLINE,m->tfile);
 			return strdup(m->line);
 		}
@@ -677,7 +677,7 @@ void *v1, *v2;
 	strcpy(m->name,(char *)v2);
 	free(v2);
 	m->state = MBX_TRYING;
-	/* kopen the connection, m->user will be the new stream */
+	/* open the connection, m->user will be the new stream */
 	if(cmdparse(cfwdcmds,cc,(void *)m) == -1) {
 		free(cc);
 		exitbbs(m);
@@ -695,7 +695,7 @@ void *v1, *v2;
 		exitbbs(m);
 		return;
 	}
-	/* kread the kconnect script. Lines starting with a dot will be sent
+	/* read the connect script. Lines starting with a dot will be sent
 	 * to the remote BBS.
 	 */
 	while(kfgets(m->line,MBXLINE,m->tfile) != NULL)
@@ -707,7 +707,7 @@ void *v1, *v2;
 	kfclose(m->tfile);
 	m->tfile = NULL;
 
-	/* kread the initial output from the bbs, looking for the SID */
+	/* read the initial output from the bbs, looking for the SID */
 	for(;;) {
 		if(kfgets(m->line,MBXLINE,m->user) == NULL) {
 			exitbbs(m);
@@ -762,8 +762,8 @@ void *v1, *v2;
 	kfclose(kstdout);
 }
 
-/* kopen a network connection based upon information in the cc line.
- * m->user is set to the ksocket number.
+/* open a network connection based upon information in the cc line.
+ * m->user is set to the socket number.
  */
 static int
 openconn(argc,argv,p)
@@ -800,7 +800,7 @@ void *p;
 		break;
 #ifdef AX25
 	case 'a':
-	case 'c':	/* allow 'c' for 'kconnect' as well */
+	case 'c':	/* allow 'c' for 'connect' as well */
 		if(argc < 3)
 			return -1;
 		sp.ax->sax_family = kAF_AX25;
@@ -845,7 +845,7 @@ void *p;
 		return -1;
 	}
 	if(kconnect(kfileno(m->user),sp.sa,len) == -1) {
-		logmsg(kfileno(m->user),"MBOX forward failed: %s kerrno %d",
+		logmsg(kfileno(m->user),"MBOX forward failed: %s errno %d",
 				sockerr(kfileno(m->user)),kerrno);
 		kfclose(m->user);
 		return -1;

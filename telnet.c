@@ -79,7 +79,7 @@ void *p;
 		return 1;
 	}
 	if((s = ksocket(kAF_INET,kSOCK_STREAM,0)) == -1){
-		kprintf("Can't create ksocket\n");
+		kprintf("Can't create socket\n");
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
@@ -89,7 +89,7 @@ void *p;
 	ksetvbuf(sp->network,NULL,_kIOLBF,kBUFSIZ);
 	return tel_connect(sp,(struct ksockaddr *)&fsocket,SOCKSIZE);
 }
-/* Generic interactive kconnect routine, used by Telnet, AX.25, NET/ROM */
+/* Generic interactive connect routine, used by Telnet, AX.25, NET/ROM */
 int
 tel_connect(sp,fsocket,len)
 struct session *sp;
@@ -140,7 +140,7 @@ struct telnet *tn;
 			kputchar((char)c);
 			if(sp->record != NULL)
 				kputc(c,sp->record);
-			/* If we're likely to block on the next kgetc, flush */
+			/* If we're likely to block on the next getc, flush */
 			if(kfrrdy(network) == 0)
 				kfflush(kstdout);
 			continue;
@@ -171,14 +171,14 @@ struct telnet *tn;
 			break;
 		}
 	}
-quit:	/* A kclose was received from the remote host.
+quit:	/* A close was received from the remote host.
 	 * Notify the user, kill the output task and wait for a response
 	 * from the user before freeing the session.
 	 */
 	kfmode(sp->output,STREAM_ASCII); /* Restore newline translation */
 	ksetvbuf(sp->output,NULL,_kIOLBF,kBUFSIZ);
 	cp = sockerr(kfileno(network));
-	kprintf("Closed: %s\n", cp != NULL ? cp : "kEOF");
+	kprintf("Closed: %s\n", cp != NULL ? cp : "EOF");
 	killproc(&sp->proc1);
 	kfclose(sp->network);
 	sp->network = NULL;
@@ -289,7 +289,7 @@ int opt;
 			return;		/* Already set, ignore to prevent loop */
 		if(opt == TN_ECHO){
 			if(Refuse_echo){
-				/* User doesn't want to kaccept */
+				/* User doesn't want to accept */
 				ack = DONT;
 				break;
 			} else {
@@ -299,7 +299,7 @@ int opt;
 				kfmode(tn->session->network,STREAM_BINARY);
 				ksetvbuf(tn->session->network,NULL,_kIONBF,0);
 				kfmode(kstdout,STREAM_BINARY);
-/*				ksetvbuf(kstdout,NULL,_kIONBF,0); */
+/*				setvbuf(stdout,NULL,_kIONBF,0); */
 			}
 		}
 		tn->remote[opt] = 1;
@@ -333,10 +333,10 @@ int opt;
 			kfmode(tn->session->network,STREAM_ASCII);
 			ksetvbuf(tn->session->network,NULL,_kIOLBF,kBUFSIZ);
 			kfmode(kstdout,STREAM_ASCII);
-/*			ksetvbuf(kstdout,NULL,_kIOLBF,kBUFSIZ); */
+/*			setvbuf(stdout,NULL,_kIOLBF,BUFSIZ); */
 		}
 	}
-	answer(tn,DONT,opt);	/* Must always kaccept */
+	answer(tn,DONT,opt);	/* Must always accept */
 }
 void
 doopt(tn,opt)

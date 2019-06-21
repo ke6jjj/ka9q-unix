@@ -5,7 +5,7 @@
  *
  * SM0RGV 890506, most work done previously by W9NK
  *
- *** Changed 900114 by KA9Q to use newline mapping features in stream ksocket
+ *** Changed 900114 by KA9Q to use newline mapping features in stream socket
  *	interface code; everything here uses C eol convention (\n)
  *
  *	Numerous new commands and other changes by SM0RGV, 900120
@@ -53,7 +53,7 @@ static int Attended = TRUE;	/* default to attended mode */
 unsigned Maxlet = BM_NLET;
 
 char Noperm[] = "Permission denied.\n";
-char Nosock[] = "Can't create ksocket\n";
+char Nosock[] = "Can't create socket\n";
 
 static char Mbbanner[] = "[NET-H$]\nWelcome %s to the %s TCP/IP Mailbox (%s)\n%s";
 static char Mbmenu[] = "Current msg# %d : A,B,C,D,E,F,G,H,I,J,K,L,N,R,S,T,U,V,W,Z,? >\n";
@@ -248,7 +248,7 @@ struct mbx *m;
 #ifdef	AX25
 	case kAF_NETROM:
 	case kAF_AX25:
-		/* NETROM and AX25 ksocket address structures are "compatible" */
+		/* NETROM and AX25 socket address structures are "compatible" */
 		pax25(m->name,sp.ax->ax25_addr);
 		cp = strchr(m->name,'-');
 		if(cp != NULL)			/* get rid of SSID */
@@ -337,11 +337,11 @@ void *p;
 	else
 		network = (kFILE *)p;
 	
-	/* Secede from the parent's sockets, and use the network ksocket that
+	/* Secede from the parent's sockets, and use the network socket that
 	 * was passed to us for both input and output. The reference
-	 * count on this ksocket will still be 1; this allows the domboxbye()
-	 * command to work by closing that ksocket with a single call.
-	 * If we return, the ksocket will be closed automatically.
+	 * count on this socket will still be 1; this allows the domboxbye()
+	 * command to work by closing that socket with a single call.
+	 * If we return, the socket will be closed automatically.
 	 */
 	kfclose(kstdin);
 	kstdin = kfdup(network);
@@ -554,7 +554,7 @@ int escape;
 					kprintf("%c%c%c",IAC,WONT,opt);
 				}
 #endif
-/* to be fixed 			kfflush(kstdout);*/
+/* to be fixed 			fflush(stdout);*/
 				continue;
 			}
 			if(c != IAC && (c = kfgetc(network)) == kEOF)
@@ -900,7 +900,7 @@ void *p;
 		return 0;
 	}
 	if((fp = kfopen(file,READ_TEXT)) == NULL)
-		kprintf("Can't kopen \"%s\": %s\n",file,ksys_errlist[kerrno]);
+		kprintf("Can't open \"%s\": %s\n",file,ksys_errlist[kerrno]);
 	else
 		if(m->stype == 'U'){			/* uuencode ? */
 			kfclose(fp);
@@ -951,7 +951,7 @@ void *p;
 		kfputs(buf,fp);
 #if !defined(UNIX) && !defined(__TURBOC__) && !defined(AMIGA)
 		/* Needed only if the OS uses a CR/LF
-		 * convention and kputc doesn't do
+		 * convention and putc doesn't do
 		 * an automatic translation
 		 */
 		if(kputc('\r',fp) == kEOF)
@@ -985,7 +985,7 @@ void *p;
 		return 0;
 	}
 	if((fp = dir(file,1)) == NULL)
-		kprintf("Can't kread directory: \"%s\": %s\n",file,ksys_errlist[kerrno]);
+		kprintf("Can't read directory: \"%s\": %s\n",file,ksys_errlist[kerrno]);
 	else
 		ksendfile(fp,m->user,ASCII_TYPE,0);
 	free(file);
@@ -1262,7 +1262,7 @@ int len;
 		cp = sockerr(s);
 		kprintf("Connection failed: ");
 		if(cp != NULL)
-			kprintf("%s kerrno %d\n",cp,kerrno);
+			kprintf("%s errno %d\n",cp,kerrno);
 		else
 			kprintf("Escape character sent.\n");
 		free(m->startmsg);
@@ -1281,7 +1281,7 @@ int len;
 		free(m->startmsg);
 		m->startmsg = NULL;
 	}
-	/* Since NOS does not flush the output ksocket after a certain
+	/* Since NOS does not flush the output socket after a certain
 	 * period of time, we have to arrange that ourselves.
 	 */
 	gwa = (struct gwalarm *) mallocw(sizeof(struct gwalarm));
@@ -1371,7 +1371,7 @@ void *p;
 	char oldbl;
 	struct usock *up;
 
-	/* Flush sockets s1 and s2, but first make sure that the ksocket
+	/* Flush sockets s1 and s2, but first make sure that the socket
 	 * is set to non-blocking mode, to prevent the flush from blocking
 	 * if the high water mark has been reached.
 	 */

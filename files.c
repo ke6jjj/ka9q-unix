@@ -313,7 +313,7 @@ int *pwdignore;
 	/*
 	 * Well, on the Amiga, a file can be referenced by many names:
 	 * device names (DF0:) or volume names (My_Disk:).  This hunk of code
-	 * passed the pathname specified in the ftpusers file, and kgets the
+	 * passed the pathname specified in the ftpusers file, and gets the
 	 * absolute path copied into the user's buffer.  We really should just
 	 * allocate the buffer and return a pointer to it, since the caller
 	 * really doesn't have a good idea how long the path string is..

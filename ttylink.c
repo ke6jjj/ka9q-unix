@@ -14,7 +14,7 @@
 #include "mailbox.h"
 #include "commands.h"
 
-static int Sttylink = -1;	/* Protoype ksocket for service */
+static int Sttylink = -1;	/* Protoype socket for service */
 
 int
 ttylstart(argc,argv,p)

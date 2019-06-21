@@ -176,7 +176,7 @@ struct tcb {
 		unsigned int force:1;	/* We owe the other end an ACK or window update */
 		unsigned int clone:1;	/* Server-type TCB, cloned on incoming SYN */
 		unsigned int retran:1;	/* A retransmission has occurred */
-		unsigned int active:1;	/* TCB created with an active kopen */
+		unsigned int active:1;	/* TCB created with an active open */
 		unsigned int synack:1;	/* Our SYN has been acked */
 		unsigned int rtt_run:1;	/* We're timing a segment */
 		unsigned int congest:1;	/* Copy of last IP congest bit received */

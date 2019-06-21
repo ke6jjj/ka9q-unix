@@ -446,7 +446,7 @@ void *p;
 }
 /* End of ax25 subcommands */
 
-/* Initiate interactive AX.25 kconnect to remote station */
+/* Initiate interactive AX.25 connect to remote station */
 int
 doconnect(argc,argv,p)
 int argc;
@@ -485,7 +485,7 @@ void *p;
 	}
 	sp->inproc = keychar;	/* Intercept ^C */
 	if((s = ksocket(kAF_AX25,kSOCK_STREAM,0)) == -1){
-		kprintf("Can't create ksocket\n");
+		kprintf("Can't create socket\n");
 		freesession(&sp);
 		keywait(NULL,1);
 		return 1;

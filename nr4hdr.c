@@ -27,7 +27,7 @@ ntohnr4(struct nr4hdr *hdr,struct mbuf **bpp)
 			hdr->u.pid.family = tbuf[0];
 			hdr->u.pid.proto = tbuf[1];
 			break;
-		case NR4OPCONRQ:	/* kconnect request */
+		case NR4OPCONRQ:	/* connect request */
 			hdr->u.conreq.myindex = tbuf[0];
 			hdr->u.conreq.myid = tbuf[1];
 			if((i = PULLCHAR(bpp)) == -1)
@@ -38,7 +38,7 @@ ntohnr4(struct nr4hdr *hdr,struct mbuf **bpp)
 			if(pullup(bpp,hdr->u.conreq.node,AXALEN) < AXALEN)
 				return -1;
 			break;
-		case NR4OPCONAK:	/* kconnect acknowledge */
+		case NR4OPCONAK:	/* connect acknowledge */
 			hdr->yourindex = tbuf[0];
 			hdr->yourid = tbuf[1];
 			hdr->u.conack.myindex = tbuf[2];

@@ -59,13 +59,13 @@ struct mbx {
 #define SYSOP_CMD	64	/* Remote sysop access allowed */
 #define EXCLUDED_CMD	128	/* This user is banned from the BBS */
 	char *path;		/* Directory path */
-	char *startmsg;		/* Message to be sent at kconnect through any */
+	char *startmsg;		/* Message to be sent at connect through any */
 				/* of the gateways */
 	int current;		/* the current message number */
 	int nmsgs;		/* number of messages in this mail box */
 	int newmsgs;		/* number of new messages in mail box */
 	int change;		/* mail file changed */
-	int anyread;		/* true if any message has been kread */
+	int anyread;		/* true if any message has been read */
 	kFILE *mfile;		/* mail data file pointer */
 	char area[64];		/* name of current mail area */
 	long mboxsize;		/* size of mailbox when opened */

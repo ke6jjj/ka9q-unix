@@ -453,7 +453,7 @@ procsigs(void)
 	int i_state;
 
 	for(;;){
-		/* Atomic kread and decrement of entry count */
+		/* Atomic read and decrement of entry count */
 		i_state = disable();
 		tmp = Ksig.nentries;
 		if(tmp != 0)

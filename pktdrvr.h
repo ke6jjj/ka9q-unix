@@ -105,8 +105,8 @@ struct pktdrvr {
 	_go32_dpmi_registers rmcb_registers;
 	int32 dosbase;
 	int32 dossize;
-	int32 wptr;	/* kwrite pointer into DOS buffer */
-	int32 rptr;	/* kread pointer into DOS buffer */
+	int32 wptr;	/* write pointer into DOS buffer */
+	int32 rptr;	/* read pointer into DOS buffer */
 	int32 cnt;	/* Count of unread bytes in buffer */
 	int32 overflows;
 };

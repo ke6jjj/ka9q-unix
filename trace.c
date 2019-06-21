@@ -253,7 +253,7 @@ void *p;
 	}
 	if(argc >= 4){
 		if((ifp->trfp = kfopen(argv[3],APPEND_TEXT)) == NULL){
-			kprintf("Can't kwrite to %s\n",argv[3]);
+			kprintf("Can't write to %s\n",argv[3]);
 		}
 	} else if(ifp->trace != 0){
 		/* Create trace session */
@@ -317,7 +317,7 @@ shuttrace()
 }
 
 /* Log messages of the form
- * Tue Jan 31 00:00:00 1987 44.64.0.7:1003 kopen FTP
+ * Tue Jan 31 00:00:00 1987 44.64.0.7:1003 open FTP
  */
 void
 trace_log(struct iface *ifp,char *fmt, ...)

@@ -107,7 +107,7 @@ struct usock {
 	int peernamelen;
 	uint8 errcodes[4];	/* Protocol-specific error codes */
 	uint8 tos;		/* Internet type-of-service */
-	int flag;		/* Mode flags, defined in ksocket.h */
+	int flag;		/* Mode flags, defined in socket.h */
 };
 extern char *(*Psock[])(struct ksockaddr *);
 extern char Badsocket[];

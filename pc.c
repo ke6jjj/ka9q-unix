@@ -76,7 +76,7 @@ ioinit(int hinit)
 	 * put them on the heap.
 	 */
 	inregs.h.ah = 0x67;
-	inregs.x.bx = Nfiles;	/* Up to the base of the ksocket numbers */
+	inregs.x.bx = Nfiles;	/* Up to the base of the socket numbers */
 	intdos(&inregs,&inregs);	
 
 	saved_break = getcbrk();
@@ -102,7 +102,7 @@ iostop(void)
 		iftmp = ifp->next;
 		if_detach(ifp);
 	}
-	/* Call list of kshutdown functions */
+	/* Call list of shutdown functions */
 	for(fp = Shutdown;*fp != NULL;fp++){
 		(**fp)();
 	}
@@ -330,7 +330,7 @@ statline(struct display *dp,struct session *sp)
  *
  * Reading the 8254 is a bit tricky since a tick could occur asynchronously
  * between the two reads. The tick counter is examined before and after the
- * hardware counter is kread. If the tick counter changes, try again.
+ * hardware counter is read. If the tick counter changes, try again.
  * Note: the hardware counter counts down from 65536.
  */
 int32
@@ -379,7 +379,7 @@ usclock(void)
 	return (hi << 16) - (int32)lo;
 }
 
-/* Directly kread BIOS count of time ticks. This is used instead of
+/* Directly read BIOS count of time ticks. This is used instead of
  * calling biostime(0,0L). The latter calls BIOS INT 1A, AH=0,
  * which resets the midnight overflow flag, losing days on the clock.
  */
@@ -395,7 +395,7 @@ bioscnt(void)
 	return rval;
 }
 
-/* Atomic kread-and-decrement operation.
+/* Atomic read-and-decrement operation.
  * Read the variable pointed to by p. If it is
  * non-zero, decrement it. Return the original value.
  */
@@ -440,10 +440,10 @@ _cleanup(void)
  * This works only for the 8254 chips used in ATs and 386s.
  *
  * The timer runs in mode 3 (square wave mode), counting down
- * by twos, twice for each cycle. So it is necessary to kread back the
+ * by twos, twice for each cycle. So it is necessary to read back the
  * OUTPUT pin to see which half of the cycle we're in. I.e., the OUTPUT
  * pin forms the most significant bit of the count. Unfortunately,
- * the 8253 in the PC/XT lacks a command to kread the OUTPUT pin...
+ * the 8253 in the PC/XT lacks a command to read the OUTPUT pin...
  *
  * The PC's clock design is soooo brain damaged...
  */
@@ -676,7 +676,7 @@ _go32_dpmi_unchain_protected_mode_interrupt_vector(uint irq,_go32_dpmi_seginfo *
 void
 eoi(void)
 {
-	/* kread in-service register from secondary 8259 */
+	/* read in-service register from secondary 8259 */
 	outportb(0xa0,0x0b);
 	if(inportb(0xa0))
 		outportb(0xa0,0x20);	/* Send EOI to secondary 8259 */

@@ -151,7 +151,7 @@ uint8 *cp)	/* Pointer to start of encoded RR record */
 	cp += 2;
 	switch(rrp->type){
 	case TYPE_A:
-		/* Just kread the address directly into the structure */
+		/* Just read the address directly into the structure */
 		rrp->rdata.addr = get32(cp);
 		cp += 4;
 		break;

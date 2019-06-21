@@ -13,7 +13,7 @@ char Ax25_eol[] = "\r";
 static void autobind(struct usock *up);
 
 /* The following two variables are needed because there can be only one
- * ksocket listening on each of the AX.25 modes (I and UI)
+ * socket listening on each of the AX.25 modes (I and UI)
  */
 int Axi_sock = -1;	/* Socket number listening for AX25 connections */
 static int Axui_sock = -1;	/* Socket number listening for AX25 UI frames */
@@ -30,7 +30,7 @@ struct mbuf **bpp
 	struct ksockaddr_ax *sax;
 
 	if(Axui_sock == -1){
-		/* Nobody there to kread it */
+		/* Nobody there to read it */
 		free_p(bpp);
 	} else {
 		pushdown(&hdr,NULL,sizeof(struct ksockaddr_ax));
@@ -340,7 +340,7 @@ so_ax_close(
 struct usock *up
 ){
 	if(up->cb.ax25 != NULL){
-		/* Tell the CLOSED upcall there's no more ksocket */
+		/* Tell the CLOSED upcall there's no more socket */
 		up->cb.ax25->user = -1;
 		disc_ax25(up->cb.ax25);
 	}
@@ -368,7 +368,7 @@ int cnt
 	up = itop(axp->user);
 	/* When AX.25 data arrives for the first time the AX.25 listener
 	   is notified, if active. If the AX.25 listener is a server its
-	   ksocket is duplicated in the same manner as in s_tscall().
+	   socket is duplicated in the same manner as in s_tscall().
 	 */
 	if (Axi_sock != -1 && axp->user == -1) {
 		oup = up = itop(Axi_sock);
@@ -377,7 +377,7 @@ int cnt
 		axp->r_upcall = up->cb.ax25->r_upcall;
 		axp->s_upcall = up->cb.ax25->s_upcall;
 		if (up->cb.ax25->flags.clone) {
-			/* Clone the ksocket */
+			/* Clone the socket */
 			ns = ksocket(kAF_AX25,kSOCK_STREAM,0);
 			nup = itop(ns);
 			ASSIGN(*nup,*up);
@@ -387,7 +387,7 @@ int cnt
 			nup->name = mallocw(sizeof(struct ksockaddr_ax));
 			nup->peername = mallocw(sizeof(struct ksockaddr_ax));
 			nup->index = ns;
-			/* Store the new ksocket # in the old one */
+			/* Store the new socket # in the old one */
 			up->rdysock = ns;
 			up = nup;
 		} else {
@@ -396,7 +396,7 @@ int cnt
 			up->cb.ax25 = axp;
 			/* Allocate space for the peer's name */
 			up->peername = mallocw(sizeof(struct ksockaddr_ax));
-			/* Store the old ksocket # in the old ksocket */
+			/* Store the old socket # in the old socket */
 			up->rdysock = Axi_sock;
 		}
 		/* Load the addresses. Memory for the name has already
@@ -447,10 +447,10 @@ int new
 
 	switch(new){
 	case LAPB_DISCONNECTED:
-		/* Clean up. If the user has already closed the ksocket,
-		 * then up will be null (s was set to -1 by the kclose routine).
-		 * If not, then this is an abnormal kclose (e.g., a reset)
-		 * and clearing out the pointer in the ksocket structure will
+		/* Clean up. If the user has already closed the socket,
+		 * then up will be null (s was set to -1 by the close routine).
+		 * If not, then this is an abnormal close (e.g., a reset)
+		 * and clearing out the pointer in the socket structure will
 		 * prevent any further operations on what will be a freed
 		 * control block. Also wake up anybody waiting on events
 		 * related to this block so they will notice it disappearing.

@@ -248,7 +248,7 @@ struct ax25_cb *iaxp;			/* incoming ax25 control block */
 	 * obscure errors as we find them.
 	 */
 	if(ismycall(n3hdr.dest)){
-		/* Toss if from me, or if we can't kread the header */
+		/* Toss if from me, or if we can't read the header */
 		if(iaxp == NULL || ntohnr4(&n4hdr,bpp) == -1){
 			free_p(bpp);
 		} else if((n4hdr.opcode & NR4OPCODE) == NR4OPPID){
@@ -269,7 +269,7 @@ struct ax25_cb *iaxp;			/* incoming ax25 control block */
 					free_p(&hbp);
 				}
 			}
-			/* IP does not use a NET/ROM level 3 ksocket */
+			/* IP does not use a NET/ROM level 3 socket */
 			if(n4hdr.u.pid.family == NRPROTO_IP
 			 && n4hdr.u.pid.proto == NRPROTO_IP)
 				ip_route(iaxp->iface,bpp,0);

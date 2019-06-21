@@ -298,7 +298,7 @@ void *p;
 	return 0;
 }
 
-/* This is the routine that kgets called every so often to do outgoing
+/* This is the routine that gets called every so often to do outgoing
  * mail processing. When called with a null argument, it runs the entire
  * queue; if called with a specific non-zero IP address from the remote
  * kick server, it only starts up sessions to that address.
@@ -349,7 +349,7 @@ int32 target;
 			continue;
 		}
 
-		(void) kfgets(tmpstring,LINELEN,wfile);	/* kread target host */
+		(void) kfgets(tmpstring,LINELEN,wfile);	/* read target host */
 		rip(tmpstring);
 
 		if ((destaddr = mailroute(tmpstring)) == 0) {
@@ -393,7 +393,7 @@ int32 target;
 			}
 		}
 
-		(void) kfgets(from,LINELEN,wfile);	/* kread from */
+		(void) kfgets(from,LINELEN,wfile);	/* read from */
 		rip(from);
 		if ((jp = setupjob(cb,prefix,from)) == NULL) {
 			kfclose(wfile);
@@ -886,7 +886,7 @@ register struct smtpcli *cb;
 		sendcmd(cb,"\n.\n");
 	return error;
 }
-/* do a kprintf() on the network stream with optional local tracing */
+/* do a printf() on the network stream with optional local tracing */
 static void
 sendcmd(struct smtpcli *cb,char *fmt, ...)
 {
@@ -904,7 +904,7 @@ sendcmd(struct smtpcli *cb,char *fmt, ...)
 	va_end(args);
 }
 
-/* Wait for, kread and display response from server. Return the result code. */
+/* Wait for, read and display response from server. Return the result code. */
 static int
 getresp(cb,mincode)
 struct smtpcli *cb;

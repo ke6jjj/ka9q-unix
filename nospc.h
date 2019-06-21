@@ -18,7 +18,7 @@ struct stopwatch {
 extern struct stopwatch Sw[];
 extern uint Intstk[];	/* Interrupt stack defined in pcgen.asm */
 extern uint Stktop[];	/* Top of interrupt stack */
-extern void (*Shutdown[])();	/* List of functions to call at kshutdown */
+extern void (*Shutdown[])();	/* List of functions to call at shutdown */
 extern int Mtasker;	/* Type of multitasker, if any */
 
 /* In n8250.c: */

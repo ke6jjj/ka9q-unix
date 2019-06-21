@@ -4,7 +4,7 @@
  *	02-90	-- Katie Stevens (dkstevens@ucdavis.edu)
  *		   UC Davis, Computing Services
  *		   Davis, CA
- *	04-90	-- Modified by Phil Karn to use raw IP sockets to kread replies
+ *	04-90	-- Modified by Phil Karn to use raw IP sockets to read replies
  *	08-90	-- Modified by Bill Simpson to display domain names
  */
 #include "top.h"
@@ -149,8 +149,8 @@ void *p;
 {
 	struct session *sp;		/* Session for trace output */
 	int s;				/* Socket for queries */
-	int s1;				/* Raw ksocket for replies */
-	struct ksocket lsocket;		/* Local ksocket sending queries */
+	int s1;				/* Raw socket for replies */
+	struct ksocket lsocket;		/* Local socket sending queries */
 	struct ksocket rsocket;		/* Final destination of queries */
 	int32 cticks;			/* Timer for query replies */
 	int32 icsource;			/* Sender of last ICMP reply */
@@ -187,7 +187,7 @@ void *p;
 	sp->inproc = keychar;
 	s = -1;
 
-	/* Setup UDP ksocket to remote host */
+	/* Setup UDP socket to remote host */
 	sock.sin_family = kAF_INET;
 	sock.sin_port = Hoprport;
 	kprintf("Resolving %s... ",hostname);
@@ -198,10 +198,10 @@ void *p;
 		return 1;
 	}
 
-	/* Open ksocket to remote host */
+	/* Open socket to remote host */
 	kprintf("%s ",psocket((struct ksockaddr *)&sock));
 	if((s = ksocket(kAF_INET,kSOCK_DGRAM,0)) == -1){
-		kprintf("Can't create udp ksocket\n");
+		kprintf("Can't create udp socket\n");
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
@@ -213,7 +213,7 @@ void *p;
 		return 1;
 	}
 	if((s1 = ksocket(kAF_INET,kSOCK_RAW,ICMP_PTCL)) == -1){
-		kprintf("Can't create raw ksocket\n");
+		kprintf("Can't create raw socket\n");
 		keywait(NULL,1);
 		kclose(s);
 		freesession(&sp);
@@ -225,7 +225,7 @@ void *p;
 	Icmp_trace = 0;
 
 	/* Setup structures to send queries */
-	/* Retrieve ksocket details for user ksocket control block */
+	/* Retrieve socket details for user socket control block */
 	usp = itop(s);
 	sinp = (struct ksockaddr_in *)usp->name;
 	lsocket.address = sinp->sin_addr.s_addr;
@@ -392,7 +392,7 @@ int c;
 	return 1;
 }
 
-/* Read raw network ksocket looking for ICMP messages in response to our
+/* Read raw network socket looking for ICMP messages in response to our
  * UDP probes
  */
 static int

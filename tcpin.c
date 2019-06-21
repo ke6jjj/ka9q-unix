@@ -88,7 +88,7 @@ int32 said		/* Authenticated packet */
 			reset(ip,&seg);
 			return;
 		}
-		/* See if there's a TCP_LISTEN on this ksocket with
+		/* See if there's a TCP_LISTEN on this socket with
 		 * unspecified remote address and port
 		 */
 		conn.remote.address = 0;
@@ -103,7 +103,7 @@ int32 said		/* Authenticated packet */
 				return;
 			}
 		}
-		/* We've found an server klisten ksocket, so clone the TCB */
+		/* We've found an server listen socket, so clone the TCB */
 		if(tcb->flags.clone){
 			ntcb = (struct tcb *)mallocw(sizeof (struct tcb));
 			ASSIGN(*ntcb,*tcb);
@@ -113,7 +113,7 @@ int32 said		/* Authenticated packet */
 			tcb->next = Tcbs;
 			Tcbs = tcb;
 		}
-		/* Put all the ksocket info into the TCB */
+		/* Put all the socket info into the TCB */
 		tcb->conn.local.address = ip->dest;
 		tcb->conn.remote.address = ip->source;
 		tcb->conn.remote.port = seg.source;
@@ -156,7 +156,7 @@ int32 said		/* Authenticated packet */
 		if(seg.flags.rst){	/* p 67 */
 			if(seg.flags.ack){
 				/* The ack must be acceptable since we just checked it.
-				 * This is how the remote side refuses kconnect requests.
+				 * This is how the remote side refuses connect requests.
 				 */
 				close_self(tcb,RESET);
 			}
@@ -238,7 +238,7 @@ int32 said		/* Authenticated packet */
 		if(seg.flags.rst){
 			if(tcb->state == TCP_SYN_RECEIVED
 			 && !tcb->flags.clone && !tcb->flags.active){
-				/* Go back to klisten state only if this was
+				/* Go back to listen state only if this was
 				 * not a cloned or active server TCB
 				 */
 				settcpstate(tcb,TCP_LISTEN);
@@ -308,7 +308,7 @@ int32 said		/* Authenticated packet */
 		case TCP_LAST_ACK:
 			update(tcb,&seg,length);
 			if(tcb->sndcnt == 0){
-				/* Our FIN is acknowledged, kclose connection */
+				/* Our FIN is acknowledged, close connection */
 				close_self(tcb,NORMAL);
 				return;
 			}			
@@ -387,7 +387,7 @@ int32 said		/* Authenticated packet */
 			default:
 				break;
 			}
-			/* Call the client again so he can see kEOF */
+			/* Call the client again so he can see EOF */
 			if(tcb->r_upcall)
 				(*tcb->r_upcall)(tcb,tcb->rcvcnt);
 		}
@@ -420,7 +420,7 @@ struct mbuf **bpp		/* First 8 bytes of TCP header */
 	struct connection conn;
 	struct tcb *tcb;
 
-	/* Extract the ksocket info from the returned TCP header fragment
+	/* Extract the socket info from the returned TCP header fragment
 	 * Note that since this is a datagram we sent, the source fields
 	 * refer to the local side.
 	 */
@@ -481,7 +481,7 @@ struct tcp *seg	/* Offending TCP header */
 	seg->dest = tmp;
 
 	if(seg->flags.ack){
-		/* This reset is being sent to clear a half-kopen connection.
+		/* This reset is being sent to clear a half-open connection.
 		 * Set the sequence number of the RST to the incoming ACK
 		 * so it will be acceptable.
 		 */
@@ -489,7 +489,7 @@ struct tcp *seg	/* Offending TCP header */
 		seg->seq = seg->ack;
 		seg->ack = 0;
 	} else {
-		/* We're rejecting a kconnect request (SYN) from TCP_LISTEN state
+		/* We're rejecting a connect request (SYN) from TCP_LISTEN state
 		 * so we have to "acknowledge" their SYN.
 		 */
 		seg->flags.ack = 1;
@@ -898,7 +898,7 @@ uint *length
 	if(tcb->rcv.wnd == 0){
 		/* If our window is closed, then the other end is
 		 * probably probing us. If so, they might send us acks
-		 * with seg.seq > rcv.nxt. Be sure to kaccept these
+		 * with seg.seq > rcv.nxt. Be sure to accept these
 		 */
 		if(len == 0 && seq_within(seg->seq,tcb->rcv.nxt,tcb->rcv.nxt+tcb->window))
 			return 0;

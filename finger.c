@@ -55,7 +55,7 @@ void *p;
 		}
 		kprintf("Trying %s...\n",psocket((struct ksockaddr *)&sock));
 		if((s = ksocket(kAF_INET,kSOCK_STREAM,0)) == -1){
-			kprintf("Can't create ksocket\n");
+			kprintf("Can't create socket\n");
 			break;
 		}
 		if(kconnect(s,(struct ksockaddr *)&sock,sizeof(sock)) == -1){

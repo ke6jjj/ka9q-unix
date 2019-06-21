@@ -69,7 +69,7 @@ static int doobsotimer(int argc,char *argv[],void *p);
 static struct cmds Nrcmds[] = {
 	"acktime",	donracktime,	0, 0,	NULL,
 	"bcnodes",	dobcnodes,	0, 2,	"netrom bcnodes <interface>",
-	"connect",	donrconnect, 1024, 2,	"netrom kconnect <node>",
+	"connect",	donrconnect, 1024, 2,	"netrom connect <node>",
 	"choketime",	donrchoketime,	0, 0,	NULL,
 	"interface",	dointerface,	0, 4,
 		"netrom interface <interface> <alias> <quality>",
@@ -353,7 +353,7 @@ void *p;
 		return 1 ;
 	}
 		
-	Nr_numiface++ ;			/* kaccept this interface */
+	Nr_numiface++ ;			/* accept this interface */
 	return 0 ;
 }
 
@@ -637,7 +637,7 @@ void *p;
 			Nr_nfmode = NRNF_REJECT ;
 			break ;
 		default:
-			kprintf("modes are: none kaccept reject\n") ;
+			kprintf("modes are: none accept reject\n") ;
 			return -1 ;
 	}
 
@@ -684,7 +684,7 @@ void *p;
 	}
 	sp->inproc = keychar;	/* Intercept ^C */
 	if((s = ksocket(kAF_NETROM,kSOCK_SEQPACKET,0)) == -1){
-		kprintf("Can't create ksocket\n");
+		kprintf("Can't create socket\n");
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
@@ -834,7 +834,7 @@ void *p;
 	return setshort(&Nr4window,"Window (frames)",argc,argv);
 }
 
-/* netrom transport maximum retries.  This is used in kconnect and */
+/* netrom transport maximum retries.  This is used in connect and */
 /* disconnect attempts; I haven't decided what to do about actual */
 /* data retries yet. */
 
@@ -941,7 +941,7 @@ struct nr4cb *cb ;
 	kprintf("Backoff Level %u SRTT %ld ms Mean dev %ld ms\n",
 		   cb->blevel, cb->srtt, cb->mdev) ;
 
-	/* If we are connected and the send window is kopen, display */
+	/* If we are connected and the send window is open, display */
 	/* the status of all the buffers and their timers */
 	
 	if (cb->state == NR4STCON && cb->nextosend != cb->ackxpected) {

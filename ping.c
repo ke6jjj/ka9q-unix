@@ -43,7 +43,7 @@ void *p;
 		return 1;
 	}
 	if((ping.s = s = ksocket(kAF_INET,kSOCK_RAW,ICMP_PTCL)) == -1){
-		kprintf("Can't create ksocket\n");
+		kprintf("Can't create socket\n");
 		keywait(NULL,1);
 		freesession(&sp);
 		return 1;
@@ -77,7 +77,7 @@ void *p;
 		sp->proc1 = newproc("pingtx",300,pingtx,s,&ping,NULL,0);
 	} else {
 		/* One shot ping; let echo_proc hook handle response.
-		 * An ID of MAXINT16 will not be confused with a legal ksocket
+		 * An ID of MAXINT16 will not be confused with a legal socket
 		 * number, which is used to identify repeated pings
 		 */
 		pingem(s,ping.target,0,MAXINT16,ping.len);
@@ -204,7 +204,7 @@ void *p;
 /* Send ICMP Echo Request packet */
 int
 pingem(s,target,seq,id,len)
-int s;		/* Raw ksocket on which to send ping */
+int s;		/* Raw socket on which to send ping */
 int32 target;	/* Site to be pinged */
 uint seq;	/* ICMP Echo Request sequence number */
 uint id;	/* ICMP Echo Request ID */

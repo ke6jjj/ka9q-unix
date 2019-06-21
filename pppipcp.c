@@ -37,7 +37,7 @@ static struct ipcp_value_s ipcp_default = {
 	0			/* no slot compression */
 };
 
-/* for test purposes, kaccept anything we understand */
+/* for test purposes, accept anything we understand */
 static uint ipcp_negotiate = IPCP_N_ADDRESS | IPCP_N_COMPRESS;
 
 static byte_t option_length[] = {

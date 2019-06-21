@@ -254,7 +254,7 @@ char *file;
 
 	if((fp = kfopen(file,READ_TEXT)) == NULL){
 		if(ifp->trace & (IF_TRACE_IN|IF_TRACE_OUT))
-			tprintf(ifp,"redial: can't kread %s\n",file);
+			tprintf(ifp,"redial: can't read %s\n",file);
 		return -1;
 	}
 	/* Save output handler and temporarily redirect output to null */

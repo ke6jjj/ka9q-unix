@@ -62,7 +62,7 @@
 
 extern char *Sock_errlist[];
 
-/* In ksocket.c: */
+/* In socket.c: */
 extern int Axi_sock;	/* Socket listening to AX25 (there can be only one) */
 
 int kaccept(int s,struct ksockaddr *peername,int *peernamelen);

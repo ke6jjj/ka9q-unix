@@ -81,7 +81,7 @@ int cnt;
 
 	while(bootpd_recv(sock, &bp_packet) != -1) {
 
-       		if(readtab() == -1) /* maybe re-kread bootptab */
+       		if(readtab() == -1) /* maybe re-read bootptab */
 			return;
 
 		switch(bp_packet.op) {
@@ -97,7 +97,7 @@ int cnt;
 
 }
 
-/* A packet has been received, kread it into a bootp structure. */
+/* A packet has been received, read it into a bootp structure. */
 static int
 bootpd_recv(sock, bootp)
 struct udp_cb *sock;

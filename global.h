@@ -12,7 +12,7 @@
  */
 
 #if	!defined(AMIGA) && (defined(MAC) || defined(MSDOS))
-/* These compilers require special kopen modes when reading binary files.
+/* These compilers require special open modes when reading binary files.
  *
  * "The single most brilliant design decision in all of UNIX was the
  * choice of a SINGLE character as the end-of-line indicator" -- M. O'Dell
@@ -304,8 +304,8 @@ extern char System[];
 /* Your system's temp directory */
 extern char *Tmpdir;
 
-extern unsigned Nfiles;	/* Maximum number of kopen files */
-extern unsigned Nsock;	/* Maximum number of kopen sockets */
+extern unsigned Nfiles;	/* Maximum number of open files */
+extern unsigned Nsock;	/* Maximum number of open sockets */
 
 extern void (*Gcollect[])();
 

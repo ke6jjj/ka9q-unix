@@ -40,8 +40,8 @@ static int Dcache_size = 20;		/* size limit */
 static time_t Dcache_time = 0L; 	/* timestamp */
 
 static int Dfile_clean = FALSE; 	/* discard expired records (flag) */
-static int Dfile_reading = 0;		/* kread interlock (count) */
-static int Dfile_writing = 0;		/* kwrite interlock (count) */
+static int Dfile_reading = 0;		/* read interlock (count) */
+static int Dfile_writing = 0;		/* write interlock (count) */
 
 struct proc *Dfile_updater = NULL;
 static int32 Dfile_wait_absolute = 0L;	/* timeout Clock time */
@@ -1131,7 +1131,7 @@ dfile_search(struct rr *rrlp)
 				All records of the same name and the same type
 				are contiguous.  Therefore, for a single query,
 				we can stop searching.  Multiple queries must
-				kread the whole file.
+				read the whole file.
 			*/
 			if(rrlp->type != TYPE_ANY
 			&& rrlp->next == NULL
@@ -1230,7 +1230,7 @@ dfile_update(int s,void *unused,void *p)
 		}
 		*rrpp = NULL;
 
-		/* kopen up the old file, concurrently with everyone else */
+		/* open up the old file, concurrently with everyone else */
 		if((old_fp = kfopen(Dfile,READ_TEXT)) == NULL){
 			/* great! no old file, so we're ready to go. */
 			kfclose(new_fp);
@@ -1367,7 +1367,7 @@ uint buflen	/* Length of same */
 		strncpy((char *)cp,dname,len);
 		cp += len;
 		if(cp1 == NULL){
-			*cp++ = 0;	/* Last one; kwrite null and finish */
+			*cp++ = 0;	/* Last one; write null and finish */
 			break;
 		}
 		dname += len+1;

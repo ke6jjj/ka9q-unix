@@ -38,7 +38,7 @@ void *p;
 	kFILE *asy;
 
 	if((asy = asyopen(argv[1],"r+b")) == NULL){
-		kprintf("Can't kopen %s\n",argv[1]);
+		kprintf("Can't open %s\n",argv[1]);
 		return 1;
 	}
 	ksetvbuf(asy,NULL,_kIONBF,0);

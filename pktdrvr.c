@@ -169,7 +169,7 @@ pkint(_go32_dpmi_registers *reg)
 		}
 		if(pp->wptr + len + sizeof(len) > pp->dossize){
 			/* Not enough room at end of DOS buffer for length
-			 * plus data, so kwrite zero length and wrap around
+			 * plus data, so write zero length and wrap around
 			 */
 			uint zero = 0;
 			pp->cnt += pp->dossize - pp->wptr;
@@ -325,7 +325,7 @@ void *p
 
 		/**** temp set multicast flag ****/
 /*		i = set_rcv_mode(intno,pp->handle,5);
-		kprintf("set_rcv_mode returns %d, Derr = %d\n",i,Derr); */
+		printf("set_rcv_mode returns %d, Derr = %d\n",i,Derr); */
 
 		/* Get hardware Ethernet address from driver */
 		if_pk->hwaddr = mallocw(EADDR_LEN);
@@ -349,7 +349,7 @@ void *p
 		setencap(if_pk,"SLIP");
 		break;
 #ifdef	AX25
-	case CL_KISS:	/* Note that the raw routine kputs on the command */
+	case CL_KISS:	/* Note that the raw routine puts on the command */
 	case CL_AX25:
 		setencap(if_pk,"AX25");
 		if_pk->hwaddr = mallocw(AXALEN);

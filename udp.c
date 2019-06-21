@@ -222,7 +222,7 @@ int32 said
 		lsocket.address = ip->dest;
 
 	lsocket.port = udp.dest;
-	/* See if there's somebody around to kread it */
+	/* See if there's somebody around to read it */
 	if((up = lookup_udp(&lsocket)) == NULL){
 		/* Nope, return an ICMP message */
 		if(!rxbroadcast){

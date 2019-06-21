@@ -46,7 +46,7 @@ struct udp {
 
 /* User Datagram Protocol control block
  * Each entry on the receive queue consists of the
- * remote ksocket structure, followed by any data
+ * remote socket structure, followed by any data
  */
 struct udp_cb {
 	struct udp_cb *next;

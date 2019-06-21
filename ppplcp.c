@@ -37,7 +37,7 @@ static struct lcp_value_s lcp_default = {
 	0L,		/* no reporting period */
 };
 
-/* for test purposes, kaccept anything we understand in the NAK */
+/* for test purposes, accept anything we understand in the NAK */
 static uint lcp_negotiate = LCP_N_MRU | LCP_N_ACCM | LCP_N_AUTHENT
 		| LCP_N_PFC | LCP_N_ACFC | LCP_N_MAGIC;
 
@@ -1004,7 +1004,7 @@ struct fsm_s *fsm_p;
 
 
 /************************************************************************/
-/* Close higher levels in preparation for link kshutdown */
+/* Close higher levels in preparation for link shutdown */
 static void
 lcp_closing(fsm_p)
 struct fsm_s *fsm_p;

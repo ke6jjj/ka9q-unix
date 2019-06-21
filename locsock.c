@@ -10,7 +10,7 @@ int
 so_los(struct usock *up,int protocol)
 {
 	up->cb.local = (struct loc *) callocw(1,sizeof(struct loc));
-	up->cb.local->peer = up;	/* kconnect to self */
+	up->cb.local->peer = up;	/* connect to self */
 	up->type = TYPE_LOCAL_STREAM;
 	up->cb.local->hiwat = LOCSFLOW;
 	return 0;
@@ -19,7 +19,7 @@ int
 so_lod(struct usock *up,int protocol)
 {
 	up->cb.local = (struct loc *) callocw(1,sizeof(struct loc));
-	up->cb.local->peer = up;	/* kconnect to self */
+	up->cb.local->peer = up;	/* connect to self */
 	up->type = TYPE_LOCAL_DGRAM;
 	up->cb.local->hiwat = LOCDFLOW;
 	return 0;

@@ -59,7 +59,7 @@ struct session {
 	struct proc *proc;	/* Primary session process (e.g., tn recv) */
 	struct proc *proc1;	/* Secondary session process (e.g., tn xmit) */
 	struct proc *proc2;	/* Tertiary session process (e.g., upload) */
-	kFILE *network;		/* Primary network ksocket (control for FTP) */
+	kFILE *network;		/* Primary network socket (control for FTP) */
 	kFILE *record;		/* Receive record file */
 	kFILE *upload;		/* Send file */
 	struct ttystate ttystate;

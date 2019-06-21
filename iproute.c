@@ -459,7 +459,7 @@ uint8 tos
 	}
 	/* Encapsulate in an IP packet from us to the gateway.
 	 * The outer source address is taken from the encap interface
-	 * structure. This defaults to kINADDR_ANY, so unless it is
+	 * structure. This defaults to INADDR_ANY, so unless it is
 	 * changed (with iface encap ipaddr ...), the IP address
 	 * of the physical interface used to reach the encap gateway
 	 * will be used.
@@ -487,7 +487,7 @@ uint8 private		/* Inhibit advertising this entry ? */
 		bits = 32;		/* Bulletproofing */
 
 	if(bits == 32 && ismyaddr(target))
-		return NULL;	/* Don't kaccept routes to ourselves */
+		return NULL;	/* Don't accept routes to ourselves */
 
 	/* Mask off don't-care bits of target */
 	target &= ~0L << (32-bits);

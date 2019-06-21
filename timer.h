@@ -15,7 +15,7 @@
  * stop searching.
  *
  * Stopping a timer or letting it expire causes it to be removed
- * from the list. Starting a timer kputs it on the list at the right
+ * from the list. Starting a timer puts it on the list at the right
  * place.
  */
 struct timer {

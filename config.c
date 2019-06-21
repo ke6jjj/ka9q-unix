@@ -83,7 +83,7 @@ static void axnr(struct iface *iface,struct ax25_cb *axp,uint8 *src,
 
 struct mbuf *Hopper;		/* Queue of incoming packets */
 unsigned Nsessions = NSESSIONS;
-unsigned Nsock = DEFNSOCK;		/* Number of ksocket entries */
+unsigned Nsock = DEFNSOCK;		/* Number of socket entries */
 
 /* Free memory threshold, below which things start to happen to conserve
  * memory, like garbage collection, source quenching and refusing connects
@@ -127,7 +127,7 @@ struct cmds Cmds[] = {
 #if	!defined(AMIGA)
 	"cd",		docd,		0, 0, NULL,
 #endif
-	"kclose",	doclose,	0, 0, NULL,
+	"close",	doclose,	0, 0, NULL,
 /* This one is out of alpabetical order to allow abbreviation to "d" */
 	"disconnect",	doclose,	0, 0, NULL,
 	"delete",	dodelete,	0, 2, "delete <file>", 
@@ -241,7 +241,7 @@ struct cmds Cmds[] = {
 	"socket",	dosock,		0, 0, NULL,
 #ifdef	SOUND
 	"sound",	dosound,	0, 2,
-		"sound attach|detach|klisten ...",
+		"sound attach|detach|listen ...",
 
 #endif
 #ifdef	SERVERS
@@ -377,7 +377,7 @@ struct cmds Remcmds[] = {
 	"socket",	dosock,		0, 0, NULL,
 #ifdef	SOUND
 	"sound",	dosound,	0, 2,
-		"sound attach|detach|klisten ...",
+		"sound attach|detach|listen ...",
 
 #endif
 #ifdef	SERVERS
@@ -553,9 +553,9 @@ static struct cmds Stopcmds[] = {
 /* Socket-protocol interface table */
 struct socklink Socklink[] = {
 	/* type,
-	 * ksocket,	bind,		klisten,		kconnect,
-	 * kaccept,	recv,		send,		qlen,
-	 * kick,	shut,		kclose,		check,
+	 * socket,	bind,		listen,		connect,
+	 * accept,	recv,		send,		qlen,
+	 * kick,	shut,		close,		check,
 	 * error,	state,		status,		eol_seq
 	 */
 	TYPE_TCP,
@@ -621,7 +621,7 @@ struct socklink Socklink[] = {
 	-1
 };
 
-/* Table of functions for printing ksocket addresses */
+/* Table of functions for printing socket addresses */
 char * (*Psock[]) () = {
 	ippsocket,
 #ifdef	AX25

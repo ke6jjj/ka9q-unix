@@ -287,7 +287,7 @@ so_n4_close(up)
 struct usock *up;
 {
 	if(up->cb.nr4 != NULL){
-		/* Tell the TCP_CLOSED upcall there's no more ksocket */
+		/* Tell the TCP_CLOSED upcall there's no more socket */
 		up->cb.nr4->user = -1;
 		disc_nr4(up->cb.nr4);
 	}
@@ -344,10 +344,10 @@ int old,new;
 	oup = up = itop(s);
 
  	if(new == NR4STDISC && up != NULL){
-		/* Clean up. If the user has already closed the ksocket,
-		 * then up will be null (s was set to -1 by the kclose routine).
-		 * If not, then this is an abnormal kclose (e.g., a reset)
-		 * and clearing out the pointer in the ksocket structure will
+		/* Clean up. If the user has already closed the socket,
+		 * then up will be null (s was set to -1 by the close routine).
+		 * If not, then this is an abnormal close (e.g., a reset)
+		 * and clearing out the pointer in the socket structure will
 		 * prevent any further operations on what will be a freed
 		 * control block. Also wake up anybody waiting on events
 		 * related to this cb so they will notice it disappearing.
@@ -358,12 +358,12 @@ int old,new;
  	if(new == NR4STCON && old == NR4STDISC){
 		/* Handle an incoming connection. If this is a server cb,
 		 * then we're being handed a "clone" cb and we need to
-		 * create a new ksocket structure for it. In either case,
+		 * create a new socket structure for it. In either case,
 		 * find out who we're talking to and wake up the guy waiting
 		 * for the connection.
 		 */
 		if(cb->clone){
-			/* Clone the ksocket */
+			/* Clone the socket */
 			ns = ksocket(kAF_NETROM,kSOCK_SEQPACKET,0);
 			nup = itop(ns);
 			ASSIGN(*nup,*up);
@@ -374,14 +374,14 @@ int old,new;
 			nup->name = mallocw(sizeof(struct ksockaddr_nr));
 			nup->peername = mallocw(sizeof(struct ksockaddr_nr));
 			nup->index = ns;
-			/* Store the new ksocket # in the old one */
+			/* Store the new socket # in the old one */
 			up->rdysock = ns;
 			up = nup;
 			s = ns;
 		} else {
 			/* Allocate space for the peer's name */
 			up->peername = mallocw(sizeof(struct ksockaddr_nr));
-			/* Store the old ksocket # in the old ksocket */
+			/* Store the old socket # in the old socket */
 			up->rdysock = s;
 		}
 		/* Load the addresses. Memory for the name has already

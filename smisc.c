@@ -169,7 +169,7 @@ void *p
 		}
 		if((asy = asyopen(buf,"r+b")) != NULL)
 			break;
-		kfprintf(network,"Can't kopen interface %s\n",buf);
+		kfprintf(network,"Can't open interface %s\n",buf);
 		kfprintf(network,"Try to bounce current user? ");
 		kfgets(buf,kBUFSIZ,network);
 		if(buf[0] == 'y' || buf[0] == 'Y'){

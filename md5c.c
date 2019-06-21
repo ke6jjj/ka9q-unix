@@ -446,7 +446,7 @@ unsigned char block[64];
 	mov C,dword ptr si[2*4];	/* C = state[2] */
 	mov D,dword ptr si[3*4];	/* D = state[3] */
 
-	lds si,block;	/* Set up for data block kread */
+	lds si,block;	/* Set up for data block read */
 
 	/* The FF macro uses ebp as scratch. This makes our args
 	 * inaccessible until it is restored!

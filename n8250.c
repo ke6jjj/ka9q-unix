@@ -387,7 +387,7 @@ unsigned short cnt
 
 /* Read data from asynch line
  * Blocks until at least 1 byte of data is available.
- * returns number of bytes kread, up to 'cnt' max
+ * returns number of bytes read, up to 'cnt' max
  */
 int
 asy_read(
@@ -409,7 +409,7 @@ unsigned short cnt
 	fp = &Asy[dev].fifo;
 	obp = (uint8 *)buf;
 	for(;;){
-		/* Atomic kread of and subtract from fp->cnt */
+		/* Atomic read of and subtract from fp->cnt */
 		i_state = disable();
 		tmp = fp->cnt;
 		if(tmp != 0){
@@ -433,7 +433,7 @@ unsigned short cnt
 	}
 	return cnt;
 }
-/* Blocking kread from asynch line
+/* Blocking read from asynch line
  * Returns character or -1 if aborting
  */
 int

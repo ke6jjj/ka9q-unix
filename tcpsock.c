@@ -56,7 +56,7 @@ so_tcp_conn(struct usock *up)
 		return -1;
 	}
 	s = up->index;
-	/* Construct the TCP-style ports from the ksockaddr structs */
+	/* Construct the TCP-style ports from the sockaddr structs */
 	local = (struct ksockaddr_in *)up->name;
 	remote = (struct ksockaddr_in *)up->peername;
 
@@ -111,7 +111,7 @@ so_tcp_recv(struct usock *up,struct mbuf **bpp,struct ksockaddr *from,
 		kerrno = kENOTCONN;
 		return -1;
 	} else if(tcb->r_upcall == trdiscard){
-		/* Receive kshutdown has been done */
+		/* Receive shutdown has been done */
 		kerrno = kENOTCONN;	/* CHANGE */
 		return -1;
 	}
@@ -174,7 +174,7 @@ so_tcp_shut(struct usock *up,int how)
 	case 0:	/* No more receives -- replace upcall */
 		up->cb.tcb->r_upcall = trdiscard;
 		break;
-	case 1:	/* Send kEOF */
+	case 1:	/* Send EOF */
 		close_tcp(up->cb.tcb);
 		break;
 	case 2:	/* Blow away TCB */
@@ -189,7 +189,7 @@ so_tcp_close(struct usock *up)
 {
 	if(up->cb.tcb != NULL){	/* In case it's been reset */
 		up->cb.tcb->r_upcall = trdiscard;
-		/* Tell the TCP_CLOSED upcall there's no more ksocket */
+		/* Tell the TCP_CLOSED upcall there's no more socket */
 		up->cb.tcb->user = -1;
 		close_tcp(up->cb.tcb);
 	}
@@ -224,10 +224,10 @@ s_tscall(struct tcb *tcb,int old,int new)
 
 	switch(new){
 	case TCP_CLOSED:
-		/* Clean up. If the user has already closed the ksocket,
-		 * then up will be null (s was set to -1 by the kclose routine).
-		 * If not, then this is an abnormal kclose (e.g., a reset)
-		 * and clearing out the pointer in the ksocket structure will
+		/* Clean up. If the user has already closed the socket,
+		 * then up will be null (s was set to -1 by the close routine).
+		 * If not, then this is an abnormal close (e.g., a reset)
+		 * and clearing out the pointer in the socket structure will
 		 * prevent any further operations on what will be a freed
 		 * control block. Also wake up anybody waiting on events
 		 * related to this tcb so they will notice it disappearing.
@@ -244,12 +244,12 @@ s_tscall(struct tcb *tcb,int old,int new)
 	case TCP_SYN_RECEIVED:
 		/* Handle an incoming connection. If this is a server TCB,
 		 * then we're being handed a "clone" TCB and we need to
-		 * create a new ksocket structure for it. In either case,
+		 * create a new socket structure for it. In either case,
 		 * find out who we're talking to and wake up the guy waiting
 		 * for the connection.
 		 */
 		if(tcb->flags.clone){
-			/* Clone the ksocket */
+			/* Clone the socket */
 			ns = ksocket(kAF_INET,kSOCK_STREAM,0);
 			nup = itop(ns);
 			ASSIGN(*nup,*up);
@@ -259,14 +259,14 @@ s_tscall(struct tcb *tcb,int old,int new)
 			nup->name = mallocw(SOCKSIZE);
 			nup->peername = mallocw(SOCKSIZE);
 			nup->index = ns;
-			/* Store the new ksocket # in the old one */
+			/* Store the new socket # in the old one */
 			up->rdysock = ns;
 			up = nup;
 			s = ns;
 		} else {
 			/* Allocate space for the peer's name */
 			up->peername = mallocw(SOCKSIZE);
-			/* Store the old ksocket # in the old ksocket */
+			/* Store the old socket # in the old socket */
 			up->rdysock = s;
 		}
 		/* Load the addresses. Memory for the name has already
@@ -293,7 +293,7 @@ s_tscall(struct tcb *tcb,int old,int new)
 	}
 	ksignal(up,0);	/* In case anybody's waiting */
 }
-/* Discard data received on a TCP connection. Used after a receive kshutdown or
+/* Discard data received on a TCP connection. Used after a receive shutdown or
  * close_s until the TCB disappears.
  */
 static void
@@ -332,7 +332,7 @@ struct inet *Inet_list;
 static void i_upcall(struct tcb *tcb,int oldstate,int newstate);
 
 
-/* Start a TCP server. Create TCB in klisten state and post upcall for
+/* Start a TCP server. Create TCB in listen state and post upcall for
  * when a connection comes in
  */ 
 int
@@ -379,7 +379,7 @@ i_upcall(struct tcb *tcb,int oldstate,int newstate)
 	if(in == NULLINET)
 		return;	/* not in table - "can't happen" */
 
-	/* Create a ksocket, hook it up with the TCB */
+	/* Create a socket, hook it up with the TCB */
 	s = ksocket(kAF_INET,kSOCK_STREAM,0);
 	up = itop(s);
 	sock.sin_family = kAF_INET;

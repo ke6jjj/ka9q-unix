@@ -322,7 +322,7 @@ struct fsm_s *fsm_p;
 
 /****************************************************************************/
 
-/* abandon PAP attempt; kshutdown LCP layer */
+/* abandon PAP attempt; shutdown LCP layer */
 static void
 pap_shutdown(fsm_p)
 struct fsm_s *fsm_p;
@@ -332,7 +332,7 @@ struct fsm_s *fsm_p;
 	PPP_DEBUG_ROUTINES("pap_shutdown()");
 
 	if (PPPtrace > 1)
-		fsm_log( fsm_p, "Failed; kclose connection" );
+		fsm_log( fsm_p, "Failed; close connection" );
 
 	fsm_close( &(ppp_p->fsm[Lcp]) );
 }

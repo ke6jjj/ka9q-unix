@@ -165,7 +165,7 @@ void *p;
         del_udp (&Bootpd_cb);
         Bootpd_cb = NULL;
 
-	bp_log ("Bootpd kshutdown %s", ctime (&now));
+	bp_log ("Bootpd shutdown %s", ctime (&now));
         return (0);
 };
 
@@ -579,17 +579,17 @@ void *p;
 
 /*
  * Read bootptab database file.  Avoid rereading the file if the
- * kwrite date hasn't changed since the last time we kread it.
+ * write date hasn't changed since the last time we read it.
  */
 int
 readtab()
 {
         struct stat st;
 
-        /* If the file hasn't been opened, kopen it. */
+        /* If the file hasn't been opened, open it. */
         if (bootfp == 0) {
                 if ((bootfp = kfopen(bootptab, "r")) == NULL) {
-                        bp_log("Can't kopen bootptab file: %s\n", bootptab);
+                        bp_log("Can't open bootptab file: %s\n", bootptab);
                         return (-1);
                 }
         }
@@ -602,7 +602,7 @@ readtab()
         /* It's been changed, reread. */
 
         if ((bootfp = kfopen(bootptab, "r")) == NULL) {
-                bp_log("Can't kopen %s\n", bootptab);
+                bp_log("Can't open %s\n", bootptab);
                 return (-1);
         }
         fstat(kfileno(bootfp), &st);
@@ -610,7 +610,7 @@ readtab()
         modtime = st.st_mtime;
 
         /*
-         * kread and parse each line in the file.
+         * read and parse each line in the file.
          */
 
 	line = mallocw(kBUFSIZ);	
@@ -655,7 +655,7 @@ bp_log(char *fmt,...)
 	}
         if (LogInFile) {
                 if ((fp = kfopen(bootplog, "a+")) == NULL) {
-                        kprintf ("Cannot kopen bootplog.\n");
+                        kprintf ("Cannot open bootplog.\n");
                         return;
                 }
 		va_start(ap,fmt);

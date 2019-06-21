@@ -73,7 +73,7 @@ static char NULL_REP[] = "(null)";
 
 int
 _format(
-	void putter(char,void *),	/* User function to kaccept output */
+	void putter(char,void *),	/* User function to accept output */
 	void *parg,			/* Arg passed to user function */
 	const char *fmt0,
 	va_list argp)
@@ -136,7 +136,7 @@ _format(
        * ``A negative field width argument is taken as a
        * - flag followed by a  positive field width.''
        *	-- ANSI X3J11
-       * They don't exclude field widths kread from args.
+       * They don't exclude field widths read from args.
        */
       if ((width = va_arg(argp, int)) >= 0)
 	goto rflag;
