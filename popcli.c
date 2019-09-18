@@ -92,13 +92,13 @@ static int popkick(int argc,char *argv[],void *p);
 int poptick(void);
 
 static struct cmds Popcmds[] = {
-	"mailbox",	domailbox,	0,	0,	NULL,
-	"mailhost",	domailhost,	0,	0,	NULL,
-	"kick",		popkick,	0,	0,	NULL,
-	"quiet",	doquiet,	0,	0,	NULL,
-	"timer",	dotimer,	0,	0,	NULL,
-	"userdata",	douserdata,	0,	0,	NULL,
-	NULL,
+	{ "mailbox",	domailbox,	0,	0,	NULL },
+	{ "mailhost",	domailhost,	0,	0,	NULL },
+	{ "kick",	popkick,	0,	0,	NULL },
+	{ "quiet",	doquiet,	0,	0,	NULL },
+	{ "timer",	dotimer,	0,	0,	NULL },
+	{ "userdata",	douserdata,	0,	0,	NULL },
+	{ NULL },
 };
 
 
