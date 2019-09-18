@@ -126,6 +126,7 @@ struct mbuf *bp;
 	else
 		kfprintf(fp,nospace);
 	kfprintf(fp,"*******\n");
+	kfflush(fp);
 	free_p(&tbp);
 }
 
@@ -337,6 +338,7 @@ trace_log(struct iface *ifp,char *fmt, ...)
 	kvfprintf(fp,fmt,ap);
 	va_end(ap);
 	kfprintf(fp,"\n");
+	kfflush(ifp->trfp);
 }
 int
 tprintf(struct iface *ifp,char *fmt, ...)
@@ -348,6 +350,7 @@ tprintf(struct iface *ifp,char *fmt, ...)
 		return -1; 
 	va_start(ap,fmt);
 	ret = kvfprintf(ifp->trfp,fmt,ap);
+	kfflush(ifp->trfp);
 	va_end(ap);
 	return ret;
 }
