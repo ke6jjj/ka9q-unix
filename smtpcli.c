@@ -84,18 +84,18 @@ static void smtp_send(int unused,void *cb1,void *p);
 static int smtpkick(int argc,char *argv[],void *p);
 
 static struct cmds Smtpcmds[] = {
-	"batch",	dobatch,	0,	0,	NULL,
-	"gateway",	dogateway,	0,	0,	NULL,
-	"mode",		setsmtpmode,	0,	0,	NULL,
-	"kick",		smtpkick,	0,	0,	NULL,
-	"kill",		dosmtpkill,	0,	2,	"kill <jobnumber>",
-	"list",		dosmtplist,	0,	0,	NULL,
-	"maxclients",	dosmtpmaxcli,	0,	0,	NULL,
-	"timer",	dotimer,	0,	0,	NULL,
+	{ "batch",	dobatch,	0,	0,	NULL },
+	{ "gateway",	dogateway,	0,	0,	NULL },
+	{ "mode",	setsmtpmode,	0,	0,	NULL },
+	{ "kick",	smtpkick,	0,	0,	NULL },
+	{ "kill",	dosmtpkill,	0,	2,	"kill <jobnumber>" },
+	{ "list",	dosmtplist,	0,	0,	NULL },
+	{ "maxclients",	dosmtpmaxcli,	0,	0,	NULL },
+	{ "timer",	dotimer,	0,	0,	NULL },
 #ifdef SMTPTRACE
-	"trace",	dosmtptrace,	0,	0,	NULL,
+	{ "trace",	dosmtptrace,	0,	0,	NULL },
 #endif
-	NULL,
+	{ NULL },
 };
 
 int

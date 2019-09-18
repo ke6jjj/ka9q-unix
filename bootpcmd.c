@@ -50,10 +50,6 @@ extern int32   bp_DefaultDomainNS[BP_MAXDNS]; /* default domain name server */
 extern int	Nhosts;
 extern struct udp_cb *Bootpd_cb;
 
-
-
-
-
 static int bp_Homedir(int argc,char *argv[],void *p);
 static int bp_DefaultFile(int argc,char *argv[],void *p);
 static int bp_DynamicRange(int argc,char *argv[],void *p);
@@ -70,18 +66,18 @@ static void dumphosts(void);
 void bootpd(struct iface *iface, struct udp_cb *sock, int cnt);
 
 static struct cmds BootpdCmds[] = {
-        "",             bp_donothing,           0, 0, NULL,
-	"start", 	bp_Start,		0, 0, NULL,
-	"stop",		bp_Stop,		0, 0, NULL,
-	"dns",		bp_DomainNS,		0, 0, NULL,
-        "dynip",    	bp_DynamicRange,     	0, 0, NULL,
-	"host",		bp_Host,		0, 0, NULL,
-	"rmhost",	bp_rmHost,		0, 0, NULL,
-        "homedir",      bp_Homedir,          	0, 0, NULL,
-        "defaultfile",  bp_DefaultFile,      	0, 0, NULL,
-	"logfile",	bp_logFile,		0, 0, NULL,
-	"logscreen",	bp_logScreen,		0, 0, NULL,
-        NULL,       NULL,                 0, 0, NULL
+	{ "",		bp_donothing,		0, 0, NULL },
+	{ "start", 	bp_Start,		0, 0, NULL },
+	{ "stop",		bp_Stop,	0, 0, NULL },
+	{ "dns",		bp_DomainNS,	0, 0, NULL },
+	{ "dynip",	bp_DynamicRange,	0, 0, NULL },
+	{ "host",		bp_Host,	0, 0, NULL },
+	{ "rmhost",	bp_rmHost,		0, 0, NULL },
+	{ "homedir",	bp_Homedir,		0, 0, NULL },
+	{ "defaultfile",	bp_DefaultFile,	0, 0, NULL },
+	{ "logfile",	bp_logFile,		0, 0, NULL },
+	{ "logscreen",	bp_logScreen,		0, 0, NULL },
+	{ NULL,		NULL,			0, 0, NULL }
 };
 
 

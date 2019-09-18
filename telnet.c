@@ -125,7 +125,6 @@ struct telnet *tn;
 	struct session *sp;
 	char *cp;
 	kFILE *network;
-	char buf[kBUFSIZ];
 
 	sp = tn->session;
 	network = sp->network;
@@ -171,7 +170,8 @@ struct telnet *tn;
 			break;
 		}
 	}
-quit:	/* A close was received from the remote host.
+
+	/* A close was received from the remote host.
 	 * Notify the user, kill the output task and wait for a response
 	 * from the user before freeing the session.
 	 */

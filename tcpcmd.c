@@ -34,17 +34,17 @@ static void tcprepstat(int interval,void *p1,void *p2);
 
 /* TCP subcommand table */
 static struct cmds Tcpcmds[] = {
-	"irtt",		doirtt,		0, 0,	NULL,
-	"kick",		dotcpkick,	0, 2,	"tcp kick <tcb>",
-	"mss",		domss,		0, 0,	NULL,
-	"reset",	dotcpreset,	0, 2,	"tcp reset <tcb>",
-	"rtt",		dortt,		0, 3,	"tcp rtt <tcb> <val>",
-	"status",	dotcpstat,	0, 0,	"tcp stat <tcb> [<interval>]",
-	"syndata",	dosyndata,	0, 0,	NULL,
-	"timestamps",	dotimestamps,	0, 0,   NULL,
-	"trace",	dotcptr,	0, 0,	NULL,
-	"window",	dowindow,	0, 0,	NULL,
-	NULL,
+	{ "irtt",	doirtt,		0, 0,	NULL },
+	{ "kick",	dotcpkick,	0, 2,	"tcp kick <tcb>" },
+	{ "mss",	domss,		0, 0,	NULL },
+	{ "reset",	dotcpreset,	0, 2,	"tcp reset <tcb>" },
+	{ "rtt",	dortt,		0, 3,	"tcp rtt <tcb> <val>" },
+	{ "status",	dotcpstat,	0, 0,	"tcp stat <tcb> [<interval>]" },
+	{ "syndata",	dosyndata,	0, 0,	NULL },
+	{ "timestamps",	dotimestamps,	0, 0,   NULL },
+	{ "trace",	dotcptr,	0, 0,	NULL },
+	{ "window",	dowindow,	0, 0,	NULL },
+	{ NULL }
 };
 int
 dotcp(argc,argv,p)

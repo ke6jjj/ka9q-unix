@@ -89,7 +89,6 @@ void *parg2,		/* Generic pointer argument #2 (session ptr) */
 int freeargs		/* If set, free arg list on parg1 at termination */
 ){
 	struct proc *pp;
-	int i;
 
 	/* Create process descriptor */
 	pp = (struct proc *)callocw(1,sizeof(struct proc));

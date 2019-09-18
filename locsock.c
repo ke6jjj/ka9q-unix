@@ -134,6 +134,7 @@ so_lod_qlen(struct usock *up,int rtx)
 		len = len_q(up->cb.local->q);
 		break;
 	case 1:
+		len = -1;
 		if(up->cb.local->peer != NULL)
 			len = len_q(up->cb.local->peer->cb.local->q);
 		break;
@@ -150,6 +151,7 @@ so_los_qlen(struct usock *up,int rtx)
 		len = len_p(up->cb.local->q);
 		break;
 	case 1:
+		len = -1;
 		if(up->cb.local->peer != NULL)
 			len = len_p(up->cb.local->peer->cb.local->q);
 		break;

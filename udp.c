@@ -16,11 +16,11 @@
 static struct udp_cb *lookup_udp(struct ksocket *socket);
 
 struct mib_entry Udp_mib[] = {
-	"",			0,
-	"udpInDatagrams",	0,
-	"udpNoPorts",		0,
-	"udpInErrors",		0,
-	"udpOutDatagrams",	0,
+	{ "",			{ 0 } },
+	{ "udpInDatagrams",	{ 0 } },
+	{ "udpNoPorts",		{ 0 } },
+	{ "udpInErrors",	{ 0 } },
+	{ "udpOutDatagrams",	{ 0 } },
 };
 
 /* UDP control structures list */

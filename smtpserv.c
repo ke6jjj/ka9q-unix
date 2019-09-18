@@ -317,7 +317,9 @@ struct smtpsv *mp;
 	time_t t;
 	kFILE *network;
 	kFILE *data;
+#ifdef	MSDOS
 	char *cp;
+#endif
 
 	network = mp->network;
 	data = mp->data;

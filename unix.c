@@ -40,8 +40,6 @@
 void
 ioinit(int hinit)
 {
-	int i;
-	short fcolor, bcolor;
 
 	/* Initialize random number generator */
 	srandomdev();

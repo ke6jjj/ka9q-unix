@@ -80,7 +80,6 @@ main(int argc,char *argv[])
 	int c;
 	char cmdbuf[256];
 	long hinit = 102400;
-	unsigned chunk;
 
 	StartTime = time(&StartTime);
 

@@ -125,23 +125,23 @@ static struct rr *resolver(struct rr *rrlp);
  **/
 
 static struct cmds Dcmds[] = {
-	"addserver",	dodnsadd,	0, 2, "add <hostid>",
-	"dropserver",	dodnsdrop,	0, 2, "drop <hostid>",
-	"list",		dodnslist,	0, 0, NULL,
-	"query",	dodnsquery,   512, 2, "query <hostid>",
-	"retry",	dodnsretry,	0, 0, NULL,
-	"suffix",	dosuffix,	0, 0, NULL,
-	"trace",	dodnstrace,	0, 0, NULL,
-	"cache",	docache,	0, 0, NULL,
-	NULL,
+	{ "addserver",	dodnsadd,	0, 2, "add <hostid>" },
+	{ "dropserver",	dodnsdrop,	0, 2, "drop <hostid>" },
+	{ "list",	dodnslist,	0, 0, NULL },
+	{ "query",	dodnsquery,	512, 2, "query <hostid>" },
+	{ "retry",	dodnsretry,	0, 0, NULL },
+	{ "suffix",	dosuffix,	0, 0, NULL },
+	{ "trace",	dodnstrace,	0, 0, NULL },
+	{ "cache",	docache,	0, 0, NULL },
+	{ NULL },
 };
 
 static struct cmds Dcachecmds[] = {
-	"clean",	docacheclean,	0, 0, NULL,
-	"list",		docachelist,  512, 0, NULL,
-	"size",		docachesize,	0, 0, NULL,
-	"wait",		docachewait,	0, 0, NULL,
-	NULL,
+	{ "clean",	docacheclean,	0, 0, NULL },
+	{ "list",	docachelist,  512, 0, NULL },
+	{ "size",	docachesize,	0, 0, NULL },
+	{ "wait",	docachewait,	0, 0, NULL },
+	{ NULL },
 };
 
 int

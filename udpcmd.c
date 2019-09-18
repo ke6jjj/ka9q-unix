@@ -15,8 +15,8 @@
 static int doudpstat(int argc,char *argv[],void *p);
 
 static struct cmds Udpcmds[] = {
-	"status",	doudpstat,	0, 0,	NULL,
-	NULL,
+	{ "status",	doudpstat,	0, 0,	NULL },
+	{ NULL },
 };
 int
 doudp(argc,argv,p)

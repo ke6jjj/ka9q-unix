@@ -131,23 +131,23 @@ static struct fsm_constant_s ipcp_constants = {
 
 /* "ppp <iface> ipcp" subcommands */
 static struct cmds IPcpcmds[] = {
-	"close",	doppp_close,	0,	0,	NULL,
-	"listen",	doppp_passive,	0,	0,	NULL,
-	"local",	doipcp_local,	0,	0,	NULL,
-	"open",		doipcp_open,	0,	0,	NULL,
-	"pool",		doipcp_pool,	0,	0,	NULL,
-	"remote",	doipcp_remote,	0,	0,	NULL,
-	"timeout",	doppp_timeout,	0,	0,	NULL,
-	"try",		doppp_try,	0,	0,	NULL,
-	NULL,
+	{ "close",	doppp_close,	0,	0,	NULL },
+	{ "listen",	doppp_passive,	0,	0,	NULL },
+	{ "local",	doipcp_local,	0,	0,	NULL },
+	{ "open",	doipcp_open,	0,	0,	NULL },
+	{ "pool",	doipcp_pool,	0,	0,	NULL },
+	{ "remote",	doipcp_remote,	0,	0,	NULL },
+	{ "timeout",	doppp_timeout,	0,	0,	NULL },
+	{ "try",	doppp_try,	0,	0,	NULL },
+	{ NULL },
 };
 
 /* "ppp <iface> ipcp {local | remote}" subcommands */
 static struct cmds IPcpside_cmds[] = {
-	"address",	doipcp_address,	0,	0,	NULL,
-	"compress",	doipcp_compress,0,	0,	NULL,
-	"default",	doipcp_default,	0,	0,	NULL,
-	NULL,
+	{ "address",	doipcp_address,	0,	0,	NULL },
+	{ "compress",	doipcp_compress,0,	0,	NULL },
+	{ "default",	doipcp_default,	0,	0,	NULL },
+	{ NULL },
 };
 
 

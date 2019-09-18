@@ -54,14 +54,14 @@ static int geticmp(int s,uint lport,uint fport,
 static int keychar(int c);
 
 static struct cmds Hopcmds[] = {
-	"check",	hopcheck,	2048,	2,	"check <host>",
-	"maxttl",	hopttl,		0,	0,	NULL,
-	"maxwait",	hokwait,	0,	0,	NULL,
-	"queries",	hopnum,		0,	0,	NULL,
+	{ "check",	hopcheck,	2048,	2,	"check <host>" },
+	{ "maxttl",	hopttl,		0,	0,	NULL },
+	{ "maxwait",	hokwait,	0,	0,	NULL },
+	{ "queries",	hopnum,		0,	0,	NULL },
 #ifdef HOPTRACE
-	"trace",	hoptrace,	0,	0,	NULL,
+	{ "trace",	hoptrace,	0,	0,	NULL },
 #endif
-	NULL,
+	{ NULL },
 };
 
 /* attempt to trace route to a remote host */
@@ -301,8 +301,8 @@ void *p;
 				    "(hopcheck) ICMP from %s (%ldms) %s %s",
 				    inet_ntoa(icsource),
 				    cticks,
-				    Icmptypes[ictype],
-				    ((ictype == ICMP_TIME_EXCEED)?Exceed[iccode]:Unreach[iccode]));
+				    Icmptypes[(uint32_t) ictype],
+				    ((ictype == ICMP_TIME_EXCEED)?Exceed[(uint32_t) iccode]:Unreach[(uint32_t) iccode]));
 #endif
 
 			/* Check type of reply */
@@ -365,10 +365,10 @@ done:	kclose(s);
 	} else if ((icsource == rsocket.address)
 		    &&(iccode == ICMP_PORT_UNREACH)) {
 		kprintf("normal (%s %s)\n",
-			Icmptypes[ictype],Unreach[iccode]);
+			Icmptypes[(uint32_t) ictype],Unreach[(uint32_t) iccode]);
 	} else {
 		kprintf("!! %s %s\n",
-			Icmptypes[ictype],Unreach[iccode]);
+			Icmptypes[(uint32_t) ictype],Unreach[(uint32_t) iccode]);
 	}
 #ifdef HOPTRACE
 	if (Hoptrace)

@@ -183,7 +183,6 @@ asy_speed(
 int dev,
 long bps
 ){
-	int i_state;
 	struct asy *asyp;
 	struct termios tc;
 
@@ -220,7 +219,7 @@ int set,
 int32 val
 ){
 	struct asy *ap = &Asy[ifp->dev];
-	int param, bits, setbits, clearbits;
+	int bits, setbits, clearbits;
 
 	switch(cmd){
 	case PARAM_SPEED:
@@ -453,9 +452,6 @@ asy_send(dev,bpp)
 int dev;
 struct mbuf **bpp;
 {
-	struct asy *asyp;
-	int wasempty;
-
 	if(dev < 0 || dev >= ASY_MAX){
 		free_p(bpp);
 		return -1;
