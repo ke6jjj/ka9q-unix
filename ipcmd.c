@@ -29,31 +29,21 @@ static int doiptrace(int argc,char *argv[],void *p);
 static int dumproute(struct route *rp);
 
 static struct cmds Ipcmds[] = {
-	"address",	doipaddr,	0,	0, NULL,
-	"rtimer",	dortimer,	0,	0, NULL,
-	"status",	doipstat,	0,	0, NULL,
-	"trace",	doiptrace,	0,	0, NULL,
-	"ttl",		dottl,		0,	0, NULL,
-	NULL,
+	{ "address",	doipaddr,	0,	0, NULL },
+	{ "rtimer",	dortimer,	0,	0, NULL },
+	{ "status",	doipstat,	0,	0, NULL },
+	{ "trace",	doiptrace,	0,	0, NULL },
+	{ "ttl",	dottl,		0,	0, NULL },
+	{ NULL },
 };
 /* "route" subcommands */
 static struct cmds Rtcmds[] = {
-	"add",		doadd,		0,	3,
-	"route add <dest addr>[/<bits>] <if name> [gateway] [metric]",
-
-	"addprivate",	doadd,		0,	3,
-	"route addprivate <dest addr>[/<bits>] <if name> [gateway] [metric]",
-
-	"drop",		dodrop,		0,	2,
-	"route drop <dest addr>[/<bits>]",
-
-	"flush",	doflush,	0,	0,
-	NULL,
-
-	"lookup",	dolook,		0,	2,
-	"route lookup <dest addr>",
-
-	NULL,
+	{ "add",	doadd,		0,	3, "route add <dest addr>[/<bits>] <if name> [gateway] [metric]" },
+	{ "addprivate",	doadd,		0,	3, "route addprivate <dest addr>[/<bits>] <if name> [gateway] [metric]" },
+	{ "drop",	dodrop,		0,	2, "route drop <dest addr>[/<bits>]" },
+	{ "flush",	doflush,	0,	0, NULL },
+	{ "lookup",	dolook,		0,	2, "route lookup <dest addr>" },
+	{ NULL },
 };
 
 int

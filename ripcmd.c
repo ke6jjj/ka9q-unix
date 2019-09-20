@@ -17,19 +17,15 @@
 #include "commands.h"
 
 struct cmds Ripcmds[] = {
-	"accept",	dodroprefuse,	0,	2,
-		"rip accept <gateway> ",
-	"add",		doripadd,	0,	3,
-		"rip add <dest> <interval> [<flags>]",
-	"drop",		doripdrop,	0,	2,
-		"rip drop <dest>",
-	"merge",	doripmerge,	0,	0,	NULL,
-	"refuse",	doaddrefuse,	0,	2,
-		"rip refuse <gateway>",	
-	"request",	doripreq,	0,	2,	NULL,
-	"status",	doripstat,	0,	0,	NULL,
-	"trace",	doriptrace,	0,	0,	NULL,
-	NULL,
+	{ "accept",	dodroprefuse,	0,	2,	"rip accept <gateway> " },
+	{ "add",	doripadd,	0,	3,	"rip add <dest> <interval> [<flags>]" },
+	{ "drop",	doripdrop,	0,	2,	"rip drop <dest>" },
+	{ "merge",	doripmerge,	0,	0,	NULL },
+	{ "refuse",	doaddrefuse,	0,	2,	"rip refuse <gateway>", },
+	{ "request",	doripreq,	0,	2,	NULL },
+	{ "status",	doripstat,	0,	0,	NULL },
+	{ "trace",	doriptrace,	0,	0,	NULL },
+	{ NULL },
 };
 
 int

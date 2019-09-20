@@ -30,10 +30,10 @@ static int dobasedelay(int,char **,void *);
 static int doperbytedelay(int,char **,void *);
 
 static struct cmds Simcmds[] = {
-	"propdelay",	dopropdelay,	0, 0, NULL,
-	"basedelay",	dobasedelay,	0, 0, NULL,
-	"perbyte",	doperbytedelay,	0, 0, NULL,
-	NULL,
+	{ "propdelay",	dopropdelay,	0, 0, NULL },
+	{ "basedelay",	dobasedelay,	0, 0, NULL },
+	{ "perbyte",	doperbytedelay,	0, 0, NULL },
+	{ NULL },
 };
 
 int

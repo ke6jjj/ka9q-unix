@@ -21,10 +21,10 @@ static int doicmpstat(int argc, char *argv[],void *p);
 static int doicmptr(int argc, char *argv[],void *p);
 
 static struct cmds Icmpcmds[] = {
-	"echo",		doicmpec,	0, 0, NULL,
-	"status",	doicmpstat,	0, 0, NULL,
-	"trace",	doicmptr,	0, 0, NULL,
-	NULL
+	{ "echo",	doicmpec,	0, 0, NULL },
+	{ "status",	doicmpstat,	0, 0, NULL },
+	{ "trace",	doicmptr,	0, 0, NULL },
+	{ NULL },
 };
 
 int Icmp_trace;
