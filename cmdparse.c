@@ -22,22 +22,22 @@ struct boolcmd {
 };
 
 static struct boolcmd Boolcmds[] = {
-	"y",		1,	/* Synonyms for "true" */
-	"yes",		1,
-	"true",		1,
-	"on",		1,
-	"1",		1,
-	"set",		1,
-	"enable",	1,
+	{ "y",		1 },/* Synonyms for "true" */
+	{ "yes",	1 },
+	{ "true",	1 },
+	{ "on",		1 },
+	{ "1",		1 },
+	{ "set",	1 },
+	{ "enable",	1 },
 
-	"n",		0,	/* Synonyms for "false" */
-	"no",		0,
-	"false",	0,
-	"off",		0,
-	"0",		0,
-	"clear",	0,
-	"disable",	0,
-	NULL
+	{ "n",		0, }, /* Synonyms for "false" */
+	{ "no",		0 },
+	{ "false",	0 },
+	{ "off",	0 },
+	{ "0",		0 },
+	{ "clear",	0 },
+	{ "disable",	0 },
+	{ NULL },
 };
 
 static char *stringparse(char *line);
