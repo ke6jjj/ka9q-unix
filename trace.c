@@ -256,6 +256,8 @@ void *p;
 		if((ifp->trfp = kfopen(argv[3],APPEND_TEXT)) == NULL){
 			kprintf("Can't write to %s\n",argv[3]);
 		}
+		/* Make sure its line buffered */
+		ksetvbuf(ifp->trfp,NULL,_kIOLBF,kBUFSIZ);
 	} else if(ifp->trace != 0){
 		/* Create trace session */
 		sp = newsession(Cmdline,ITRACE,1);
