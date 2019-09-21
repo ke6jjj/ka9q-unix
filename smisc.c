@@ -22,10 +22,8 @@
 #include "telnet.h"
 #include "errno.h"
 
-static int chkrpass(struct mbuf *bp);
 static void discserv(int s,void *unused,void *p);
 static void echoserv(int s,void *unused,void *p);
-static void termserv(int s,void *unused,void *p);
 static void termrx(int s,void *p1,void *p2);
 static void tunregister(struct iface *,int);
 static void tregister(struct iface *);
@@ -121,16 +119,16 @@ void *p
 }
 
 /* Fix this to be command from telnet server */
-static void
+void
 termserv(
 int s,
 void *unused,
 void *p
 ){
 	kFILE *network = NULL;
-	kFILE *asy;
+	kFILE *asy = NULL;
 	char *buf = NULL;
-	struct iface *ifp;
+	struct iface *ifp = NULL;
 	struct route *rp;
 	struct ksockaddr_in fsocket;
 	struct proc *rxproc = NULL;
@@ -206,13 +204,17 @@ void *p
 	kfblock(network,PART_READ);
 	while((i = kfread(buf,1,kBUFSIZ,network)) > 0)
 		kfwrite(buf,1,i,asy);
-quit:	kfclose(network);
-	kfclose(asy);
+quit:	
+	if (network != NULL)
+		kfclose(network);
+	if (asy != NULL)
+		kfclose(asy);
 	killproc(&rxproc);
 	logmsg(s,"close term");
 	free(buf);
 	close_s(s);
-	tunregister(ifp,0);
+	if (ifp != NULL)
+		tunregister(ifp,0);
 }
 void
 termrx(int s,void *p1,void *p2)
