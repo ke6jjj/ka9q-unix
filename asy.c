@@ -88,7 +88,6 @@ void *p;
 	struct asymode *ap;
 	char *cp;
 	struct asy *asyp;
-	int i,n;
 #ifndef UNIX
 	char *basestr, *irqstr;
 #else

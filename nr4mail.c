@@ -71,12 +71,12 @@ static int dombnrconnect(int argc,char *argv[],void *p);
 static char mbnrid[80];
 
 static struct cmds Mbnrcmds[] = {
-	"",		donothing,	0, 0, NULL,
-	"connect",	dombnrconnect,	0, 0, NULL,
-	"ident",	dombnrident,	0, 0, NULL,
-	"nodes",	dombnrnodes,	0, 0, NULL,
-	"users",	dombox,		0, 0, NULL,
-	NULL,	NULL,		0, 0, NULL,
+	{ "",		donothing,	0, 0, NULL },
+	{ "connect",	dombnrconnect,	0, 0, NULL },
+	{ "ident",	dombnrident,	0, 0, NULL },
+	{ "nodes",	dombnrnodes,	0, 0, NULL },
+	{ "users",	dombox,		0, 0, NULL },
+	{ NULL,	NULL,		0, 0, NULL },
 };
 
 int

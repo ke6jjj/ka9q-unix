@@ -80,10 +80,10 @@ static struct fsm_constant_s pap_constants = {
 
 /* "ppp <iface> pap" subcommands */
 static struct cmds Papcmds[] = {
-	"timeout",	doppp_timeout,	0,	0,	NULL,
-	"try",		doppp_try,	0,	0,	NULL,
-	"user",		dopap_user,	0,	0,	NULL,
-	NULL,
+	{ "timeout",	doppp_timeout,	0,	0,	NULL },
+	{ "try",	doppp_try,	0,	0,	NULL },
+	{ "user",	dopap_user,	0,	0,	NULL },
+	{ NULL },
 };
 
 

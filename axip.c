@@ -168,8 +168,6 @@ axudp_attach(int argc, char *argv[], void *p)
 	struct ksockaddr_in addr;
 	size_t i;
 	int port, flags;
-	int32 ip_addr;
-	void *dummy;
 	char *cp;
 
 	for (i=4,flags=0;i<argc;i++){
@@ -361,7 +359,6 @@ axudp_stop(struct iface *iface)
 {
 	axudp_dev *dev;
 	axudp_map_entry *e;
-	void *dummy;
 	size_t i;
 
 	dev = &Axudp_dev[iface->dev];

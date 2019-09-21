@@ -755,7 +755,6 @@ dchar(
 struct display *dp,
 uint8 c
 ){
-	uint8 *cp;
 	int row, col;
 
 	switch(c){
