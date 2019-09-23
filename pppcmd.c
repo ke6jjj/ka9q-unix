@@ -40,20 +40,20 @@ static int dotry_terminate(int argc, char *argv[], void *p);
 
 /* "ppp" subcommands */
 static struct cmds Pppcmds[] = {
-	"ipcp",		doppp_ipcp,	0,	0,	NULL,
-	"lcp",		doppp_lcp,	0,	0,	NULL,
-	"pap",		doppp_pap,	0,	0,	NULL,
-	"quick",	doppp_quick,	0,	0,	NULL,
-	"trace",	doppp_trace,	0,	0,	NULL,
-	NULL,
+	{ "ipcp",	doppp_ipcp,	0,	0,	NULL },
+	{ "lcp",	doppp_lcp,	0,	0,	NULL },
+	{ "pap",	doppp_pap,	0,	0,	NULL },
+	{ "quick",	doppp_quick,	0,	0,	NULL },
+	{ "trace",	doppp_trace,	0,	0,	NULL },
+	{ NULL },
 };
 
 /* "ppp <iface> <ncp> try" subcommands */
 static struct cmds PppTrycmds[] = {
-	"configure",	dotry_req,	0,	0,	NULL,
-	"failure",	dotry_nak,	0,	0,	NULL,
-	"terminate",	dotry_terminate,	0,	0,	NULL,
-	NULL,
+	{ "configure",	dotry_req,	0,	0,	NULL },
+	{ "failure",	dotry_nak,	0,	0,	NULL },
+	{ "terminate",	dotry_terminate,	0,	0,	NULL },
+	{ NULL },
 };
 
 static char *PPPStatus[] = {

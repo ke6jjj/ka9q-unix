@@ -118,16 +118,16 @@ struct iface Encap = {
 char Noipaddr[] = "IP address field missing, and ip address not set\n";
 
 struct cmds Ifcmds[] = {
-	"broadcast",		ifbroad,	0,	2,	NULL,
-	"encapsulation",	ifencap,	0,	2,	NULL,
-	"forward",		ifforw,		0,	2,	NULL,
-	"ipaddress",		ifipaddr,	0,	2,	NULL,
-	"linkaddress",		iflinkadr,	0,	2,	NULL,
-	"mtu",			ifmtu,		0,	2,	NULL,
-	"netmask",		ifnetmsk,	0,	2,	NULL,
-	"txqlen",		iftxqlen,	0,	2,	NULL,
-	"rxbuf",		ifrxbuf,	0,	2,	NULL,
-	NULL,
+	{ "broadcast",		ifbroad,	0,	2,	NULL },
+	{ "encapsulation",	ifencap,	0,	2,	NULL },
+	{ "forward",		ifforw,		0,	2,	NULL },
+	{ "ipaddress",		ifipaddr,	0,	2,	NULL },
+	{ "linkaddress",	iflinkadr,	0,	2,	NULL },
+	{ "mtu",		ifmtu,		0,	2,	NULL },
+	{ "netmask",		ifnetmsk,	0,	2,	NULL },
+	{ "txqlen",		iftxqlen,	0,	2,	NULL },
+	{ "rxbuf",		ifrxbuf,	0,	2,	NULL },
+	{ NULL },
 };
 /*
  * General purpose interface transmit task, one for each device that can

@@ -77,18 +77,18 @@ static int dotimeout(int argc,char *argv[],void *p);
 
 /* mbox subcommand table */
 static struct cmds Mbtab[] = {
-	"attend",	doattend,	0, 0, NULL,
+	{ "attend",	doattend,	0, 0, NULL },
 #ifdef	AX25
-	"kick",		dombkick,	0, 0, NULL,
+	{ "kick",		dombkick,	0, 0, NULL },
 #endif
-	"maxmsg",	domaxmsg,	0, 0, NULL,
-	"motd",		domotd,		0, 0, NULL,
-	"status",	domboxdisplay,	0, 0, NULL,
+	{ "maxmsg",	domaxmsg,	0, 0, NULL },
+	{ "motd",	domotd,		0, 0, NULL },
+	{ "status",	domboxdisplay,	0, 0, NULL },
 #ifdef	AX25
-	"timer",	dombtimer,	0, 0, NULL,
+	{ "timer",	dombtimer,	0, 0, NULL },
 #endif
-	"tiptimeout",	dotimeout,	0, 0, NULL,
-	NULL,
+	{ "tiptimeout",	dotimeout,	0, 0, NULL },
+	{ NULL },
 };
 
 
@@ -429,42 +429,42 @@ static int msgidcheck(char *string);
 static int uuencode(kFILE *infile,kFILE *outfile,char *infilename);
 
 static struct cmds Mbcmds[] = {
-	"",		doreadnext,	0, 0, NULL,
-	"area",		doarea,		0, 0, NULL,
-	"send",		dosend,		0, 0, NULL,
-	"read",		doreadmsg,	0, 2, "R numbers",
-	"verbose",	doreadmsg,	0, 2, "V numbers",
+	{ "",		doreadnext,	0, 0, NULL },
+	{ "area",	doarea,		0, 0, NULL },
+	{ "send",	dosend,		0, 0, NULL },
+	{ "read",	doreadmsg,	0, 2, "R numbers" },
+	{ "verbose",	doreadmsg,	0, 2, "V numbers" },
 #ifdef	AX25
-	"jheard",	doaxheard,	0, 0, NULL,
+	{ "jheard",	doaxheard,	0, 0, NULL },
 #endif
-	"kill",		dodelmsg,	0, 2, "K numbers",
-	"list",		dolistnotes,	0, 0, NULL,
-	"escape",	dombescape,	0, 0, NULL,
-	"download",	dodownload,	0, 2, "D[U] filename",
-	"upload",	dombupload,	0, 2, "U filename",
-	"what",		dowhat,		0, 0, NULL,
-	"zap",		dozap,		0, 2, "Z filename",
+	{ "kill",	dodelmsg,	0, 2, "K numbers" },
+	{ "list",	dolistnotes,	0, 0, NULL },
+	{ "escape",	dombescape,	0, 0, NULL },
+	{ "download",	dodownload,	0, 2, "D[U] filename" },
+	{ "upload",	dombupload,	0, 2, "U filename" },
+	{ "what",	dowhat,		0, 0, NULL },
+	{ "zap",	dozap,		0, 2, "Z filename" },
 #ifdef AX25
-	"gateway",	dogateway,	0, 3, "G interface callsigns",
+	{ "gateway",	dogateway,	0, 3, "G interface callsigns" },
 #endif
-	"telnet",	dombtelnet,	0, 2, "T hostname",
-	"finger",	dombfinger,	0, 0, NULL,
+	{ "telnet",	dombtelnet,	0, 2, "T hostname" },
+	{ "finger",	dombfinger,	0, 0, NULL },
 #ifdef	NETROM
-	"netrom",	dombnetrom,	0, 0, NULL,
+	{ "netrom",	dombnetrom,	0, 0, NULL },
 #endif
-	"chat",		dochat,		0, 0, NULL,
-	"bye",		domboxbye,	0, 0, NULL,
-	"help",		dombhelp,	0, 0, NULL,
-	"info",		dombhelp,	0, 0, NULL,
-	"?",		dombhelp,	0, 0, NULL,
-	"[",		dosid,		0, 0, NULL,
+	{ "chat",	dochat,		0, 0, NULL },
+	{ "bye",	domboxbye,	0, 0, NULL },
+	{ "help",	dombhelp,	0, 0, NULL },
+	{ "info",	dombhelp,	0, 0, NULL },
+	{ "?",		dombhelp,	0, 0, NULL },
+	{ "[",		dosid,		0, 0, NULL },
 #ifdef	AX25
-	"f>",		dorevfwd,	0, 0, NULL,
+	{ "f>",		dorevfwd,	0, 0, NULL },
 #endif
-	"@",		dosysop,	0, 0, NULL,
-	"***",		dostars,	0, 0, NULL,
-	"login", 	dologin,	0, 0, NULL,   
-	NULL,	NULL,		0, 0, "Huh?",
+	{ "@",		dosysop,	0, 0, NULL },
+	{ "***",	dostars,	0, 0, NULL },
+	{ "login", 	dologin,	0, 0, NULL },
+	{ NULL,	NULL,	0, 0, "Huh?" },
 };
 
 /* "twocmds" defines the MBL/RLI two-letter commands, eg. "SB", "SP" and so on.

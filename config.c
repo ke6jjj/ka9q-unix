@@ -97,299 +97,289 @@ int32 Sfsize = 1000;	/* Default size of session scrollback file */
 /* Command lookup and branch tables */
 struct cmds Cmds[] = {
 	/* The "go" command must be first */
-	"",		go,		0, 0, NULL,
+	{ "",		go,		0, 0, NULL },
 #if	(defined(MAC) && defined(APPLETALK))
-	"applestat",	doatstat,	0, 0, NULL,
+	{ "applestat",	doatstat,	0, 0, NULL },
 #endif
 #if	(defined(AX25) || defined(ETHER) || defined(APPLETALK))
-	"arp",		doarp,		0, 0, NULL,
+	{ "arp",	doarp,		0, 0, NULL },
 #endif
 #ifdef	ASY
-	"asystat",	doasystat,	0, 0, NULL,
+	{ "asystat",	doasystat,	0, 0, NULL },
 #endif
-	"attach",	doattach,	0, 2,
-		"attach <hardware> <hw specific options>",
+	{ "attach",	doattach,	0, 2, "attach <hardware> <hw specific options>" },
 #ifdef	AX25
-	"ax25",		doax25,		0, 0, NULL,
+	{ "ax25",	doax25,		0, 0, NULL },
 #endif
 #ifdef	AXIP
-	"axudp",	doaxudp,	0, 2, "axudp <interface> <subcmd> ...",
+	{ "axudp",	doaxudp,	0, 2, "axudp <interface> <subcmd> ..." },
 #endif
 #ifdef	BOOTP
-	"bootp",	dobootp,	0, 0, NULL,
-	"bootpd",	bootpdcmd,	0, 0, NULL,
+	{ "bootp",	dobootp,	0, 0, NULL },
+	{ "bootpd",	bootpdcmd,	0, 0, NULL },
 #endif
 /* This one is out of alpabetical order to allow abbreviation to "c" */
 #ifdef	AX25
-	"connect",	doconnect,	1024, 3,
-	"connect <interface> <callsign>",
+	{ "connect",	doconnect,	1024, 3, "connect <interface> <callsign>" },
 #endif
 #if	!defined(AMIGA)
-	"cd",		docd,		0, 0, NULL,
+	{ "cd",		docd,		0, 0, NULL },
 #endif
-	"close",	doclose,	0, 0, NULL,
+	{ "close",	doclose,	0, 0, NULL },
 /* This one is out of alpabetical order to allow abbreviation to "d" */
-	"disconnect",	doclose,	0, 0, NULL,
-	"delete",	dodelete,	0, 2, "delete <file>", 
-	"detach",	dodetach,	0, 2, "detach <interface>",
-	"debug",	dodebug,	0, 1, "debug [on|off]",
+	{ "disconnect",	doclose,	0, 0, NULL },
+	{ "delete",	dodelete,	0, 2, "delete <file>" },
+	{ "detach",	dodetach,	0, 2, "detach <interface>" },
+	{ "debug",	dodebug,	0, 1, "debug [on|off]" },
 #ifdef	DIALER
-	"dialer",	dodialer,	0, 2,
-		 "dialer <iface> <timeout> [device-dependent args]",
+	{ "dialer",	dodialer,	0, 2, "dialer <iface> <timeout> [device-dependent args]" },
 #endif
 #ifndef	AMIGA
-	"dir",		dodir,		0, 0, NULL, /* note sequence */
+	{ "dir",	dodir,		0, 0, NULL },/* note sequence */
 #endif
-	"domain",	dodomain,	0, 0, NULL,
+	{ "domain",	dodomain,	0, 0, NULL },
 #ifdef	DRSI
-	"drsistat",	dodrstat,	0, 0, NULL,
+	{ "drsistat",	dodrstat,	0, 0, NULL },
 #endif
 #ifdef	EAGLE
-	"eaglestat",	doegstat,	0, 0, NULL,
+	{ "eaglestat",	doegstat,	0, 0, NULL },
 #endif
-	"echo",		doecho,		0, 0, NULL,
-	"eol",		doeol,		0, 0, NULL,
+	{ "echo",	doecho,		0, 0, NULL },
+	{ "eol",	doeol,		0, 0, NULL },
 #if	!defined(MSDOS) && !defined(UNIX)
-	"escape",	doescape,	0, 0, NULL,
+	{ "escape",	doescape,	0, 0, NULL },
 #endif
-	"exit",		doexit,		0, 0, NULL,
-	"files",	dofiles,	0, 0, NULL,
-	"finger",	dofinger,	1024, 2, "finger name@host",
-	"ftp",		doftp,		2048, 2, "ftp <address>",
+	{ "exit",	doexit,		0, 0, NULL },
+	{ "files",	dofiles,	0, 0, NULL },
+	{ "finger",	dofinger,	1024, 2, "finger name@host" },
+	{ "ftp",	doftp,		2048, 2, "ftp <address>" },
 #ifdef HAPN
-	"hapnstat",	dohapnstat,	0, 0, NULL,
+	{ "hapnstat",	dohapnstat,	0, 0, NULL },
 #endif
-	"help",		dohelp,		0, 0, NULL,
+	{ "help",	dohelp,		0, 0, NULL },
 #ifdef	HOPCHECK
-	"hop",		dohop,		0, 0, NULL,
+	{ "hop",	dohop,		0, 0, NULL },
 #endif
-	"hostname",	dohostname,	0, 0, NULL,
+	{ "hostname",	dohostname,	0, 0, NULL },
 #ifdef	HS
-	"hs",		dohs,		0, 0, NULL,
+	{ "hs",		dohs,		0, 0, NULL },
 #endif
-	"icmp",		doicmp,		0, 0, NULL,
-	"ifconfig",	doifconfig,	0, 0, NULL,
-	"ip",		doip,		0, 0, NULL,
-	"kick",		dokick,		0, 0, NULL,
+	{ "icmp",	doicmp,		0, 0, NULL },
+	{ "ifconfig",	doifconfig,	0, 0, NULL },
+	{ "ip",		doip,		0, 0, NULL },
+	{ "kick",	dokick,		0, 0, NULL },
 #ifdef	KSP
-	"ksp",		doksp,		0, 0, NULL,
+	{ "ksp",	doksp,		0, 0, NULL },
 #endif
-	"log",		dolog,		0, 0, NULL,
+	{ "log",	dolog,		0, 0, NULL },
 #ifdef	LTERM
-	"lterm",	dolterm,	512, 3, "lterm <iface> <address> [<port>]",
+	{ "lterm",	dolterm,	512, 3, "lterm <iface> <address> [<port>]" },
 #endif
 #ifdef	MAILBOX
-	"mbox",		dombox,		0, 0, NULL,
+	{ "mbox",	dombox,		0, 0, NULL },
 #endif
 #ifndef	UNIX
-	"memory",	domem,		0, 0, NULL,
+	{ "memory",	domem,		0, 0, NULL },
 #endif
-	"mkdir",	domkd,		0, 2, "mkdir <directory>",
+	{ "mkdir",	domkd,		0, 2, "mkdir <directory>" },
 #ifndef UNIX /* Not yet */
-	"more",		doview,		0, 2, "more <filename>",
+	{ "more",	doview,		0, 2, "more <filename>" },
 #endif
 #ifdef	NETROM
-	"netrom",	donetrom,	0, 0, NULL,
+	{ "netrom",	donetrom,	0, 0, NULL },
 #endif	/* NETROM */
 #ifdef	NNTP
-	"nntp",		donntp,		0, 0, NULL,
+	{ "nntp",	donntp,		0, 0, NULL },
 #endif	/* NNTP */
 #ifdef	NRS
-	"nrstat",	donrstat,	0, 0, NULL,
+	{ "nrstat",	donrstat,	0, 0, NULL },
 #endif	/* NRS */
 #ifndef UNIX
-	"page",		dopage,		0, 2, "page <command> [args...]",
+	{ "page",	dopage,		0, 2, "page <command> [args...]" },
 #endif
-	"param",	doparam,	0, 2, "param <interface>",
-	"ping",		doping,		512, 2,
-	"ping <hostid> [<length> [<interval> [incflag]]]",
+	{ "param",	doparam,	0, 2, "param <interface>" },
+	{ "ping",	doping,		512, 2, "ping <hostid> [<length> [<interval> [incflag]]]" },
 #ifdef	PI
-	"pistatus",	dopistat,	0, 0, NULL,
+	{ "pistatus",	dopistat,	0, 0, NULL },
 #endif
 #ifdef POP
-	"pop",		dopop,		0, 0, NULL,
+	{ "pop",	dopop,		0, 0, NULL },
 #endif
 #ifdef PPP
-	"ppp",		doppp_commands,	0, 0, NULL,
+	{ "ppp",	doppp_commands,	0, 0, NULL },
 #endif
-	"ps",		ps,		0, 0, NULL,
+	{ "ps",		ps,		0, 0, NULL },
 #if	!defined(AMIGA)
-	"pwd",		docd,		0, 0, NULL,
+	{ "pwd",	docd,		0, 0, NULL },
 #endif
-	"record",	dorecord,	0, 0, NULL,
-	"rename",	dorename,	0, 3, "rename <oldfile> <newfile>",
-	"repeat",	dorepeat,	1024, 3, "repeat <interval> <command> [args...]",
-	"reset",	doreset,	0, 0, NULL,
-	"reboot",	doreboot,	0, 0, NULL,
+	{ "record",	dorecord,	0, 0, NULL },
+	{ "rename",	dorename,	0, 3, "rename <oldfile> <newfile>" },
+	{ "repeat",	dorepeat,	1024, 3, "repeat <interval> <command> [args...]" },
+	{ "reset",	doreset,	0, 0, NULL },
+	{ "reboot",	doreboot,	0, 0, NULL },
 #ifdef	RIP
-	"rip",		dorip,		0, 0, NULL,
+	{ "rip",	dorip,		0, 0, NULL },
 #endif
-	"rmdir",	dormd,		0, 2, "rmdir <directory>",
-	"route",	doroute,	0, 0, NULL,
-	"session",	dosession,	0, 0, NULL,
+	{ "rmdir",	dormd,		0, 2, "rmdir <directory>" },
+	{ "route",	doroute,	0, 0, NULL },
+	{ "session",	dosession,	0, 0, NULL },
 #ifdef	IPSEC
-	"secure",	dosec,		0, 0, "secure [[add|delete] <host>]",
+	{ "secure",	dosec,		0, 0, "secure [[add|delete] <host>]" },
 #endif
-	"scrollback",	dosfsize,	0, 0, NULL,
+	{ "scrollback",	dosfsize,	0, 0, NULL },
 #ifdef	SCC
-	"sccstat",	dosccstat,	0, 0, NULL,
+	{ "sccstat",	dosccstat,	0, 0, NULL },
 #endif
-	"sim",		dosim,		0, 0, NULL,
+	{ "sim",	dosim,		0, 0, NULL },
 #if	defined(SMTP)
-	"smtp",		dosmtp,		0, 0, NULL,
+	{ "smtp",	dosmtp,		0, 0, NULL },
 #endif
-	"socket",	dosock,		0, 0, NULL,
+	{ "socket",	dosock,		0, 0, NULL },
 #ifdef	SOUND
-	"sound",	dosound,	0, 2,
-		"sound attach|detach|listen ...",
+	{ "sound",	dosound,	0, 2, "sound attach|detach|listen ..." },
 
 #endif
 #ifdef	SERVERS
-	"start",	dostart,	0, 2, "start <servername>",
-	"stop",		dostop,		0, 2, "stop <servername>",
+	{ "start",	dostart,	0, 2, "start <servername>" },
+	{ "stop",	dostop,		0, 2, "stop <servername>" },
 #endif
-	"tcp",		dotcp,		0, 0, NULL,
-	"telnet",	dotelnet,	1024, 2, "telnet <address>",
+	{ "tcp",	dotcp,		0, 0, NULL },
+	{ "telnet",	dotelnet,	1024, 2, "telnet <address>" },
 #ifdef	notdef
-	"test",		dotest,		1024, 0, NULL,
+	{ "test",	dotest,		1024, 0, NULL },
 #endif
-	"tip",		dotip,		256, 2, "tip <iface>",
-	"topt",		dotopt,		0, 0, NULL,
+	{ "tip",	dotip,		256, 2, "tip <iface>" },
+	{ "topt",	dotopt,		0, 0, NULL },
 #ifdef	TRACE
-	"trace",	dotrace,	512, 0, NULL,
+	{ "trace",	dotrace,	512, 0, NULL },
 #endif
-	"udp",		doudp,		0, 0, NULL,
-	"upload",	doupload,	0, 0, NULL,
+	{ "udp",	doudp,		0, 0, NULL },
+	{ "upload",	doupload,	0, 0, NULL },
 #ifndef UNIX /* not yet */
-	"view",		doview,		0, 2, "view <filename>",
+	{ "view",	doview,		0, 2, "view <filename>" },
 #endif
-	"wipe",		dowipe,		0, 0, NULL,
-	"?",		dohelp,		0, 0, NULL,
-	NULL,	NULL,		0, 0,
-		"Unknown command; type \"?\" for list",
+	{ "wipe",	dowipe,		0, 0, NULL },
+	{ "?",		dohelp,		0, 0, NULL },
+	{ NULL,	NULL,	0, 0, "Unknown command; type \"?\" for list" },
 };
 /* Remote command lookup and branch tables */
 struct cmds Remcmds[] = {
-	"",		donothing,	0, 0, NULL,
+	{ "",		donothing,	0, 0, NULL },
 #if	(defined(MAC) && defined(APPLETALK))
-	"applestat",	doatstat,	0, 0, NULL,
+	{ "applestat",	doatstat,	0, 0, NULL },
 #endif
 #if	(defined(AX25) || defined(ETHER) || defined(APPLETALK))
-	"arp",		doarp,		0, 0, NULL,
+	{ "arp",	doarp,		0, 0, NULL },
 #endif
 #ifdef	ASY
-	"asystat",	doasystat,	0, 0, NULL,
+	{ "asystat",	doasystat,	0, 0, NULL },
 #endif
-	"attach",	doattach,	0, 2,
-		"attach <hardware> <hw specific options>",
+	{ "attach",	doattach,	0, 2, "attach <hardware> <hw specific options>" },
 #ifdef	AX25
-	"ax25",		doax25,		0, 0, NULL,
+	{ "ax25",	doax25,		0, 0, NULL },
 #endif
 #ifdef	AXIP
-	"axudp",	doaxudp,	0, 2, "axudp <interface> <subcmd> ...",
+	{ "axudp",	doaxudp,	0, 2, "axudp <interface> <subcmd> ..." },
 #endif
 #ifdef	BOOTP
-	"bootp",	dobootp,	0, 0, NULL,
-	"bootpd",	bootpdcmd,	0, 0, NULL,
+	{ "bootp",	dobootp,	0, 0, NULL },
+	{ "bootpd",	bootpdcmd,	0, 0, NULL },
 #endif
 #if	!defined(AMIGA)
-	"cd",		docd,		0, 0, NULL,
+	{ "cd",		docd,		0, 0, NULL },
 #endif
-	"delete",	dodelete,	0, 2, "delete <file>", 
-	"detach",	dodetach,	0, 2, "detach <interface>",
+	{ "delete",	dodelete,	0, 2, "delete <file>" },
+	{ "detach",	dodetach,	0, 2, "detach <interface>" },
 #ifdef	DIALER
-	"dialer",	dodialer,	0, 2,
-		 "dialer <iface> <timeout> [device-dependent args]",
+	{ "dialer",	dodialer,	0, 2, "dialer <iface> <timeout> [device-dependent args]" },
 #endif
 #ifdef	notdef	/* hangs system - must fix this */
 #ifndef	AMIGA
-	"dir",		dodir,		0, 0, NULL, /* note sequence */
+	{ "dir",	dodir,		0, 0, NULL }, /* note sequence */
 #endif
 #endif
-	"domain",	dodomain,	0, 0, NULL,
+	{ "domain",	dodomain,	0, 0, NULL },
 #ifdef	DRSI
-	"drsistat",	dodrstat,	0, 0, NULL,
+	{ "drsistat",	dodrstat,	0, 0, NULL },
 #endif
 #ifdef	EAGLE
-	"eaglestat",	doegstat,	0, 0, NULL,
+	{ "eaglestat",	doegstat,	0, 0, NULL },
 #endif
-	"files",	dofiles,	0, 0, NULL,
+	{ "files",	dofiles,	0, 0, NULL },
 #ifdef HAPN
-	"hapnstat",	dohapnstat,	0, 0, NULL,
+	{ "hapnstat",	dohapnstat,	0, 0, NULL },
 #endif
-	"help",		dorhelp,	0, 0, NULL,
-	"hostname",	dohostname,	0, 0, NULL,
+	{ "help",	dorhelp,	0, 0, NULL },
+	{ "hostname",	dohostname,	0, 0, NULL },
 #ifdef	HS
-	"hs",		dohs,		0, 0, NULL,
+	{ "hs",		dohs,		0, 0, NULL },
 #endif
-	"icmp",		doicmp,		0, 0, NULL,
-	"ifconfig",	doifconfig,	0, 0, NULL,
-	"ip",		doip,		0, 0, NULL,
-	"kick",		dokick,		0, 0, NULL,
+	{ "icmp",	doicmp,		0, 0, NULL },
+	{ "ifconfig",	doifconfig,	0, 0, NULL },
+	{ "ip",		doip,		0, 0, NULL },
+	{ "kick",	dokick,		0, 0, NULL },
 #ifdef	KSP
-	"ksp",		doksp,		0, 0, NULL,
+	{ "ksp",	doksp,		0, 0, NULL },
 #endif
-	"log",		dolog,		0, 0, NULL,
+	{ "log",	dolog,		0, 0, NULL },
 #ifndef	UNIX
-	"memory",	domem,		0, 0, NULL,
+	{ "memory",	domem,		0, 0, NULL },
 #endif
-	"mkdir",	domkd,		0, 2, "mkdir <directory>",
+	{ "mkdir",	domkd,		0, 2, "mkdir <directory>" },
 #ifdef	NETROM
-	"netrom",	donetrom,	0, 0, NULL,
+	{ "netrom",	donetrom,	0, 0, NULL },
 #endif	/* NETROM */
 #ifdef	NNTP
-	"nntp",		donntp,		0, 0, NULL,
+	{ "nntp",	donntp,		0, 0, NULL },
 #endif	/* NNTP */
 #ifdef	NRS
-	"nrstat",	donrstat,	0, 0, NULL,
+	{ "nrstat",	donrstat,	0, 0, NULL },
 #endif	/* NRS */
-	"param",	doparam,	0, 2, "param <interface>",
+	{ "param",	doparam,	0, 2, "param <interface>" },
 #ifdef	PI
-	"pistatus",	dopistat,	0, 0, NULL,
+	{ "pistatus",	dopistat,	0, 0, NULL },
 #endif
 #ifdef POP
-	"pop",		dopop,		0, 0, NULL,
+	{ "pop",	dopop,		0, 0, NULL },
 #endif
 #ifdef PPP
-	"ppp",		doppp_commands,	0, 0, NULL,
+	{ "ppp",	doppp_commands,	0, 0, NULL },
 #endif
-	"ps",		ps,		0, 0, NULL,
+	{ "ps",		ps,		0, 0, NULL },
 #if	!defined(AMIGA)
-	"pwd",		docd,		0, 0, NULL,
+	{ "pwd",	docd,		0, 0, NULL },
 #endif
-	"rename",	dorename,	0, 3, "rename <oldfile> <newfile>",
-	"reset",	doreset,	0, 0, NULL,
-	"reboot",	doreboot,	0, 0, NULL,
+	{ "rename",	dorename,	0, 3, "rename <oldfile> <newfile>" },
+	{ "reset",	doreset,	0, 0, NULL },
+	{ "reboot",	doreboot,	0, 0, NULL },
 #ifdef	RIP
-	"rip",		dorip,		0, 0, NULL,
+	{ "rip",	dorip,		0, 0, NULL },
 #endif
-	"rmdir",	dormd,		0, 2, "rmdir <directory>",
-	"route",	doroute,	0, 0, NULL,
+	{ "rmdir",	dormd,		0, 2, "rmdir <directory>" },
+	{ "route",	doroute,	0, 0, NULL },
 #ifdef	IPSEC
-	"secure",	dosec,		0, 0, "secure [[add|delete] <host>]",
+	{ "secure",	dosec,		0, 0, "secure [[add|delete] <host>]" },
 #endif
 #ifdef	SCC
-	"sccstat",	dosccstat,	0, 0, NULL,
+	{ "sccstat",	dosccstat,	0, 0, NULL },
 #endif
 #if	defined(SMTP)
-	"smtp",		dosmtp,		0, 0, NULL,
+	{ "smtp",	dosmtp,		0, 0, NULL },
 #endif
-	"socket",	dosock,		0, 0, NULL,
+	{ "socket",	dosock,		0, 0, NULL },
 #ifdef	SOUND
-	"sound",	dosound,	0, 2,
-		"sound attach|detach|listen ...",
+	{ "sound",	dosound,	0, 2, "sound attach|detach|listen ..." },
 
 #endif
 #ifdef	SERVERS
-	"start",	dostart,	0, 2, "start <servername>",
-	"stop",		dostop,		0, 2, "stop <servername>",
+	{ "start",	dostart,	0, 2, "start <servername>" },
+	{ "stop",	dostop,		0, 2, "stop <servername>" },
 #endif
-	"tcp",		dotcp,		0, 0, NULL,
-	"udp",		doudp,		0, 0, NULL,
-	"wipe",		dowipe,		0, 0, NULL,
-	"?",		dorhelp,	0, 0, NULL,
-	NULL,	NULL,		0, 0,
-		"Unknown command; type \"?\" for list",
+	{ "tcp",	dotcp,		0, 0, NULL },
+	{ "udp",	doudp,		0, 0, NULL },
+	{ "wipe",	dowipe,		0, 0, NULL },
+	{ "?",		dorhelp,	0, 0, NULL },
+	{ NULL,	NULL,	0, 0, "Unknown command; type \"?\" for list" },
 };
 
 /* List of supported hardware devices */
@@ -397,156 +387,133 @@ struct cmds Attab[] = {
 #if defined(ASY)
 	/* Ordinary PC asynchronous adaptor */
 #if defined(MSDOS)
-	"asy", asy_attach, 0, 8,
-	"attach asy <address> <vector> slip|vjslip|ax25ui|ax25i|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]",
+	{ "asy", asy_attach, 0, 8, "attach asy <address> <vector> slip|vjslip|ax25ui|ax25i|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]" },
 #elif defined(UNIX)
-	"asy", asy_attach, 0, 7,
-	"attach asy <device> slip|vjslip|ax25ui|ax25i|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]",
+	{ "asy", asy_attach, 0, 7, "attach asy <device> slip|vjslip|ax25ui|ax25i|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]" },
 #else
-	"asy", asy_attach, 0, 8,
-	"attach asy <driver> <unit> slip|vjslip|ax25ui|ax25i|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]",
+	{ "asy", asy_attach, 0, 8, "attach asy <driver> <unit> slip|vjslip|ax25ui|ax25i|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]" },
 #endif	/* rest (AMIGA?) */
 #endif	/* ASY */
 #ifdef	PC100
 	/* PACCOMM PC-100 8530 HDLC adaptor */
-	"pc100", pc_attach, 0, 8,
-	"attach pc100 <address> <vector> ax25ui|ax25i <label> <buffers>\
- <mtu> <speed> [ip_addra] [ip_addrb]",
+	{ "pc100", pc_attach, 0, 8,"attach pc100 <address> <vector> ax25ui|ax25i <label> <buffers> <mtu> <speed> [ip_addra] [ip_addrb]" },
 #endif
 #ifdef	DRSI
 	/* DRSI PCPA card in low speed mode */
-	"drsi", dr_attach, 0, 8,
-	"attach drsi <address> <vector> ax25ui|ax25i <label> <bufsize> <mtu>\
-<chan a speed> <chan b speed> [ip addr a] [ip addr b]",
+	{ "drsi", dr_attach, 0, 8, "attach drsi <address> <vector> ax25ui|ax25i <label> <bufsize> <mtu> <chan a speed> <chan b speed> [ip addr a] [ip addr b]" },
 #endif
 #ifdef	EAGLE
 	/* EAGLE RS-232C 8530 HDLC adaptor */
-	"eagle", eg_attach, 0, 8,
-	"attach eagle <address> <vector> ax25ui|ax25i <label> <buffers>\
- <mtu> <speed> [ip_addra] [ip_addrb]",
+	{ "eagle", eg_attach, 0, 8, "attach eagle <address> <vector> ax25ui|ax25i <label> <buffers> <mtu> <speed> [ip_addra] [ip_addrb]" },
 #endif
 #ifdef	PI
 	/* PI 8530 HDLC adaptor */
-	"pi", pi_attach, 0, 8,
-	"attach pi <address> <vector> <dmachannel> ax25ui|ax25i <label> <buffers>\
- <mtu> <speed> [ip_addra] [ip_addrb]",
+	{ "pi", pi_attach, 0, 8, "attach pi <address> <vector> <dmachannel> ax25ui|ax25i <label> <buffers> <mtu> <speed> [ip_addra] [ip_addrb]" },
 #endif
 #ifdef	HAPN
 	/* Hamilton Area Packet Radio (HAPN) 8273 HDLC adaptor */
-	"hapn", hapn_attach, 0, 8,
-	"attach hapn <address> <vector> ax25ui|ax25i <label> <rx bufsize>\
- <mtu> csma|full [ip_addr]",
+	{ "hapn", hapn_attach, 0, 8, "attach hapn <address> <vector> ax25ui|ax25i <label> <rx bufsize> <mtu> csma|full [ip_addr]" },
 #endif
 #ifdef	APPLETALK
 	/* Macintosh AppleTalk */
-	"0", at_attach, 0, 7,
-	"attach 0 <protocol type> <device> arpa <label> <rx bufsize> <mtu> [ip_addr]",
+	{ "0", at_attach, 0, 7, "attach 0 <protocol type> <device> arpa <label> <rx bufsize> <mtu> [ip_addr]" },
 #endif
 #ifdef NETROM
 	/* fake netrom interface */
-	"netrom", nr_attach, 0, 1,
-	"attach netrom [ip_addr]",
+	{ "netrom", nr_attach, 0, 1, "attach netrom [ip_addr]" },
 #endif
 #ifdef	PACKET
 #ifdef	MSDOS
 	/* FTP Software's packet driver spec */
-	"packet", pk_attach, 0, 4,
-	"attach packet <int#> <label> <buffers> <mtu> [ip_addr]",
+	{ "packet", pk_attach, 0, 4, "attach packet <int#> <label> <buffers> <mtu> [ip_addr]" },
 #endif
 #ifdef	UNIX
 	/* BSD Ethernet TAP device */
-	"tap", tap_attach, 0, 4,
-	"attach tap <path> <label> <ethaddr> <mtu>",
+	{ "tap", tap_attach, 0, 4, "attach tap <path> <label> <ethaddr> <mtu>" },
 
 	/* BSD IP TUN device */
-	"tun", tun_attach, 0, 4,
-	"attach tun <path> <label> <mtu>",
+	{ "tun", tun_attach, 0, 4, "attach tun <path> <label> <mtu>" },
 #endif
 #endif
 #ifdef	HS
 	/* Special high speed driver for DRSI PCPA or Eagle cards */
-	"hs", hs_attach, 0, 7,
-	"attach hs <address> <vector> ax25ui|ax25i <label> <buffers> <mtu>\
- <txdelay> <persistence> [ip_addra] [ip_addrb]",
+	{ "hs", hs_attach, 0, 7, "attach hs <address> <vector> ax25ui|ax25i <label> <buffers> <mtu> <txdelay> <persistence> [ip_addra] [ip_addrb]" },
 #endif
 #ifdef SCC
-	"scc", scc_attach, 0, 7,
+	{ "scc", scc_attach, 0, 7,
 	"attach scc <devices> init <addr> <spacing> <Aoff> <Boff> <Dataoff>\n"
 	"   <intack> <vec> [p]<clock> [hdwe] [param]\n"
-	"attach scc <chan> slip|kiss|nrs|ax25ui|ax25i <label> <mtu> <speed> <bufsize> [call] ",
+	"attach scc <chan> slip|kiss|nrs|ax25ui|ax25i <label> <mtu> <speed> <bufsize> [call] " },
 #endif
 #if defined(ASY) && !defined(UNIX)
-	"4port",fp_attach, 0, 3, "attach 4port <base> <irq>",
+	{ "4port",fp_attach, 0, 3, "attach 4port <base> <irq>" },
 #endif
 #ifdef	KSP
-	"ksp", ksp_attach, 0, 5,
-	"attach ksp <base> <irq> <label> <mtu>",
+	{ "ksp", ksp_attach, 0, 5, "attach ksp <base> <irq> <label> <mtu>" },
 #endif
 #ifdef AXIP
-	"axudp", axudp_attach, 0, 4,
-	"attach axudp <listenip> <port> <label> [automap] [autobroadcast]",
+	{ "axudp", axudp_attach, 0, 4, "attach axudp <listenip> <port> <label> [automap] [autobroadcast]" },
 #endif
-
-	NULL,
+	{ NULL },
 };
 
 #ifdef	SERVERS
 /* "start" and "stop" subcommands */
 static struct cmds Startcmds[] = {
 #if	defined(AX25) && defined(MAILBOX)
-	"ax25",		ax25start,	256, 0, NULL,
+	{ "ax25",	ax25start,	256, 0, NULL },
 #endif
-	"discard",	dis1,		256, 0, NULL,
-	"echo",		echo1,		256, 0, NULL,
-	"finger",	finstart,	256, 0, NULL,
-	"ftp",		ftpstart,	256, 0, NULL,
+	{ "discard",	dis1,		256, 0, NULL },
+	{ "echo",	echo1,		256, 0, NULL },
+	{ "finger",	finstart,	256, 0, NULL },
+	{ "ftp",	ftpstart,	256, 0, NULL },
 #if	defined(NETROM) && defined(MAILBOX)
-	"netrom",	nr4start,	256, 0, NULL,
+	{ "netrom",	nr4start,	256, 0, NULL },
 #endif
 #ifdef POP
-	"pop",		pop1,		256, 0, NULL,
+	{ "pop",	pop1,		256, 0, NULL },
 #endif
 #ifdef	RIP
-	"rip",		doripinit,	0,   0, NULL,
+	{ "rip",	doripinit,	0,   0, NULL },
 #endif
 #ifdef	SMTP
-	"smtp",		smtp1,		256, 0, NULL,
+	{ "smtp",	smtp1,		256, 0, NULL },
 #endif
 #if	defined(MAILBOX)
-	"telnet",	telnet1,	256, 0, NULL,
-	"tip",		tipstart,	256, 2, "start tip <interface>",
+	{ "telnet",	telnet1,	256, 0, NULL },
+	{ "tip",	tipstart,	256, 2, "start tip <interface>" },
 #endif
-	"telnet",	tnstart,	256, 0, NULL,
-	"ttylink",	ttylstart,	256, 0, NULL,
-	NULL,
+	{ "telnet",	tnstart,	256, 0, NULL },
+	{ "ttylink",	ttylstart,	256, 0, NULL },
+	{ NULL },
 };
 
 static struct cmds Stopcmds[] = {
 #if	defined(AX25) && defined(MAILBOX)
-	"ax25",		ax250,		0, 0, NULL,
+	{ "ax25",	ax250,		0, 0, NULL },
 #endif
-	"discard",	dis0,		0, 0, NULL,
-	"echo",		echo0,		0, 0, NULL,
-	"finger",	fin0,		0, 0, NULL,
-	"ftp",		ftp0,		0, 0, NULL,
+	{ "discard",	dis0,		0, 0, NULL },
+	{ "echo",	echo0,		0, 0, NULL },
+	{ "finger",	fin0,		0, 0, NULL },
+	{ "ftp",	ftp0,		0, 0, NULL },
 #if	defined(NETROM) && defined(MAILBOX)
-	"netrom",	nr40,		0, 0, NULL,
+	{ "netrom",	nr40,		0, 0, NULL },
 #endif
 #ifdef	POP
-	"pop",		pop0,		0, 0, NULL,
+	{ "pop",	pop0,		0, 0, NULL },
 #endif
 #ifdef	RIP
-	"rip",		doripstop,	0, 0, NULL,
+	{ "rip",	doripstop,	0, 0, NULL },
 #endif
 #ifdef	SMTP
-	"smtp",		smtp0,		0, 0, NULL,
+	{ "smtp",	smtp0,		0, 0, NULL },
 #endif
 #ifdef	MAILBOX
-	"telnet",	telnet0,	0, 0, NULL,
-	"tip",		tip0,		0, 2, "stop tip <interface>",
+	{ "telnet",	telnet0,	0, 0, NULL },
+	{ "tip",	tip0,		0, 2, "stop tip <interface>" },
 #endif
-	"ttylink",	ttyl0,		0, 0, NULL,
-	NULL,
+	{ "ttylink",	ttyl0,		0, 0, NULL },
+	{ NULL },
 };
 #endif	/* SERVERS */
 
@@ -558,67 +525,67 @@ struct socklink Socklink[] = {
 	 * kick,	shut,		close,		check,
 	 * error,	state,		status,		eol_seq
 	 */
-	TYPE_TCP,
+	{ TYPE_TCP,
 	so_tcp,		NULL,		so_tcp_listen,	so_tcp_conn,
 	TRUE,		so_tcp_recv,	so_tcp_send,	so_tcp_qlen,
 	so_tcp_kick,	so_tcp_shut,	so_tcp_close,	checkipaddr,
-	Tcpreasons,	tcpstate,	so_tcp_stat,	Inet_eol,
+	Tcpreasons,	tcpstate,	so_tcp_stat,	Inet_eol },
 
-	TYPE_UDP,
+	{ TYPE_UDP,
 	so_udp,		so_udp_bind,	NULL,		so_udp_conn,
 	FALSE,		so_udp_recv,	so_udp_send,	so_udp_qlen,
 	NULL,		NULL,		so_udp_close,	checkipaddr,
-	NULL,		NULL,		so_udp_stat,	Inet_eol,
+	NULL,		NULL,		so_udp_stat,	Inet_eol },
 
 #ifdef	AX25
-	TYPE_AX25I,
+	{ TYPE_AX25I,
 	so_ax_sock,	NULL,		so_ax_listen,	so_ax_conn,
 	TRUE,		so_ax_recv,	so_ax_send,	so_ax_qlen,
 	so_ax_kick,	so_ax_shut,	so_ax_close,	checkaxaddr,
-	Axreasons,	axstate,	so_ax_stat,	Ax25_eol,
+	Axreasons,	axstate,	so_ax_stat,	Ax25_eol },
 
-	TYPE_AX25UI,
+	{ TYPE_AX25UI,
 	so_axui_sock,	so_axui_bind,	NULL,		so_axui_conn,
 	FALSE,		so_axui_recv,	so_axui_send,	so_axui_qlen,
 	NULL,		NULL,		so_axui_close,	checkaxaddr,
-	NULL,		NULL,		NULL,		Ax25_eol,
+	NULL,		NULL,		NULL,		Ax25_eol },
 #endif	/* AX25 */
 
-	TYPE_RAW,
+	{ TYPE_RAW,
 	so_ip_sock,	NULL,		NULL,		so_ip_conn,
 	FALSE,		so_ip_recv,	so_ip_send,	so_ip_qlen,
 	NULL,		NULL,		so_ip_close,	checkipaddr,
-	NULL,		NULL,		NULL,		Inet_eol,
+	NULL,		NULL,		NULL,		Inet_eol },
 
 #ifdef	NETROM
-	TYPE_NETROML3,
+	{ TYPE_NETROML3,
 	so_n3_sock,	NULL,		NULL,		so_n3_conn,
 	FALSE,		so_n3_recv,	so_n3_send,	so_n3_qlen,
 	NULL,		NULL,		so_n3_close,	checknraddr,
-	NULL,		NULL,		NULL,		Ax25_eol,
+	NULL,		NULL,		NULL,		Ax25_eol },
 
-	TYPE_NETROML4,
+	{ TYPE_NETROML4,
 	so_n4_sock,	NULL,		so_n4_listen,	so_n4_conn,
 	TRUE,		so_n4_recv,	so_n4_send,	so_n4_qlen,
 	so_n4_kick,	so_n4_shut,	so_n4_close,	checknraddr,
-	Nr4reasons,	nrstate,	so_n4_stat,	Ax25_eol,
+	Nr4reasons,	nrstate,	so_n4_stat,	Ax25_eol },
 #endif	/* NETROM */
 
 #ifdef	LOCSOCK
-	TYPE_LOCAL_STREAM,
+	{ TYPE_LOCAL_STREAM,
 	so_los,		NULL,		NULL,		NULL,
 	TRUE,		so_lo_recv,	so_los_send,	so_los_qlen,
 	NULL,		so_loc_shut,	so_loc_close,	NULL,
-	NULL,		NULL,		so_loc_stat,	Eol,
+	NULL,		NULL,		so_loc_stat,	Eol },
 
-	TYPE_LOCAL_DGRAM,
+	{ TYPE_LOCAL_DGRAM,
 	so_lod,		NULL,		NULL,		NULL,
 	FALSE,		so_lo_recv,	so_lod_send,	so_lod_qlen,
 	NULL,		so_loc_shut,	so_loc_close,	NULL,
-	NULL,		NULL,		so_loc_stat,	Eol,
+	NULL,		NULL,		so_loc_stat,	Eol },
 #endif
 
-	-1
+	{ -1 },
 };
 
 /* Table of functions for printing socket addresses */
@@ -662,76 +629,76 @@ int (*Kicklist[])() = {
 
 /* Transport protocols atop IP */
 struct iplink Iplink[] = {
-	TCP_PTCL,	"TCP",	tcp_input,	tcp_dump,
-	UDP_PTCL,	"UDP",	udp_input,	udp_dump,
-	ICMP_PTCL,	"ICMP",	icmp_input,	icmp_dump,
-	IP_PTCL,	"IP",	ipip_recv,	ipip_dump,
-	IP4_PTCL,	"IP",	ipip_recv,	ipip_dump,
+	{ TCP_PTCL,	"TCP",	tcp_input,	tcp_dump },
+	{ UDP_PTCL,	"UDP",	udp_input,	udp_dump },
+	{ ICMP_PTCL,	"ICMP",	icmp_input,	icmp_dump },
+	{ IP_PTCL,	"IP",	ipip_recv,	ipip_dump },
+	{ IP4_PTCL,	"IP",	ipip_recv,	ipip_dump },
 #ifdef	IPSEC
-	ESP_PTCL,	"ESP",	esp_input,	esp_dump,
-	AH_PTCL,	"AH",	ah_input,	ah_dump,
+	{ ESP_PTCL,	"ESP",	esp_input,	esp_dump },
+	{ AH_PTCL,	"AH",	ah_input,	ah_dump },
 #endif
-	0,		NULL,	NULL,		NULL
+	{ 0,		NULL,	NULL,		NULL },
 };
 
 /* Transport protocols atop ICMP */
 struct icmplink Icmplink[] = {
-	TCP_PTCL,	tcp_icmp,
+	{ TCP_PTCL,	tcp_icmp },
 #ifdef	IPSEC
-	ESP_PTCL,	esp_icmp,
-/*	AH_PTCL,	ah_icmp, */
+	{ ESP_PTCL,	esp_icmp },
+/*	{ AH_PTCL,	ah_icmp }, */
 #endif
-	0,		0
+	{ 0,		0 },
 };
 
 #ifdef	AX25
 /* Linkage to network protocols atop ax25 */
 struct axlink Axlink[] = {
-	PID_IP,		axip,
-	PID_ARP,	axarp,
+	{ PID_IP,	axip },
+	{ PID_ARP,	axarp },
 #ifdef	NETROM
-	PID_NETROM,	axnr,
+	{ PID_NETROM,	axnr },
 #endif
-	PID_NO_L3,	axnl3,
-	0,		NULL,
+	{ PID_NO_L3,	axnl3 },
+	{ 0,		NULL },
 };
 #endif	/* AX25 */
 
 /* ARP protocol linkages, indexed by arp's hardware type */
 struct arp_type Arp_type[NHWTYPES] = {
 #ifdef	NETROM
-	AXALEN, 0, 0, 0, NULL, pax25, setcall,	/* ARP_NETROM */
+	{ AXALEN, 0, 0, 0, NULL, pax25, setcall },	/* ARP_NETROM */
 #else
-	0, 0, 0, 0, NULL,NULL,NULL,
+	{ 0, 0, 0, 0, NULL,NULL,NULL },
 #endif
 
 #ifdef	ETHER
-	EADDR_LEN,IP_TYPE,ARP_TYPE,1,Ether_bdcst,pether,gether, /* ARP_ETHER */
+	{ EADDR_LEN,IP_TYPE,ARP_TYPE,1,Ether_bdcst,pether,gether },  /* ARP_ETHER */
 #else
-	0, 0, 0, 0, NULL,NULL,NULL,
+	{ 0, 0, 0, 0, NULL,NULL,NULL },
 #endif
 
-	0, 0, 0, 0, NULL,NULL,NULL,			/* ARP_EETHER */
+	{ 0, 0, 0, 0, NULL,NULL,NULL },			/* ARP_EETHER */
 
 #ifdef	AX25
-	AXALEN, PID_IP, PID_ARP, 10, Ax25multi[0], pax25, setcall,
+	{ AXALEN, PID_IP, PID_ARP, 10, Ax25multi[0], pax25, setcall },
 #else
-	0, 0, 0, 0, NULL,NULL,NULL,			/* ARP_AX25 */
+	{ 0, 0, 0, 0, NULL,NULL,NULL },			/* ARP_AX25 */
 #endif
 
-	0, 0, 0, 0, NULL,NULL,NULL,			/* ARP_PRONET */
+	{ 0, 0, 0, 0, NULL,NULL,NULL },			/* ARP_PRONET */
 
-	0, 0, 0, 0, NULL,NULL,NULL,			/* ARP_CHAOS */
+	{ 0, 0, 0, 0, NULL,NULL,NULL },			/* ARP_CHAOS */
 
-	0, 0, 0, 0, NULL,NULL,NULL,			/* ARP_IEEE802 */
+	{ 0, 0, 0, 0, NULL,NULL,NULL },			/* ARP_IEEE802 */
 
 #ifdef	ARCNET
-	AADDR_LEN, ARC_IP, ARC_ARP, 1, ARC_bdcst, parc, garc, /* ARP_ARCNET */
+	{ AADDR_LEN, ARC_IP, ARC_ARP, 1, ARC_bdcst, parc, garc }, /* ARP_ARCNET */
 #else
-	0, 0, 0, 0, NULL,NULL,NULL,
+	{ 0, 0, 0, 0, NULL,NULL,NULL },
 #endif
 
-	0, 0, 0, 0, NULL,NULL,NULL,			/* ARP_APPLETALK */
+	{ 0, 0, 0, 0, NULL,NULL,NULL }			/* ARP_APPLETALK */
 };
 /* Get rid of trace references in Iftypes[] if TRACE is turned off */
 #ifndef	TRACE
@@ -749,49 +716,49 @@ struct arp_type Arp_type[NHWTYPES] = {
  */
 struct iftype Iftypes[] = {
 	/* This entry must be first, since Loopback refers to it */
-	"None",		nu_send,	nu_output,	NULL,
+	{ "None",		nu_send,	nu_output,	NULL,
 	NULL,		CL_NONE,	0,		ip_proc,
-	NULL,		ip_dump,	NULL,		NULL,
+	NULL,		ip_dump,	NULL,		NULL },
 
 #ifdef	AX25
-	"AX25UI",	axui_send,	ax_output,	pax25,
+	{ "AX25UI",	axui_send,	ax_output,	pax25,
 	setcall,	CL_AX25,	AXALEN,		ax_recv,
-	ax_forus,	ax25_dump,	NULL,		NULL,
+	ax_forus,	ax25_dump,	NULL,		NULL },
 
-	"AX25I",	axi_send,	ax_output,	pax25,
+	{ "AX25I",	axi_send,	ax_output,	pax25,
 	setcall,	CL_AX25,	AXALEN,		ax_recv,
-	ax_forus,	ax25_dump,	NULL,		NULL,
+	ax_forus,	ax25_dump,	NULL,		NULL },
 #endif	/* AX25 */
 
 #ifdef	KISS
-	"KISSUI",	axui_send,	ax_output,	pax25,
+	{ "KISSUI",	axui_send,	ax_output,	pax25,
 	setcall,	CL_AX25,	AXALEN,		kiss_recv,
-	ki_forus,	ki_dump,	NULL,		NULL,
+	ki_forus,	ki_dump,	NULL,		NULL },
 
-	"KISSI",	axi_send,	ax_output,	pax25,
+	{ "KISSI",	axi_send,	ax_output,	pax25,
 	setcall,	CL_AX25,	AXALEN,		kiss_recv,
-	ki_forus,	ki_dump,	NULL,		NULL,
+	ki_forus,	ki_dump,	NULL,		NULL },
 #endif	/* KISS */
 
 #ifdef	SLIP
-	"SLIP",		slip_send,	NULL,		NULL,
+	{ "SLIP",		slip_send,	NULL,		NULL,
 	NULL,		CL_NONE,	0,		ip_proc,
 	NULL,		ip_dump,
 #ifdef	DIALER
-					sd_init,	sd_stat,
+					sd_init,	sd_stat },
 #else
-					NULL,		NULL,
+					NULL,		NULL },
 #endif
 #endif	/* SLIP */
 
 #ifdef	VJCOMPRESS
-	"VJSLIP",	vjslip_send,	NULL,		NULL,
+	{ "VJSLIP",	vjslip_send,	NULL,		NULL,
 	NULL,		CL_NONE,	0,		ip_proc,
 	NULL,		sl_dump,
 #ifdef	DIALER
-					sd_init,	sd_stat,
+					sd_init,	sd_stat },
 #else
-					NULL,		NULL,
+					NULL,		NULL },
 #endif
 #endif	/* VJCOMPRESS */
 
@@ -800,45 +767,45 @@ struct iftype Iftypes[] = {
 	 * gether() exists because the packet drivers don't support
 	 * address setting.
 	 */
-	"Ethernet",	enet_send,	enet_output,	pether,
+	{ "Ethernet",	enet_send,	enet_output,	pether,
 	NULL,		CL_ETHERNET,	EADDR_LEN,	eproc,
-	ether_forus,	ether_dump,	NULL,		NULL,
+	ether_forus,	ether_dump,	NULL,		NULL },
 #endif	/* ETHER */
 
 #ifdef	NETROM
-	"NETROM",	nr_send,	NULL,		pax25,
+	{ "NETROM",	nr_send,	NULL,		pax25,
 	setcall,	CL_NETROM,	AXALEN,		NULL,
-	NULL,		NULL,	NULL,		NULL,
+	NULL,		NULL,	NULL,		NULL },
 #endif	/* NETROM */
 
 #ifdef	SLFP
-	"SLFP",		pk_send,	NULL,		NULL,
+	{ "SLFP",		pk_send,	NULL,		NULL,
 	NULL,		CL_NONE,	0,		ip_proc,
-	NULL,		ip_dump,	NULL,		NULL,
+	NULL,		ip_dump,	NULL,		NULL },
 #endif	/* SLFP */
 
 #ifdef	PPP
-	"PPP",		ppp_send,	ppp_output,	NULL,
+	{ "PPP",		ppp_send,	ppp_output,	NULL,
 	NULL,		CL_PPP,		0,		ppp_proc,
-	NULL,		ppp_dump,	NULL,		NULL,
+	NULL,		ppp_dump,	NULL,		NULL },
 #endif	/* PPP */
 
 #ifdef	SPPP
-	"sppp",		sppp_send,	NULL,		NULL,
+	{ "sppp",		sppp_send,	NULL,		NULL,
 	NULL,		CL_NONE,	0,		ip_proc,
-	NULL,		ip_dump,	NULL,		NULL,
+	NULL,		ip_dump,	NULL,		NULL },
 #endif	/* SPPP */
 
 #ifdef	ARCNET
-	"Arcnet",	anet_send,	anet_output,	parc,
+	{ "Arcnet",	anet_send,	anet_output,	parc,
 	garc,		CL_ARCNET,	1,		aproc,
-	arc_forus,	arc_dump,	NULL,		NULL,
+	arc_forus,	arc_dump,	NULL,		NULL },
 #endif	/* ARCNET */
 
 #ifdef	QTSO
-	"QTSO",		qtso_send,	NULL,		NULL,
+	{ "QTSO",		qtso_send,	NULL,		NULL,
 	NULL,		CL_NONE,	0,		ip_proc,
-	NULL,		NULL,	NULL,		NULL,
+	NULL,		NULL,	NULL,		NULL },
 #endif	/* QTSO */
 
 #ifdef	CDMA_DM
@@ -848,45 +815,45 @@ struct iftype Iftypes[] = {
 #endif
 
 #ifdef	DMLITE
-	"DMLITE",	rlp_send,	NULL,		NULL,
+	{ "DMLITE",	rlp_send,	NULL,		NULL,
 	NULL,		CL_NONE,	0,		ip_proc,
-	NULL,		ip_dump,	dl_init,	dl_stat,
+	NULL,		ip_dump,	dl_init,	dl_stat },
 #endif
 
-	NULL,	NULL,		NULL,		NULL,
+	{ NULL,	NULL,		NULL,		NULL,
 	NULL,		-1,		0,		NULL,
-	NULL,		NULL,	NULL,		NULL,
+	NULL,		NULL,	NULL,		NULL },
 };
 
 /* Asynchronous interface mode table */
 #ifdef	ASY
 struct asymode Asymode[] = {
 #ifdef	SLIP
-	"SLIP",		FR_END,		slip_init,	slip_free,
-	"VJSLIP",	FR_END,		slip_init,	slip_free,
+	{ "SLIP",	FR_END,		slip_init,	slip_free },
+	{ "VJSLIP",	FR_END,		slip_init,	slip_free },
 #endif
 #ifdef	KISS
-	"AX25UI",	FR_END,		kiss_init,	kiss_free,
-	"AX25I",	FR_END,		kiss_init,	kiss_free,
-	"KISSUI",	FR_END,		kiss_init,	kiss_free,
-	"KISSI",	FR_END,		kiss_init,	kiss_free,
+	{ "AX25UI",	FR_END,		kiss_init,	kiss_free },
+	{ "AX25I",	FR_END,		kiss_init,	kiss_free },
+	{ "KISSUI",	FR_END,		kiss_init,	kiss_free },
+	{ "KISSI",	FR_END,		kiss_init,	kiss_free },
 #endif
 #ifdef	NRS
-	"NRS",		ETX,		nrs_init,	nrs_free,
+	{ "NRS",	ETX,		nrs_init,	nrs_free },
 #endif
 #ifdef	PPP
-	"PPP",		HDLC_FLAG,	ppp_init,	ppp_free,
+	{ "PPP",	HDLC_FLAG,	ppp_init,	ppp_free },
 #endif
 #ifdef	SPPP
-	"SPPP",		HDLC_FLAG,	sppp_init,	sppp_free,
+	{ "SPPP",	HDLC_FLAG,	sppp_init,	sppp_free },
 #endif
 #ifdef	QTSO
-	"QTSO",		HDLC_FLAG,	qtso_init,	qtso_free,
+	{ "QTSO",	HDLC_FLAG,	qtso_init,	qtso_free },
 #endif
 #ifdef	DMLITE
-	"DMLITE",	HDLC_FLAG,	dml_init,	dml_stop,
+	{ "DMLITE",	HDLC_FLAG,	dml_init,	dml_stop },
 #endif
-	NULL
+	{ NULL },
 };
 
 #else	/* not ASY */
@@ -919,21 +886,21 @@ asy_ioctl(struct iface *ifp,int cmd,int set,int32 val)
 
 /* daemons to be run at startup time */
 struct daemon Daemons[] = {
-	"killer",	512,	killer,
+	{ "killer",	512,	killer },
 #ifndef USE_SYSTEM_MALLOC
-	"gcollect",	256,	gcollect,
+	{ "gcollect",	256,	gcollect },
 #endif
-	"timer",	1024,	timerproc,
-	"network",	1536,	network,
-	"keyboard",	250,	keyboard,
+	{ "timer",	1024,	timerproc },
+	{ "network",	1536,	network },
+	{ "keyboard",	250,	keyboard },
 #ifndef UNIX
-	"random init",	650,	rand_init,
+	{ "random init",	650,	rand_init },
 #endif
 #ifdef	PHOTURIS
-	"keygen",	2048,	gendh,
-	"key mgmt",	2048,	phot_proc,
+	{ "keygen",	2048,	gendh },
+	{ "key mgmt",	2048,	phot_proc },
 #endif
-	NULL,	0,	NULL
+	{ NULL,	0,	NULL }
 };
 
 /* Functions to be called on each clock tick */

@@ -67,27 +67,26 @@ static void doobsotick(void);
 static int doobsotimer(int argc,char *argv[],void *p);
 
 static struct cmds Nrcmds[] = {
-	"acktime",	donracktime,	0, 0,	NULL,
-	"bcnodes",	dobcnodes,	0, 2,	"netrom bcnodes <interface>",
-	"connect",	donrconnect, 1024, 2,	"netrom connect <node>",
-	"choketime",	donrchoketime,	0, 0,	NULL,
-	"interface",	dointerface,	0, 4,
-		"netrom interface <interface> <alias> <quality>",
-	"irtt",		donrirtt,	0, 0,	NULL,
-	"kick",		donrkick,	0, 2,	"netrom kick <&nrcb>",
-	"nodefilter",	donodefilter,	0, 0,	NULL,
-	"nodetimer",	donodetimer,	0, 0,	NULL,
-	"obsotimer",	doobsotimer,	0, 0,	NULL,
-	"qlimit",	donrqlimit,	0, 0,	NULL,
-	"reset",	donrreset,	0, 2,	"netrom reset <&nrcb>",
-	"retries",	donrretries,	0, 0,	NULL,
-	"route",	donrroute,	0, 0,	NULL,
-	"status",	donrstatus,	0, 0,	NULL,
-	"ttl",		donrttl,	0, 0,	NULL,
-	"user",		donruser,	0, 0,	NULL,
-	"verbose",	donrverbose,	0, 0,	NULL,
-	"window",	donrwindow,	0, 0,	NULL,
-	NULL,
+	{ "acktime",	donracktime,	0, 0,	NULL },
+	{ "bcnodes",	dobcnodes,	0, 2,	"netrom bcnodes <interface>" },
+	{ "connect",	donrconnect, 1024, 2,	"netrom connect <node>" },
+	{ "choketime",	donrchoketime,	0, 0,	NULL },
+	{"interface",	dointerface,	0, 4,	"netrom interface <interface> <alias> <quality>" },
+	{ "irtt",	donrirtt,	0, 0,	NULL },
+	{ "kick",	donrkick,	0, 2,	"netrom kick <&nrcb>" },
+	{ "nodefilter",	donodefilter,	0, 0,	NULL },
+	{ "nodetimer",	donodetimer,	0, 0,	NULL },
+	{ "obsotimer",	doobsotimer,	0, 0,	NULL },
+	{ "qlimit",	donrqlimit,	0, 0,	NULL },
+	{ "reset",	donrreset,	0, 2,	"netrom reset <&nrcb>" },
+	{ "retries",	donrretries,	0, 0,	NULL },
+	{ "route",	donrroute,	0, 0,	NULL },
+	{ "status",	donrstatus,	0, 0,	NULL },
+	{ "ttl",	donrttl,	0, 0,	NULL },
+	{ "user",	donruser,	0, 0,	NULL },
+	{ "verbose",	donrverbose,	0, 0,	NULL },
+	{ "window",	donrwindow,	0, 0,	NULL },
+	{ NULL },
 } ;
 
 static struct timer Nodetimer ;	/* timer for nodes broadcasts */
@@ -106,13 +105,10 @@ void *p;
 }
 
 static struct cmds Routecmds[] = {
-	"add",	dorouteadd,	0, 6,
-		"netrom route add <alias> <destination> <interface> <quality> <neighbor>",
-	"drop",	doroutedrop, 0, 4,
-		"netrom route drop <destination> <neighbor> <interface>",
-	"info", dorouteinfo, 0, 2,
-		"netrom route info <destination>",
-	NULL,
+	{ "add",	dorouteadd,	0, 6, "netrom route add <alias> <destination> <interface> <quality> <neighbor>" },
+	{ "drop",	doroutedrop, 0, 4, "netrom route drop <destination> <neighbor> <interface>" },
+	{ "info", dorouteinfo, 0, 2, "netrom route info <destination>" },
+	{ NULL },
 } ;
 
 /* Route command multiplexer */
@@ -492,13 +488,10 @@ doobsotick()
 
 
 static struct cmds Nfcmds[] = {
-	"add",	donfadd,	0, 3,
-		"netrom nodefilter add <neighbor> <interface>",
-	"drop",	donfdrop,	0, 3,
-		"netrom nodefilter drop <neighbor> <interface>",
-	"mode",	donfmode,	0, 0,	NULL,
-	NULL,	NULL,	0, 0,
-		"nodefilter subcommands: add drop mode",
+	{ "add",	donfadd,	0, 3, "netrom nodefilter add <neighbor> <interface>" },
+	{ "drop",	donfdrop,	0, 3, "netrom nodefilter drop <neighbor> <interface>" },
+	{ "mode",	donfmode,	0, 0,	NULL },
+	{ NULL,	NULL,	0, 0, "nodefilter subcommands: add drop mode" },
 } ;
 
 /* nodefilter command multiplexer */

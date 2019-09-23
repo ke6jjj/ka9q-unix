@@ -48,22 +48,22 @@ int Tcp_trace;			/* State change tracing flag */
 int Tcp_syndata;
 struct tcp_rtt Tcp_rtt[RTTCACHE];
 struct mib_entry Tcp_mib[] = {
-	NULL,		0,
-	"tcpRtoAlgorithm",	4,	/* Van Jacobsen's algorithm */
-	"tcpRtoMin",		0,	/* No lower bound */
-	"tcpRtoMax",		MAXINT32,	/* No upper bound */
-	"tcpMaxConn",		-1L,	/* No limit */
-	"tcpActiveOpens",	0,
-	"tcpPassiveOpens",	0,
-	"tcpAttemptFails",	0,
-	"tcpEstabResets",	0,
-	"tcpCurrEstab",		0,
-	"tcpInSegs",		0,
-	"tcpOutSegs",		0,
-	"tcpRetransSegs",	0,
-	NULL,		0,	/* Connection state goes here */
-	"tcpInErrs",		0,
-	"tcpOutRsts",		0,
+	{ NULL,		{ 0 }},
+	{ "tcpRtoAlgorithm",	{ 4 } },	/* Van Jacobsen's algorithm */
+	{ "tcpRtoMin",		{ 0 } },	/* No lower bound */
+	{ "tcpRtoMax",		{ MAXINT32 } },	/* No upper bound */
+	{ "tcpMaxConn",		{ -1L } },	/* No limit */
+	{ "tcpActiveOpens",	{ 0 } },
+	{ "tcpPassiveOpens",	{ 0 } },
+	{ "tcpAttemptFails",	{ 0 } },
+	{ "tcpEstabResets",	{ 0 } },
+	{ "tcpCurrEstab",	{ 0 } },
+	{ "tcpInSegs",		{ 0 } },
+	{ "tcpOutSegs",		{ 0 } },
+	{ "tcpRetransSegs",	{ 0 } },
+	{ NULL,			{ 0 } },	/* Connection state goes here */
+	{ "tcpInErrs",		{ 0 } },
+	{ "tcpOutRsts",		{ 0 } },
 };
 
 

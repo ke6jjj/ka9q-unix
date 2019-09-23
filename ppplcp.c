@@ -136,26 +136,26 @@ static struct fsm_constant_s lcp_constants = {
 
 /* "ppp <iface> lcp" subcommands */
 static struct cmds Lcpcmds[] = {
-	"close",	doppp_close,	0,	0,	NULL,
-	"listen",	doppp_passive,	0,	0,	NULL,
-	"local",	dolcp_local,	0,	0,	NULL,
-	"open",		dolcp_open,	0,	0,	NULL,
-	"remote",	dolcp_remote,	0,	0,	NULL,
-	"timeout",	doppp_timeout,	0,	0,	NULL,
-	"try",		doppp_try,	0,	0,	NULL,
-	NULL,
+	{ "close",	doppp_close,	0,	0,	NULL },
+	{ "listen",	doppp_passive,	0,	0,	NULL },
+	{ "local",	dolcp_local,	0,	0,	NULL },
+	{ "open",	dolcp_open,	0,	0,	NULL },
+	{ "remote",	dolcp_remote,	0,	0,	NULL },
+	{ "timeout",	doppp_timeout,	0,	0,	NULL },
+	{ "try",	doppp_try,	0,	0,	NULL },
+	{ NULL },
 };
 
 /* "ppp <iface> lcp [local | remote]" subcommands */
 static struct cmds Lcpside_cmds[] = {
-	"accm",		dolcp_accm,	0,	0,	NULL,
-	"acfc",		dolcp_acfc,	0,	0,	NULL,
-	"authenticate",	dolcp_auth,	0,	0,	NULL,
-	"magic",	dolcp_magic,	0,	0,	NULL,
-	"mru",		dolcp_mru,	0,	0,	NULL,
-	"pfc",		dolcp_pfc,	0,	0,	NULL,
-	"default",	dolcp_default,	0,	0,	NULL,
-	NULL,
+	{ "accm",	dolcp_accm,	0,	0,	NULL },
+	{ "acfc",	dolcp_acfc,	0,	0,	NULL },
+	{ "authenticate",dolcp_auth,	0,	0,	NULL },
+	{ "magic",	dolcp_magic,	0,	0,	NULL },
+	{ "mru",	dolcp_mru,	0,	0,	NULL },
+	{ "pfc",	dolcp_pfc,	0,	0,	NULL },
+	{ "default",	dolcp_default,	0,	0,	NULL },
+	{ NULL },
 };
 
 

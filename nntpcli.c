@@ -69,7 +69,7 @@ struct nntpservers {
 static struct grouploc {
 	char *prefix;        /* e.g. comp, rec, net, talk, alt ... */
 	char *directory;     /* directory where these groups should be */
-	} groupdirs[MAXGROUPDIRS] = { NULL, NULL };
+	} groupdirs[MAXGROUPDIRS] = { { NULL, NULL } };
 
 struct nntpservers *Nntpservers = NULL;
 static char *Nntpgroups = NULL;
@@ -99,17 +99,16 @@ static int dondir(int argc,char *argv[],void *p);
  */
 
 static struct cmds Nntpcmds[] = {
-	"addserver",	doadds,	0,	3,
-	"nntp addserver <nntpserver> <interval>",
-	"directory",	dondir,	0,	0,	NULL,
-	"dropserver",	dodrops,	0,	2,
-	"nntp dropserver <nntpserver>",
-	"groups",	dogroups,	0,	0,	NULL,
-	"kick",		dokicks,	0,	2,
-	"nntp kick <nntpserver>",
-	"listservers",	dolists,	0,	0,	NULL,
-	"trace",	donntrace,	0,	0,	NULL,
-	NULL,
+	{ "addserver",	doadds,	0,	3 },
+	{ "nntp addserver <nntpserver> <interval>" },
+	{ "directory",	dondir,	0,	0,	NULL },
+	{ "dropserver",	dodrops,	0,	2 },
+	{ "nntp dropserver <nntpserver>" },
+	{ "groups",	dogroups,	0,	0,	NULL },
+	{ "kick",		dokicks,	0,	2,  "nntp kick <nntpserver>" },
+	{ "listservers",	dolists,	0,	0,	NULL },
+	{ "trace",	donntrace,	0,	0,	NULL },
+	{ NULL },
 };
 
 int
@@ -353,7 +352,7 @@ void *tp, *v1;
 {
 	kFILE *fp, *tmpf;
 	int s = -1, i;
-	kFILE *network;
+	kFILE *network = NULL;
 /*	long pos; */
 	struct tm *ltm;
 	time_t t;
@@ -574,7 +573,8 @@ void *tp, *v1;
 quit:
 	if (nntptrace >= 3)
 		kprintf("NNTP daemon exiting\n");
-	kfclose(network);
+	if (network != NULL)
+		kfclose(network);
 	/* Restart timer */
 	start_timer(&np->nntpcli_t);
 	return;

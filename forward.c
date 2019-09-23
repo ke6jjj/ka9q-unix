@@ -648,16 +648,16 @@ struct mbx *m;
 
 /* possible commands on the command line in the forwarding file */
 static struct cmds cfwdcmds[] = {
-	"tcp",		openconn,	0, 0, NULL,
-	"telnet",	openconn,	0, 0, NULL,
+	{ "tcp",	openconn,	0, 0, NULL },
+	{ "telnet",	openconn,	0, 0, NULL },
 #ifdef AX25
-	"ax25",		openconn,	0, 0, NULL,
-	"connect",	openconn,	0, 0, NULL,
+	{ "ax25",	openconn,	0, 0, NULL },
+	{ "connect",	openconn,	0, 0, NULL },
 #endif
 #ifdef NETROM
-	"netrom",	openconn,	0, 0, NULL,
+	{ "netrom",	openconn,	0, 0, NULL },
 #endif
-	NULL
+	{ NULL }
 };
 
 /* this function is called whenever the forwarding timer expires */

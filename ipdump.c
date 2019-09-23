@@ -33,7 +33,7 @@ int check
 		kfprintf(fp,"IP: bad header\n");
 		return;
 	}
-	if(check && cksum(NULL,*bpp,ip_len) != 0)
+	if(check && (csum = cksum(NULL,*bpp,ip_len)) != 0)
 		kfprintf(fp,"IP: CHECKSUM ERROR (%u)",csum);
 
 	ntohip(&ip,bpp);	/* Can't fail, we've already checked ihl */

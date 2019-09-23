@@ -21,19 +21,11 @@ static int doarpflush(int argc,char *argv[],void *p);
 static void dumparp(void);
 
 static struct cmds Arpcmds[] = {
-	"add", doarpadd, 0, 4,
-	"arp add <hostid> ether|ax25|netrom|arcnet <ether addr|callsign>",
-
-	"drop", doarpdrop, 0, 3,
-	"arp drop <hostid> ether|ax25|netrom|arcnet",
-
-	"flush", doarpflush, 0, 0,
-	NULL,
-
-	"publish", doarpadd, 0, 4,
-	"arp publish <hostid> ether|ax25|netrom|arcnet <ether addr|callsign>",
-
-	NULL,
+	{ "add", doarpadd, 0, 4, "arp add <hostid> ether|ax25|netrom|arcnet <ether addr|callsign>" },
+	{ "drop", doarpdrop, 0, 3, "arp drop <hostid> ether|ax25|netrom|arcnet" },
+	{ "flush", doarpflush, 0, 0, NULL },
+	{ "publish", doarpadd, 0, 4, "arp publish <hostid> ether|ax25|netrom|arcnet <ether addr|callsign>" },
+	{ NULL },
 };
 char *Arptypes[] = {
 	"NET/ROM",
