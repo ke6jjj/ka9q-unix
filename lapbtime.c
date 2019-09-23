@@ -62,6 +62,14 @@ recover(void *p)
 	}
 }
 
+/* Deferred lapb send */
+void
+defer_lapb_send(void *p)
+{
+	struct ax25_cb *axp = p;
+
+	(void) dlapb_output(axp);
+}
 
 /* Send a poll (S-frame command with the poll bit set) */
 void

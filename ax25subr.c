@@ -17,6 +17,7 @@
 struct ax25_cb *Ax25_cb;
 
 /* Default AX.25 parameters */
+uint32 T2init = 1000;		/* 1000ms transmit delay */
 uint32 T3init = 0;		/* No keep-alive polling */
 uint Maxframe = 1;		/* Stop and wait */
 uint N2 = 10;			/* 10 retries */
@@ -73,6 +74,7 @@ del_ax25(struct ax25_cb *conn)
 
 	/* Timers should already be stopped, but just in case... */
 	stop_timer(&axp->t1);
+	stop_timer(&axp->t2);
 	stop_timer(&axp->t3);
 
 	/* Free allocated resources */
@@ -114,6 +116,10 @@ cr_ax25(uint8 *addr)
 	set_timer(&axp->t1,2*axp->srt);
 	axp->t1.func = recover;
 	axp->t1.arg = axp;
+
+	set_timer(&axp->t2, T2init);
+	axp->t2.func = defer_lapb_send;
+	axp->t2.arg = axp;
 
 	set_timer(&axp->t3,T3init);
 	axp->t3.func = pollthem;
