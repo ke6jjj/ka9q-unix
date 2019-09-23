@@ -354,13 +354,10 @@ struct mbuf **bpp		/* Rest of frame, starting with ctl */
 	free_p(bpp);	/* In case anything's left */
 
 	/* See if we can send some data, perhaps piggybacking an ack.
-	 * If successful, lapb_output will clear axp->response.
+	 * If (eventually) successful, lapb_output will clear axp->response.
 	 */
 	lapb_output(axp);
-	if(axp->response != 0){
-		sendctl(axp,LAPB_RESPONSE,axp->response);
-		axp->response = 0;
-	}
+
 	return 0;
 }
 /* Handle incoming acknowledgements for frames we've sent.
@@ -481,11 +478,13 @@ int cmd
 		cmd |= (axp->vr << 5);
 	return sendframe(axp,cmdrsp,cmd,&mb);
 }
-/* Start data transmission on link, if possible
- * Return number of frames sent
+/*
+ * Start data transmission on link, if possible.
+ *
+ * Return number of frames sent.
  */
 int
-lapb_output(struct ax25_cb *axp)
+dlapb_output(struct ax25_cb *axp)
 {
 	struct mbuf *bp;
 	struct mbuf *tbp;
@@ -534,6 +533,18 @@ lapb_output(struct ax25_cb *axp)
 			axp->flags.rtt_run = 1;
 		}
 	}
+
+	/*
+	 * Handle any deferred RR/RNR responses.
+	 *
+	 * If they weren't cleared by the above I frame transmission
+	 * they need to go out now.
+	 */
+	if (axp->response != 0) {
+		sendctl(axp,LAPB_RESPONSE,axp->response);
+		axp->response = 0;
+	}
+
 	return sent;
 }
 /* General purpose AX.25 frame output */
@@ -546,6 +557,20 @@ struct mbuf **data
 ){
 	return axsend(axp->iface,axp->remote,axp->local,cmdrsp,ctl,data);
 }
+
+/* defer output with timer, give time for ack to abort retry - K5JB */
+void
+lapb_output(struct ax25_cb *axp)
+{
+    if (axp->t2.duration == 0L)  /* disabled? */
+        dlapb_output(axp);
+    else {
+        /* function installed in lapbtime.c */
+        axp->t2.arg = (void *)axp;
+        start_timer(&axp->t2);
+    }
+}
+
 /* Set new link state */
 void
 lapbstate(

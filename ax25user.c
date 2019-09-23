@@ -118,7 +118,11 @@ int pid
 	} else {
 		enqueue(&axp->txq,bpp);
 	}
-	return lapb_output(axp);
+
+	/* Schedule another transmission */
+	lapb_output(axp);
+
+	return 0; /* No error */
 }
 
 /* Receive incoming data on an AX.25 connection */
