@@ -583,6 +583,7 @@ int s
 	axp->state = s;
 	if(s == LAPB_DISCONNECTED){
 		stop_timer(&axp->t1);
+		stop_timer(&axp->t2);
 		stop_timer(&axp->t3);
 		free_q(&axp->txq);
 	}
