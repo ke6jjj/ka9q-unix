@@ -1,6 +1,10 @@
 #ifndef	_CONFIG_H
 #define	_CONFIG_H
 
+#ifdef USE_CMAKE_CONFIG_H
+#include "cmake_config.h"
+#endif
+
 /* Software options */
 #define	MAILBOX		1	/* Include SM0RGV mailbox server */
 #define	NNTP		1	/* Netnews client */
