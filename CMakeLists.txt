@@ -16,6 +16,8 @@ add_definitions(-DHAVE_CONFIG_H)
 find_package(Curses REQUIRED)
 include_directories(${CURSES_INCLUDE_DIR})
 
+find_package(Threads REQUIRED)
+
 add_library(clients telnet.c ftpcli.c finger.c smtpcli.c hop.c tip.c nntpcli.c bootp.c popcli.c lterm.c)
 add_library(servers ttylink.c ftpserv.c smisc.c smtpserv.c fingerd.c mailbox.c rewrite.c bmutil.c forward.c tipmail.c bootpd.c bootpdip.c bootpcmd.c popserv.c tnserv.c)
 add_library(internet tcpcmd.c tcpsock.c tcpuser.c tcptimer.c tcpout.c tcpin.c tcpsubr.c tcphdr.c udpcmd.c udpsock.c udp.c udphdr.c domain.c domhdr.c ripcmd.c rip.c ipcmd.c ipsock.c ip.c iproute.c iphdr.c icmpcmd.c ping.c icmp.c icmpmsg.c icmphdr.c arpcmd.c arp.c arphdr.c netuser.c sim.c)
@@ -37,4 +39,4 @@ endif()
 
 add_executable(net main.c config.c version.c session.c)
 target_link_libraries(net clients servers internet ax25 netrom ppp netinet dump unix)
-target_link_libraries(net ${CURSES_LIBRARIES})
+target_link_libraries(net ${CURSES_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
