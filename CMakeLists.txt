@@ -18,9 +18,10 @@ else()
   CHECK_INCLUDE_FILES(net/if_tun.h HAVE_NET_IF_TUN_H)
 endif()
 
-configure_file(${CMAKE_CURRENT_LIST_DIR}/config.h.in
-  ${CMAKE_CURRENT_BINARY_DIR}/config.h)
-add_definitions(-DHAVE_CONFIG_H)
+configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake_config.h.in
+  ${CMAKE_CURRENT_BINARY_DIR}/cmake_config.h)
+add_definitions(-DUSE_CMAKE_CONFIG_H)
+include_directories(${CMAKE_CURRENT_BINARY_DIR})
 
 find_package(Curses REQUIRED)
 include_directories(${CURSES_INCLUDE_DIR})

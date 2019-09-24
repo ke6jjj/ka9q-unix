@@ -7,6 +7,9 @@ CC= gcc
 RM= del
 LIB= ar
 CFLAGS= -g -DHOST_BSD -Werror -Wno-int-to-void-pointer-cast -O3
+# This was enabled by default, maintain backwards compatibility for now
+CFLAGS+= -DHAVE_NET_IF_TAP_H
+CFLAGS+= -DHAVE_NET_IF_TUN_H
 LFLAGS= -lcurses
 
 
