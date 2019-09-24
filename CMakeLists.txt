@@ -28,11 +28,11 @@ add_library(dump trace.c enetdump.c arcdump.c kissdump.c ax25dump.c arpdump.c nr
 add_library(unix ksubr_unix.c timer_unix.c display_crs.c unix.c dirutil_unix.c enet.c)
 
 if (HAVE_NET_IF_TAP_H)
-  add_library(tap tapdrvr.c tundrvr.c)
+  add_library(tap tapdrvr.c)
 endif()
 
 if (HAVE_NET_IF_TUN_H)
-  add_library(tun tapdrvr.c)
+  add_library(tun tundrvr.c)
 endif()
 
 add_executable(net main.c config.c version.c session.c)
