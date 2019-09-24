@@ -6,8 +6,17 @@ project (ka9q)
 set(CMAKE_C_FLAGS "-DHOST_BSD -Wall")
 
 INCLUDE(CheckIncludeFiles)
-CHECK_INCLUDE_FILES(net/if_tap.h HAVE_NET_IF_TAP_H)
-CHECK_INCLUDE_FILES(net/if_tun.h HAVE_NET_IF_TUN_H)
+
+# FreeBSD-10 uses u_char in if_tap.h / if_tun.h; so include if
+# if it exists.
+CHECK_INCLUDE_FILES(sys/types.h HAVE_SYS_TYPES_H)
+if (HAVE_SYS_TYPES_H)
+  CHECK_INCLUDE_FILES("sys/types.h;net/if_tap.h" HAVE_NET_IF_TAP_H)
+  CHECK_INCLUDE_FILES("sys/types.h;net/if_tun.h" HAVE_NET_IF_TUN_H)
+else()
+  CHECK_INCLUDE_FILES(net/if_tap.h HAVE_NET_IF_TAP_H)
+  CHECK_INCLUDE_FILES(net/if_tun.h HAVE_NET_IF_TUN_H)
+endif()
 
 configure_file(${CMAKE_CURRENT_LIST_DIR}/config.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/config.h)
@@ -40,3 +49,9 @@ endif()
 add_executable(net main.c config.c version.c session.c)
 target_link_libraries(net clients servers internet ax25 netrom ppp netinet dump unix)
 target_link_libraries(net ${CURSES_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
+if (HAVE_NET_IF_TAP_H)
+  target_link_libraries(net tap)
+endif()
+if (HAVE_NET_IF_TUN_H)
+  target_link_libraries(net tun)
+endif()
