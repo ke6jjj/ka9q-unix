@@ -494,10 +494,17 @@ dlapb_output(struct ax25_cb *axp)
 	int sent = 0;
 	int i;
 
-	if(axp == NULL
-	 || (axp->state != LAPB_RECOVERY && axp->state != LAPB_CONNECTED)
-	 || axp->flags.remotebusy)
+	if (axp == NULL || (axp->state != LAPB_RECOVERY && axp->state != LAPB_CONNECTED)) {
 		return 0;
+	}
+
+	/* Break RNR deadlock */
+	if (axp->flags.remotebusy) {
+		if (!run_timer(&axp->t1)) {
+			start_timer(&axp->t1);
+		}
+		return 0;
+	}
 
 	/* Dig into the send queue for the first unsent frame */
 	bp = axp->txq;
