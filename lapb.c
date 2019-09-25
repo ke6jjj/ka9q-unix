@@ -381,7 +381,21 @@ uint n
 	 * then we have a frame reject condition.
 	 */
 	oldest = (axp->vs - axp->unack) & MMASK;
-	while(axp->unack != 0 && oldest != n){
+	while(axp->unack != 0) {
+		/*
+		 * If oldest == n and unack is 8, then we've received
+		 * all 8 frames in our transmit queue and should handle
+		 * them here.
+		 *
+		 * Otherwise we will forever keep looping over transmitting
+		 * the same 8 frames until we miss one, or we get an
+		 * intermediate RR for less than 8 frames, leading to a
+		 * partial flush.
+		 */
+		if ((oldest == n) && (axp->unack != 8)) {
+			break;
+		}
+
 		if((bp = dequeue(&axp->txq)) == NULL){
 			/* Acking unsent frame */
 			return -1;
