@@ -427,13 +427,14 @@ struct cmds Attab[] = {
 	/* FTP Software's packet driver spec */
 	{ "packet", pk_attach, 0, 4, "attach packet <int#> <label> <buffers> <mtu> [ip_addr]" },
 #endif
-#ifdef	UNIX
+#ifdef HAVE_NET_IF_TAP_H
 	/* BSD Ethernet TAP device */
 	{ "tap", tap_attach, 0, 4, "attach tap <path> <label> <ethaddr> <mtu>" },
-
+#endif /* HAVE_NET_IF_TAP_H */
+#ifdef HAVE_NET_IF_TUN_H
 	/* BSD IP TUN device */
 	{ "tun", tun_attach, 0, 4, "attach tun <path> <label> <mtu>" },
-#endif
+#endif /* HAVE_NET_IF_TUN_H */
 #endif
 #ifdef	HS
 	/* Special high speed driver for DRSI PCPA or Eagle cards */
