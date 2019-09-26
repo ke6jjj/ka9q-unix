@@ -81,7 +81,7 @@ struct mbuf **bpp		/* Rest of frame, starting with ctl */
 			lapbstate(axp,LAPB_CONNECTED);/* Resets state counters */
 			axp->srt = Axirtt;
 			axp->mdev = 0;
-			set_timer(&axp->t1,2*axp->srt);
+			ax25_set_t1_timer(axp, 2*axp->srt);
 			start_timer(&axp->t3);
 			break;
 		case DM:	/* Ignore to avoid infinite loops */
@@ -404,7 +404,7 @@ uint n
 				axp->srt = ((axp->srt * 7) + rtt + 4) >> 3;
 				axp->mdev = ((axp->mdev*3) + abserr + 2) >> 2;
 				/* Update timeout */
-				set_timer(&axp->t1,4*axp->mdev+axp->srt);
+				ax25_set_t1_timer(axp, 4*axp->mdev+axp->srt);
 			}
 		}
 		axp->flags.retrans = 0;

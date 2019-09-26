@@ -19,9 +19,10 @@ recover(void *p)
 
 	axp->flags.retrans = 1;
 	axp->retries++;
-	if((1L << axp->retries) < Blimit)
+	if((1L << axp->retries) < Blimit) {
 		/* Back off retransmit timer */
-		set_timer(&axp->t1,dur_timer(&axp->t1)*2);
+		ax25_set_t1_timer(axp, dur_timer(&axp->t1)*2);
+	}
 
 	switch(axp->state){
 	case LAPB_SETUP:

@@ -17,6 +17,7 @@
 struct ax25_cb *Ax25_cb;
 
 /* Default AX.25 parameters */
+uint32 T1maxinit = 10000;	/* 10s maximum T1 value */
 uint32 T2init = 1000;		/* 1000ms transmit delay */
 uint32 T3init = 0;		/* No keep-alive polling */
 uint Maxframe = 1;		/* Stop and wait */
@@ -24,7 +25,7 @@ uint N2 = 10;			/* 10 retries */
 uint Axwindow = 2048;		/* 2K incoming text before RNR'ing */
 uint Paclen = 256;		/* 256-byte I fields */
 uint Pthresh = 128;		/* Send polls for packets larger than this */
-uint32 Axirtt = 5000;		/* Initial round trip estimate, ms */
+uint32 Axirtt = 2000;		/* Initial round trip estimate, ms */
 uint Axversion = V1;		/* Protocol version */
 uint32 Blimit = 30;		/* Retransmission backoff limit */
 
@@ -84,6 +85,19 @@ del_ax25(struct ax25_cb *conn)
 	free(axp);
 }
 
+/*
+ * Set the T1 timer value.  Clamp at T1maxinit.
+ */
+void
+ax25_set_t1_timer(struct ax25_cb *axp, int value)
+{
+	if (value > T1maxinit) {
+		set_timer(&axp->t1, T1maxinit);
+	} else {
+		set_timer(&axp->t1, value);
+	}
+}
+
 /* Create an ax25 control block. Allocate a new structure, if necessary,
  * and fill it with all the defaults. The caller
  * is still responsible for filling in the reply address
@@ -113,7 +127,7 @@ cr_ax25(uint8 *addr)
 	axp->pthresh = Pthresh;
 	axp->n2 = N2;
 	axp->srt = Axirtt;
-	set_timer(&axp->t1,2*axp->srt);
+	ax25_set_t1_timer(axp, 2 * axp->srt);
 	axp->t1.func = recover;
 	axp->t1.arg = axp;
 

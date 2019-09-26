@@ -132,13 +132,14 @@ extern struct axlink Axlink[];
 
 extern struct ax25_cb Ax25default,*Ax25_cb;
 extern char *Ax25states[],*Axreasons[];
-extern uint32 Axirtt,T2init,T3init,Blimit;
+extern uint32 Axirtt,T1maxinit,T2init,T3init,Blimit;
 extern uint N2,Maxframe,Paclen,Pthresh,Axwindow,Axversion;
 
 /* In ax25cmd.c: */
 void st_ax25(struct ax25_cb *axp);
 
 /* In ax25subr.c: */
+void ax25_set_t1_timer(struct ax25_cb *cb, int value);
 struct ax25_cb *cr_ax25(uint8 *addr);
 void del_ax25(struct ax25_cb *axp);
 struct ax25_cb *find_ax25(uint8 *);
