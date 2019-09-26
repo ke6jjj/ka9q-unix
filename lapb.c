@@ -1,5 +1,4 @@
-/* Link Access Procedures Balanced (LAPB), the upper sublayer of
- * AX.25 Level 2.
+/* Link Access Procedures Balanced (LAPB), the upper sublayer of * AX.25 Level 2.
  *
  * Copyright 1991 Phil Karn, KA9Q
  */
@@ -204,7 +203,11 @@ struct mbuf **bpp		/* Rest of frame, starting with ctl */
 			if(ns != axp->vr){
 				if(axp->proto == V1 || !axp->flags.rejsent){
 					axp->flags.rejsent = YES;
-					sendctl(axp,LAPB_RESPONSE,REJ | pf);
+					if (poll) {
+						sendctl(axp,LAPB_RESPONSE,REJ | pf);
+					} else {
+						axp->response = REJ;
+					}
 					/* TODO: once rej is sent, stop sending follow-up ACKs? */
 				} else if(poll)
 					enq_resp(axp);
@@ -328,7 +331,11 @@ struct mbuf **bpp		/* Rest of frame, starting with ctl */
 			if(ns != axp->vr){
 				if(axp->proto == V1 || !axp->flags.rejsent){
 					axp->flags.rejsent = YES;
-					sendctl(axp,LAPB_RESPONSE,REJ | pf);
+					if (poll) {
+						sendctl(axp,LAPB_RESPONSE,REJ | pf);
+					} else {
+						axp->response = REJ;
+					}
 					/* TODO: once rej is sent, stop sending follow-up ACKs? */
 				} else if(poll)
 					enq_resp(axp);
@@ -571,14 +578,7 @@ struct mbuf **data
 void
 lapb_output(struct ax25_cb *axp)
 {
-	if (axp->t2.duration == 0L) { /* disabled? */
-		dlapb_output(axp);
-	} else {
-		/* function installed in lapbtime.c */
-		if (! run_timer(&axp->t2)) {
-			start_timer(&axp->t2);
-		}
-	}
+	start_timer(&axp->t2);
 }
 
 /* Set new link state */
