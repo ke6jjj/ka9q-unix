@@ -120,7 +120,7 @@ int pid
 	}
 
 	/* Schedule another transmission */
-	lapb_output(axp);
+	lapb_output(axp, 1);
 
 	return 0; /* No error */
 }

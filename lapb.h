@@ -163,7 +163,7 @@ void est_link(struct ax25_cb *axp);
 void lapbstate(struct ax25_cb *axp,int s);
 int lapb_input(struct ax25_cb *axp,int cmdrsp,struct mbuf **bp);
 int dlapb_output(struct ax25_cb *axp);
-void lapb_output(struct ax25_cb *axp);
+void lapb_output(struct ax25_cb *axp, int no_delay);
 struct mbuf *segmenter(struct mbuf **bp,uint ssize);
 int sendctl(struct ax25_cb *axp,int cmdrsp,int cmd);
 int sendframe(struct ax25_cb *axp,int cmdrsp,int ctl,struct mbuf **data);

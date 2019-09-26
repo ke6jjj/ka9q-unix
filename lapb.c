@@ -365,7 +365,7 @@ struct mbuf **bpp		/* Rest of frame, starting with ctl */
 	/* See if we can send some data, perhaps piggybacking an ack.
 	 * If (eventually) successful, lapb_output will clear axp->response.
 	 */
-	lapb_output(axp);
+	lapb_output(axp, 0);
 
 	return 0;
 }
@@ -576,9 +576,18 @@ struct mbuf **data
 
 /* defer output with timer, give time for ack to abort retry - K5JB */
 void
-lapb_output(struct ax25_cb *axp)
+lapb_output(struct ax25_cb *axp, int no_delay)
 {
-	start_timer(&axp->t2);
+	/* If no_delay is 0 then always schedule the timer */
+	if (no_delay == 0) {
+		start_timer(&axp->t2);
+		return;
+	}
+
+	/* no_delay is 1; only schedule it if it isn't running */
+	if (! run_timer(&axp->t2)) {
+		start_timer(&axp->t2);
+	}
 }
 
 /* Set new link state */
