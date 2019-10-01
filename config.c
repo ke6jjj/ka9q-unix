@@ -389,7 +389,7 @@ struct cmds Attab[] = {
 #if defined(MSDOS)
 	{ "asy", asy_attach, 0, 8, "attach asy <address> <vector> slip|vjslip|ax25ui|ax25i|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]" },
 #elif defined(UNIX)
-	{ "asy", asy_attach, 0, 7, "attach asy <device> slip|vjslip|ax25ui|ax25i|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]" },
+	{ "asy", asy_attach, 0, 7, "attach asy <device> slip|vjslip|ax25ui|ax25i|kissui|kissi|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]" },
 #else
 	{ "asy", asy_attach, 0, 8, "attach asy <driver> <unit> slip|vjslip|ax25ui|ax25i|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]" },
 #endif	/* rest (AMIGA?) */
