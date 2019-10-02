@@ -217,7 +217,8 @@ axudp_attach(int argc, char *argv[], void *p)
 		goto IfNameDupFailed;
 	}
 	/* Interface routines will free this on shutdown */
-	if_axudp->hwaddr = NULL;
+	if_axudp->hwaddr = mallocw(AXALEN);
+	memcpy(if_axudp->hwaddr, Mycall, AXALEN);
 	if_axudp->mtu = 65535;
 	if_axudp->dev = i;
 	if_axudp->raw = axudp_raw;

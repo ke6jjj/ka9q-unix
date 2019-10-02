@@ -37,6 +37,8 @@ static int domycall(int argc,char *argv[],void *p);
 static int don2(int argc,char *argv[],void *p);
 static int dopaclen(int argc,char *argv[],void *p);
 static int dopthresh(int argc,char *argv[],void *p);
+static int dot1max(int argc,char *argv[],void *p);
+static int dot2(int argc,char *argv[],void *p);
 static int dot3(int argc,char *argv[],void *p);
 static int doversion(int argc,char *argv[],void *p);
 
@@ -75,6 +77,8 @@ static struct cmds Axcmds[] = {
 	{ "retry",	don2,		0, 0, NULL },
 	{ "route",	doaxroute,	0, 0, NULL },
 	{ "status",	doaxstat,	0, 0, NULL },
+	{ "t1max",	dot1max,	0, 0, "ax25 t1 <maximum retransmit timer value in ms>" },
+	{ "t2",		dot2,		0, 0, "ax25 t2 <transmit time in ms>" },
 	{ "t3",		dot3,		0, 0, NULL },
 	{ "version",	doversion,	0, 0, NULL },
 	{ "window",	doaxwindow,	0, 0, NULL },
@@ -307,13 +311,19 @@ struct ax25_cb *axp;
 		kprintf("stop");
 	kprintf("/%lu ms; ",dur_timer(&axp->t1));
 
+	kprintf("T2: ");
+	if(run_timer(&axp->t2))
+		kprintf("%lu",read_timer(&axp->t2));
+	else
+		kprintf("stop");
+	kprintf("/%lu ms; ",dur_timer(&axp->t2));
+
 	kprintf("T3: ");
 	if(run_timer(&axp->t3))
 		kprintf("%lu",read_timer(&axp->t3));
 	else
 		kprintf("stop");
 	kprintf("/%lu ms\n",dur_timer(&axp->t3));
-
 }
 
 /* Display or change our AX.25 address */
@@ -368,6 +378,27 @@ char *argv[];
 void *p;
 {
 	return setuns(&Axirtt,"Initial RTT (ms)",argc,argv);
+}
+
+/* Set maximum t1 timer value */
+static int
+dot1max(argc,argv,p)
+int argc;
+char *argv[];
+void *p;
+{
+	return setuns(&T1maxinit,"Maximum T1 timer value (ms)",argc,argv);
+}
+
+
+/* Set transmit timer */
+static int
+dot2(argc,argv,p)
+int argc;
+char *argv[];
+void *p;
+{
+	return setuns(&T2init,"Transmit delay (ms)",argc,argv);
 }
 
 /* Set idle timer */

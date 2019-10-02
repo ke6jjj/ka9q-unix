@@ -19,9 +19,10 @@ recover(void *p)
 
 	axp->flags.retrans = 1;
 	axp->retries++;
-	if((1L << axp->retries) < Blimit)
+	if((1L << axp->retries) < Blimit) {
 		/* Back off retransmit timer */
-		set_timer(&axp->t1,dur_timer(&axp->t1)*2);
+		ax25_set_t1_timer(axp, dur_timer(&axp->t1)*2);
+	}
 
 	switch(axp->state){
 	case LAPB_SETUP:
@@ -62,6 +63,14 @@ recover(void *p)
 	}
 }
 
+/* Deferred lapb send */
+void
+defer_lapb_send(void *p)
+{
+	struct ax25_cb *axp = p;
+
+	(void) dlapb_output(axp);
+}
 
 /* Send a poll (S-frame command with the poll bit set) */
 void
@@ -87,6 +96,8 @@ static void
 tx_enq(struct ax25_cb *axp)
 {
 	char ctl;
+
+#if 0
 	struct mbuf *bp;
 
 	/* I believe that retransmitting the oldest unacked
@@ -106,7 +117,17 @@ tx_enq(struct ax25_cb *axp)
 		ctl = len_p(axp->rxq) >= axp->window ? RNR|PF : RR|PF;	
 		sendctl(axp,LAPB_COMMAND,ctl);
 	}
-	axp->response = 0;	
+#else
+	/*
+	 * Just send a poll request, don't try to retransmit an older I-frame.
+	 * For stacks that don't implement T2 doing the above may result in
+	 * a lot of retransmitted packets as the receiver may see RRs followed
+	 * by an I-frame poll for an earlier sequence number, leading to a REJ.
+	 */
+	ctl = len_p(axp->rxq) >= axp->window ? RNR|PF : RR|PF;
+	sendctl(axp,LAPB_COMMAND,ctl);
+#endif
+	axp->response = 0;
 	stop_timer(&axp->t3);
 	start_timer(&axp->t1);
 }
