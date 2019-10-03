@@ -84,4 +84,8 @@ extern	int unix_socket_read(struct unix_socket_entry *us, void *buf,
 extern	int unix_socket_write(struct unix_socket_entry *us, const void *buf,
 	    unsigned short cnt);
 
+extern	int unix_socket_tx_dma_busy(struct unix_socket_entry *us);
+extern	int unix_socket_get_trigchar(struct unix_socket_entry *us);
+extern	int unix_socket_set_trigchar(struct unix_socket_entry *us, int trigchar);
+
 #endif /* KA9Q_UNIX_SOCKET_H */

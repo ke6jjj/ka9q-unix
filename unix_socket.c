@@ -477,3 +477,22 @@ unix_socket_write(struct unix_socket_entry *us, const void *buf, unsigned short 
 	}
 	return cnt;
 }
+
+int
+unix_socket_tx_dma_busy(struct unix_socket_entry *us)
+{
+	return (us->dma.busy != 0);
+}
+
+int
+unix_socket_get_trigchar(struct unix_socket_entry *us)
+{
+	return (us->trigchar);
+}
+
+int
+unix_socket_set_trigchar(struct unix_socket_entry *us, int trigchar)
+{
+	us->trigchar = trigchar;
+	return 0;
+}

@@ -66,7 +66,7 @@ DUMP= 	trace.o enetdump.o \
 	ipdump.o icmpdump.o udpdump.o tcpdump.o ripdump.o
 
 UNIX=	ksubr_unix.o timer_unix.o display_crs.o unix.o dirutil_unix.o \
-	tapdrvr.o tundrvr.o enet.o
+	tapdrvr.o tundrvr.o enet.o unix_socket.o
 
 DSP=	fsk.o mdb.o qpsk.o fft.o r4bf.o fano.o tab.o
 

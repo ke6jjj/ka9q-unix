@@ -330,7 +330,7 @@ struct mbuf **bpp
 	/* No need to send an opening flag if the previous packet is still
 	 * being transmitted.
 	 */
-	if ( Asy[ifp->dev].dma.busy == 0 ) {
+	if (asy_tx_dma_busy(ifp->dev) != 0) {
 		/* Flush out any line garbage */
 		*cp++ = HDLC_FLAG;
 		ppp_p->OutOpenFlag++;
