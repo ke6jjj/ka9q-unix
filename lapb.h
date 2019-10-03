@@ -102,6 +102,7 @@ struct ax25_cb {
 		LAPB_RECOVERY
 	} state;			/* Link state */
 	struct timer t1;		/* Retry timer */
+	struct timer t2;		/* Response timer */
 	struct timer t3;		/* Keep-alive poll timer */
 	int32 rtt_time;			/* Stored clock values for RTT, ticks */
 	int rtt_seq;			/* Sequence number being timed */
@@ -131,13 +132,14 @@ extern struct axlink Axlink[];
 
 extern struct ax25_cb Ax25default,*Ax25_cb;
 extern char *Ax25states[],*Axreasons[];
-extern uint32 Axirtt,T3init,Blimit;
+extern uint32 Axirtt,T1maxinit,T2init,T3init,Blimit;
 extern uint N2,Maxframe,Paclen,Pthresh,Axwindow,Axversion;
 
 /* In ax25cmd.c: */
 void st_ax25(struct ax25_cb *axp);
 
 /* In ax25subr.c: */
+void ax25_set_t1_timer(struct ax25_cb *cb, int value);
 struct ax25_cb *cr_ax25(uint8 *addr);
 void del_ax25(struct ax25_cb *axp);
 struct ax25_cb *find_ax25(uint8 *);
@@ -160,7 +162,8 @@ int send_ax25(struct ax25_cb *axp,struct mbuf **bp,int pid);
 void est_link(struct ax25_cb *axp);
 void lapbstate(struct ax25_cb *axp,int s);
 int lapb_input(struct ax25_cb *axp,int cmdrsp,struct mbuf **bp);
-int lapb_output(struct ax25_cb *axp);
+int dlapb_output(struct ax25_cb *axp);
+void lapb_output(struct ax25_cb *axp, int no_delay);
 struct mbuf *segmenter(struct mbuf **bp,uint ssize);
 int sendctl(struct ax25_cb *axp,int cmdrsp,int cmd);
 int sendframe(struct ax25_cb *axp,int cmdrsp,int ctl,struct mbuf **data);
@@ -169,6 +172,7 @@ void axnl3(struct iface *iface,struct ax25_cb *axp,uint8 *src,
 
 /* In lapbtimer.c: */
 void pollthem(void *p);
+void defer_lapb_send(void *p);
 void recover(void *p);
 
 /* In ax25subr.c: */

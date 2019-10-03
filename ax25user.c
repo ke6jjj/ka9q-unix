@@ -118,7 +118,11 @@ int pid
 	} else {
 		enqueue(&axp->txq,bpp);
 	}
-	return lapb_output(axp);
+
+	/* Schedule another transmission */
+	lapb_output(axp, 1);
+
+	return 0; /* No error */
 }
 
 /* Receive incoming data on an AX.25 connection */
@@ -142,8 +146,11 @@ uint cnt;
 	}
 	/* If this has un-busied us, send a RR to reopen the window */
 	if(len_p(axp->rxq) < axp->window
-	 && (len_p(axp->rxq) + bp->cnt) >= axp->window)
-		sendctl(axp,LAPB_RESPONSE,RR);
+	 && (len_p(axp->rxq) + bp->cnt) >= axp->window) {
+		axp->response = RR;
+		start_timer(&axp->t2);
+		//sendctl(axp,LAPB_RESPONSE,RR);
+	}
 
 	return bp;
 }

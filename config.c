@@ -389,7 +389,7 @@ struct cmds Attab[] = {
 #if defined(MSDOS)
 	{ "asy", asy_attach, 0, 8, "attach asy <address> <vector> slip|vjslip|ax25ui|ax25i|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]" },
 #elif defined(UNIX)
-	{ "asy", asy_attach, 0, 7, "attach asy <device> slip|vjslip|ax25ui|ax25i|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]" },
+	{ "asy", asy_attach, 0, 7, "attach asy <device> slip|vjslip|ax25ui|ax25i|kissui|kissi|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]" },
 #else
 	{ "asy", asy_attach, 0, 8, "attach asy <driver> <unit> slip|vjslip|ax25ui|ax25i|nrs|ppp <label> <buffers> <mtu> <speed> [ip_addr]" },
 #endif	/* rest (AMIGA?) */
@@ -427,13 +427,14 @@ struct cmds Attab[] = {
 	/* FTP Software's packet driver spec */
 	{ "packet", pk_attach, 0, 4, "attach packet <int#> <label> <buffers> <mtu> [ip_addr]" },
 #endif
-#ifdef	UNIX
+#ifdef HAVE_NET_IF_TAP_H
 	/* BSD Ethernet TAP device */
 	{ "tap", tap_attach, 0, 4, "attach tap <path> <label> <ethaddr> <mtu>" },
-
+#endif /* HAVE_NET_IF_TAP_H */
+#ifdef HAVE_NET_IF_TUN_H
 	/* BSD IP TUN device */
 	{ "tun", tun_attach, 0, 4, "attach tun <path> <label> <mtu>" },
-#endif
+#endif /* HAVE_NET_IF_TUN_H */
 #endif
 #ifdef	HS
 	/* Special high speed driver for DRSI PCPA or Eagle cards */

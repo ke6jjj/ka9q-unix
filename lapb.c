@@ -1,5 +1,4 @@
-/* Link Access Procedures Balanced (LAPB), the upper sublayer of
- * AX.25 Level 2.
+/* Link Access Procedures Balanced (LAPB), the upper sublayer of * AX.25 Level 2.
  *
  * Copyright 1991 Phil Karn, KA9Q
  */
@@ -81,7 +80,7 @@ struct mbuf **bpp		/* Rest of frame, starting with ctl */
 			lapbstate(axp,LAPB_CONNECTED);/* Resets state counters */
 			axp->srt = Axirtt;
 			axp->mdev = 0;
-			set_timer(&axp->t1,2*axp->srt);
+			ax25_set_t1_timer(axp, 2*axp->srt);
 			start_timer(&axp->t3);
 			break;
 		case DM:	/* Ignore to avoid infinite loops */
@@ -204,7 +203,12 @@ struct mbuf **bpp		/* Rest of frame, starting with ctl */
 			if(ns != axp->vr){
 				if(axp->proto == V1 || !axp->flags.rejsent){
 					axp->flags.rejsent = YES;
-					sendctl(axp,LAPB_RESPONSE,REJ | pf);
+					if (poll) {
+						sendctl(axp,LAPB_RESPONSE,REJ | pf);
+					} else {
+						axp->response = REJ;
+					}
+					/* TODO: once rej is sent, stop sending follow-up ACKs? */
 				} else if(poll)
 					enq_resp(axp);
 				axp->response = 0;
@@ -327,7 +331,12 @@ struct mbuf **bpp		/* Rest of frame, starting with ctl */
 			if(ns != axp->vr){
 				if(axp->proto == V1 || !axp->flags.rejsent){
 					axp->flags.rejsent = YES;
-					sendctl(axp,LAPB_RESPONSE,REJ | pf);
+					if (poll) {
+						sendctl(axp,LAPB_RESPONSE,REJ | pf);
+					} else {
+						axp->response = REJ;
+					}
+					/* TODO: once rej is sent, stop sending follow-up ACKs? */
 				} else if(poll)
 					enq_resp(axp);
 
@@ -354,13 +363,10 @@ struct mbuf **bpp		/* Rest of frame, starting with ctl */
 	free_p(bpp);	/* In case anything's left */
 
 	/* See if we can send some data, perhaps piggybacking an ack.
-	 * If successful, lapb_output will clear axp->response.
+	 * If (eventually) successful, lapb_output will clear axp->response.
 	 */
-	lapb_output(axp);
-	if(axp->response != 0){
-		sendctl(axp,LAPB_RESPONSE,axp->response);
-		axp->response = 0;
-	}
+	lapb_output(axp, 0);
+
 	return 0;
 }
 /* Handle incoming acknowledgements for frames we've sent.
@@ -405,7 +411,7 @@ uint n
 				axp->srt = ((axp->srt * 7) + rtt + 4) >> 3;
 				axp->mdev = ((axp->mdev*3) + abserr + 2) >> 2;
 				/* Update timeout */
-				set_timer(&axp->t1,4*axp->mdev+axp->srt);
+				ax25_set_t1_timer(axp, 4*axp->mdev+axp->srt);
 			}
 		}
 		axp->flags.retrans = 0;
@@ -481,11 +487,13 @@ int cmd
 		cmd |= (axp->vr << 5);
 	return sendframe(axp,cmdrsp,cmd,&mb);
 }
-/* Start data transmission on link, if possible
- * Return number of frames sent
+/*
+ * Start data transmission on link, if possible.
+ *
+ * Return number of frames sent.
  */
 int
-lapb_output(struct ax25_cb *axp)
+dlapb_output(struct ax25_cb *axp)
 {
 	struct mbuf *bp;
 	struct mbuf *tbp;
@@ -493,10 +501,17 @@ lapb_output(struct ax25_cb *axp)
 	int sent = 0;
 	int i;
 
-	if(axp == NULL
-	 || (axp->state != LAPB_RECOVERY && axp->state != LAPB_CONNECTED)
-	 || axp->flags.remotebusy)
+	if (axp == NULL || (axp->state != LAPB_RECOVERY && axp->state != LAPB_CONNECTED)) {
 		return 0;
+	}
+
+	/* Break RNR deadlock */
+	if (axp->flags.remotebusy) {
+		if (!run_timer(&axp->t1)) {
+			start_timer(&axp->t1);
+		}
+		return 0;
+	}
 
 	/* Dig into the send queue for the first unsent frame */
 	bp = axp->txq;
@@ -534,6 +549,18 @@ lapb_output(struct ax25_cb *axp)
 			axp->flags.rtt_run = 1;
 		}
 	}
+
+	/*
+	 * Handle any deferred RR/RNR responses.
+	 *
+	 * If they weren't cleared by the above I frame transmission
+	 * they need to go out now.
+	 */
+	if (axp->response != 0) {
+		sendctl(axp,LAPB_RESPONSE,axp->response);
+		axp->response = 0;
+	}
+
 	return sent;
 }
 /* General purpose AX.25 frame output */
@@ -546,6 +573,23 @@ struct mbuf **data
 ){
 	return axsend(axp->iface,axp->remote,axp->local,cmdrsp,ctl,data);
 }
+
+/* defer output with timer, give time for ack to abort retry - K5JB */
+void
+lapb_output(struct ax25_cb *axp, int no_delay)
+{
+	/* If no_delay is 0 then always schedule the timer */
+	if (no_delay == 0) {
+		start_timer(&axp->t2);
+		return;
+	}
+
+	/* no_delay is 1; only schedule it if it isn't running */
+	if (! run_timer(&axp->t2)) {
+		start_timer(&axp->t2);
+	}
+}
+
 /* Set new link state */
 void
 lapbstate(
@@ -558,6 +602,7 @@ int s
 	axp->state = s;
 	if(s == LAPB_DISCONNECTED){
 		stop_timer(&axp->t1);
+		stop_timer(&axp->t2);
 		stop_timer(&axp->t3);
 		free_q(&axp->txq);
 	}
