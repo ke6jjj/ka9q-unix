@@ -113,7 +113,6 @@ int dev,
 long bps
 ){
 	struct asy *asyp;
-	struct termios tc;
 
 	if(dev >= ASY_MAX)
 		return -1;
@@ -124,20 +123,8 @@ long bps
 	if(bps == 0)
 		return -1;
 
-	if (unix_socket_is_real_tty(asyp->socket_entry)) {
-		if (tcgetattr(asyp->socket_entry->ttyfd, &tc) != 0)
-			return -1;
-		if (cfsetspeed(&tc, bps) != 0)
-			return -1;
-		if (tcsetattr(asyp->socket_entry->ttyfd, TCSAFLUSH, &tc) != 0)
-			return -1;
-	}
-
-	asyp->socket_entry->speed = bps;
-
-	return 0;
+	return unix_socket_set_line_speed(asyp->socket_entry, bps);
 }
-
 
 /* Asynchronous line I/O control */
 int32
@@ -148,39 +135,8 @@ int set,
 int32 val
 ){
 	struct asy *ap = &Asy[ifp->dev];
-	int bits, setbits, clearbits;
 
-	switch(cmd){
-	case PARAM_SPEED:
-		if(set)
-			asy_speed(ifp->dev,val);
-		return ap->socket_entry->speed;
-	case PARAM_DTR:
-		setbits = (set && val) ? TIOCM_DTR : 0;
-		clearbits = (set && !val) ? 0 : TIOCM_DTR;
-		if (unix_socket_is_real_tty(ap->socket_entry)) {
-			unix_socket_modem_bits(ap->socket_entry,setbits,clearbits,&bits);
-			return (bits & TIOCM_DTR) ? TRUE : FALSE;
-		}
-		return TRUE;
-	case PARAM_RTS:
-		setbits = (set && val) ? TIOCM_RTS : 0;
-		clearbits = (set && !val) ? 0 : TIOCM_RTS;
-		if (unix_socket_is_real_tty(ap->socket_entry)) {
-			unix_socket_modem_bits(ap->socket_entry,setbits,clearbits,&bits);
-			return (bits & TIOCM_RTS) ? TRUE : FALSE;
-		}
-		return TRUE;
-	case PARAM_DOWN:
-		if (unix_socket_is_real_tty(ap->socket_entry))
-			unix_socket_modem_bits(ap->socket_entry,0,TIOCM_RTS|TIOCM_DTR,NULL);
-		return FALSE;
-	case PARAM_UP:
-		if (unix_socket_is_real_tty(ap->socket_entry))
-			unix_socket_modem_bits(ap->socket_entry,TIOCM_RTS|TIOCM_DTR,0,NULL);
-		return TRUE;
-	}
-	return -1;
+	return unix_socket_ioctl(ap->socket_entry, cmd, set, val);
 }
 
 /* Open an asynch port for direct I/O, temporarily suspending any
