@@ -33,6 +33,13 @@
 #include "proc.h"
 #endif
 
+struct unix_socket_stats {
+	long rxchar;
+	long txchar;
+	long fifo_overrun;
+	long fifo_hiwat;
+};
+
 /* Output pseudo-dma control structure */
 struct unix_socket_dma {
 	uint8 *data;		/* current output pointer */
@@ -94,5 +101,9 @@ extern	int32 unix_socket_ioctl(struct unix_socket_entry *us, int cmd,
 extern	int unix_socket_modem_bits(struct unix_socket_entry *us, int setbits,
 	    int clearbits, int *readbits);
 extern	int unix_socket_is_real_tty(struct unix_socket_entry *us);
+extern	int unix_socket_flowcontrol_cts(struct unix_socket_entry *us);
+extern	int unix_socket_get_stats(struct unix_socket_entry *us,
+	    struct unix_socket_stats *stats);
+extern	long unix_socket_get_speed(struct unix_socket_entry *us);
 
 #endif /* KA9Q_UNIX_SOCKET_H */

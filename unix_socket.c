@@ -590,3 +590,35 @@ unix_socket_is_real_tty(struct unix_socket_entry *us)
 	}
 	return us->is_real_tty;
 }
+
+int
+unix_socket_flowcontrol_cts(struct unix_socket_entry *us)
+{
+	if (us == NULL) {
+		return 0;
+	}
+	return us->cts;
+}
+
+int
+unix_socket_get_stats(struct unix_socket_entry *us, struct unix_socket_stats *stats)
+{
+	if (us == NULL) {
+		return -1;
+	}
+	stats->rxchar = us->rxchar;
+	stats->txchar = us->txchar;
+	stats->fifo_overrun = us->fifo.overrun;
+	stats->fifo_hiwat = us->fifo.hiwat;
+	us->fifo.hiwat = 0;
+	return 0;
+}
+
+long
+unix_socket_get_speed(struct unix_socket_entry *us)
+{
+	if (us == NULL) {
+		return -1;
+	}
+	return us->speed;
+}

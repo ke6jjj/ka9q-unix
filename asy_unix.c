@@ -273,15 +273,16 @@ void *p;
 static void
 pasy(struct asy *asyp)
 {
+	struct unix_socket_stats stats;
 	int mcr;
 
 	printf("%s:",asyp->iface->name);
-	if(asyp->socket_entry->trigchar != -1)
-		kprintf(" [trigger 0x%02x]",asyp->socket_entry->trigchar);
-	if(asyp->socket_entry->cts)
+	if(unix_socket_get_trigchar(asyp->socket_entry) != -1)
+		kprintf(" [trigger 0x%02x]",unix_socket_get_trigchar(asyp->socket_entry));
+	if(unix_socket_flowcontrol_cts(asyp->socket_entry))
 		kprintf(" [cts flow control]");
 
-	kprintf(" %lu bps\n",asyp->socket_entry->speed);
+	kprintf(" %lu bps\n",unix_socket_get_speed(asyp->socket_entry));
 
 	if (unix_socket_is_real_tty(asyp->socket_entry)) {
 		if (unix_socket_modem_bits(asyp->socket_entry, 0, 0, &mcr) != 0)
@@ -298,12 +299,12 @@ pasy(struct asy *asyp)
 	} else {
 		kprintf(" TCP socket, no control bits.\n");
 	}
-	
-	kprintf(" RX: chars %lu", asyp->socket_entry->rxchar);
-	kprintf(" sw over %lu sw hi %u\n",asyp->socket_entry->fifo.overrun,asyp->socket_entry->fifo.hiwat);
+	(void) unix_socket_get_stats(asyp->socket_entry, &stats);
 
-	kprintf(" TX: chars %lu %s\n",
-	 asyp->socket_entry->txchar, asyp->socket_entry->dma.busy ? " BUSY" : "");
+	kprintf(" RX: chars %lu", stats.rxchar);
+	kprintf(" sw over %lu sw hi %u\n", stats.fifo_overrun, stats.fifo_hiwat);
+	kprintf(" TX: chars %lu %s\n", stats.txchar,
+	 unix_socket_tx_dma_busy(asyp->socket_entry) ? " BUSY" : "");
 }
 
 /* Send a message on the specified serial line */
