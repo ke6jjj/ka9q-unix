@@ -124,7 +124,7 @@ long bps
 	if(bps == 0)
 		return -1;
 
-	if (asyp->socket_entry->is_real_tty) {
+	if (unix_socket_is_real_tty(asyp->socket_entry)) {
 		if (tcgetattr(asyp->socket_entry->ttyfd, &tc) != 0)
 			return -1;
 		if (cfsetspeed(&tc, bps) != 0)
@@ -158,7 +158,7 @@ int32 val
 	case PARAM_DTR:
 		setbits = (set && val) ? TIOCM_DTR : 0;
 		clearbits = (set && !val) ? 0 : TIOCM_DTR;
-		if (ap->socket_entry->is_real_tty) {
+		if (unix_socket_is_real_tty(ap->socket_entry)) {
 			unix_socket_modem_bits(ap->socket_entry,setbits,clearbits,&bits);
 			return (bits & TIOCM_DTR) ? TRUE : FALSE;
 		}
@@ -166,17 +166,17 @@ int32 val
 	case PARAM_RTS:
 		setbits = (set && val) ? TIOCM_RTS : 0;
 		clearbits = (set && !val) ? 0 : TIOCM_RTS;
-		if (ap->socket_entry->is_real_tty) {
+		if (unix_socket_is_real_tty(ap->socket_entry)) {
 			unix_socket_modem_bits(ap->socket_entry,setbits,clearbits,&bits);
 			return (bits & TIOCM_RTS) ? TRUE : FALSE;
 		}
 		return TRUE;
 	case PARAM_DOWN:
-		if (ap->socket_entry->is_real_tty)
+		if (unix_socket_is_real_tty(ap->socket_entry))
 			unix_socket_modem_bits(ap->socket_entry,0,TIOCM_RTS|TIOCM_DTR,NULL);
 		return FALSE;
 	case PARAM_UP:
-		if (ap->socket_entry->is_real_tty)
+		if (unix_socket_is_real_tty(ap->socket_entry))
 			unix_socket_modem_bits(ap->socket_entry,TIOCM_RTS|TIOCM_DTR,0,NULL);
 		return TRUE;
 	}
@@ -327,7 +327,7 @@ pasy(struct asy *asyp)
 
 	kprintf(" %lu bps\n",asyp->socket_entry->speed);
 
-	if (asyp->socket_entry->is_real_tty) {
+	if (unix_socket_is_real_tty(asyp->socket_entry)) {
 		if (unix_socket_modem_bits(asyp->socket_entry, 0, 0, &mcr) != 0)
 			kprintf("modem bits error: %s\n", strerror(errno));
 			return;

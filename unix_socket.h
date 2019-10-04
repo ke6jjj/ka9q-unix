@@ -93,5 +93,6 @@ extern	int32 unix_socket_ioctl(struct unix_socket_entry *us, int cmd,
 	    int set, int32 val);
 extern	int unix_socket_modem_bits(struct unix_socket_entry *us, int setbits,
 	    int clearbits, int *readbits);
+extern	int unix_socket_is_real_tty(struct unix_socket_entry *us);
 
 #endif /* KA9Q_UNIX_SOCKET_H */

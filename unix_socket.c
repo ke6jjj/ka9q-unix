@@ -582,3 +582,11 @@ unix_socket_modem_bits(struct unix_socket_entry *us, int setbits,
 	return 0;
 }
 
+int
+unix_socket_is_real_tty(struct unix_socket_entry *us)
+{
+	if (us == NULL) {
+		return 0;
+	}
+	return us->is_real_tty;
+}
