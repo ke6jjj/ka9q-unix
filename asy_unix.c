@@ -50,7 +50,6 @@
 
 struct asy Asy[ASY_MAX];
 
-static int asy_modem_bits(int fd, int setbits, int clearbits, int *readbits);
 static void pasy(struct asy *asyp);
 static void asy_tx(int dummy0, void *app, void *dummy1);
 
@@ -160,7 +159,7 @@ int32 val
 		setbits = (set && val) ? TIOCM_DTR : 0;
 		clearbits = (set && !val) ? 0 : TIOCM_DTR;
 		if (ap->socket_entry->is_real_tty) {
-			asy_modem_bits(ap->socket_entry->ttyfd,setbits,clearbits,&bits);
+			unix_socket_modem_bits(ap->socket_entry,setbits,clearbits,&bits);
 			return (bits & TIOCM_DTR) ? TRUE : FALSE;
 		}
 		return TRUE;
@@ -168,17 +167,17 @@ int32 val
 		setbits = (set && val) ? TIOCM_RTS : 0;
 		clearbits = (set && !val) ? 0 : TIOCM_RTS;
 		if (ap->socket_entry->is_real_tty) {
-			asy_modem_bits(ap->socket_entry->ttyfd,setbits,clearbits,&bits);
+			unix_socket_modem_bits(ap->socket_entry,setbits,clearbits,&bits);
 			return (bits & TIOCM_RTS) ? TRUE : FALSE;
 		}
 		return TRUE;
 	case PARAM_DOWN:
 		if (ap->socket_entry->is_real_tty)
-			asy_modem_bits(ap->socket_entry->ttyfd,0,TIOCM_RTS|TIOCM_DTR,NULL);
+			unix_socket_modem_bits(ap->socket_entry,0,TIOCM_RTS|TIOCM_DTR,NULL);
 		return FALSE;
 	case PARAM_UP:
 		if (ap->socket_entry->is_real_tty)
-			asy_modem_bits(ap->socket_entry->ttyfd,TIOCM_RTS|TIOCM_DTR,0,NULL);
+			unix_socket_modem_bits(ap->socket_entry,TIOCM_RTS|TIOCM_DTR,0,NULL);
 		return TRUE;
 	}
 	return -1;
@@ -329,7 +328,7 @@ pasy(struct asy *asyp)
 	kprintf(" %lu bps\n",asyp->socket_entry->speed);
 
 	if (asyp->socket_entry->is_real_tty) {
-		if (asy_modem_bits(asyp->socket_entry->ttyfd, 0, 0, &mcr) != 0)
+		if (unix_socket_modem_bits(asyp->socket_entry, 0, 0, &mcr) != 0)
 			kprintf("modem bits error: %s\n", strerror(errno));
 			return;
 
@@ -364,18 +363,6 @@ struct mbuf **bpp;
 
 	enqueue(&Asy[dev].txq, bpp);
 
-	return 0;
-}
-
-static int
-asy_modem_bits(int fd, int setbits, int clearbits, int *readbits)
-{
-	if (setbits != 0 && ioctl(fd, TIOCMBIS, &setbits) != 0)
-		return -1;
-	if (clearbits != 0 && ioctl(fd, TIOCMBIC, &clearbits) != 0)
-		return -1;
-	if (readbits != NULL && ioctl(fd, TIOCMGET, readbits) != 0)
-		return -1;
 	return 0;
 }
 

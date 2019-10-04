@@ -496,3 +496,89 @@ unix_socket_set_trigchar(struct unix_socket_entry *us, int trigchar)
 	us->trigchar = trigchar;
 	return 0;
 }
+
+/* Set asynch line speed */
+int
+unix_socket_set_line_speed(struct unix_socket_entry *us, long bps)
+{
+	struct termios tc;
+
+	if(bps == 0)
+		return -1;
+
+	if (us->is_real_tty) {
+		if (tcgetattr(us->ttyfd, &tc) != 0)
+			return -1;
+		if (cfsetspeed(&tc, bps) != 0)
+			return -1;
+		if (tcsetattr(us->ttyfd, TCSAFLUSH, &tc) != 0)
+			return -1;
+	}
+
+	us->speed = bps;
+
+	return 0;
+}
+
+/* Asynchronous line I/O control */
+int32
+unix_socket_ioctl(struct unix_socket_entry *us, int cmd, int set, int32 val)
+{
+	int bits, setbits, clearbits;
+
+	switch(cmd){
+	case PARAM_SPEED:
+		if(set)
+			unix_socket_set_line_speed(us, val);
+		return us->speed;
+	case PARAM_DTR:
+		setbits = (set && val) ? TIOCM_DTR : 0;
+		clearbits = (set && !val) ? 0 : TIOCM_DTR;
+		if (us->is_real_tty) {
+			unix_socket_modem_bits(us, setbits, clearbits, &bits);
+			return (bits & TIOCM_DTR) ? TRUE : FALSE;
+		}
+		return TRUE;
+	case PARAM_RTS:
+		setbits = (set && val) ? TIOCM_RTS : 0;
+		clearbits = (set && !val) ? 0 : TIOCM_RTS;
+		if (us->is_real_tty) {
+			unix_socket_modem_bits(us, setbits,clearbits,&bits);
+			return (bits & TIOCM_RTS) ? TRUE : FALSE;
+		}
+		return TRUE;
+	case PARAM_DOWN:
+		if (us->is_real_tty)
+			unix_socket_modem_bits(us, 0,TIOCM_RTS|TIOCM_DTR,NULL);
+		return FALSE;
+	case PARAM_UP:
+		if (us->is_real_tty)
+			unix_socket_modem_bits(us,TIOCM_RTS|TIOCM_DTR,0,NULL);
+		return TRUE;
+	}
+	return -1;
+}
+
+/*
+ * Fetch and update the modem ioctl configuration.
+ *
+ * TODO: change this to use KA9Q versions of the IOCTL flags and
+ * translate them here.  That way this public API will hide the
+ * UNIX ioctl flags.
+ */
+int
+unix_socket_modem_bits(struct unix_socket_entry *us, int setbits,
+    int clearbits, int *readbits)
+{
+	if (us == NULL) {
+		return -1;
+	}
+	if (setbits != 0 && ioctl(us->ttyfd, TIOCMBIS, &setbits) != 0)
+		return -1;
+	if (clearbits != 0 && ioctl(us->ttyfd, TIOCMBIC, &clearbits) != 0)
+		return -1;
+	if (readbits != NULL && ioctl(us->ttyfd, TIOCMGET, readbits) != 0)
+		return -1;
+	return 0;
+}
+

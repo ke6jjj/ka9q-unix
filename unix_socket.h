@@ -88,4 +88,10 @@ extern	int unix_socket_tx_dma_busy(struct unix_socket_entry *us);
 extern	int unix_socket_get_trigchar(struct unix_socket_entry *us);
 extern	int unix_socket_set_trigchar(struct unix_socket_entry *us, int trigchar);
 
+extern	int unix_socket_set_line_speed(struct unix_socket_entry *us, long bps);
+extern	int32 unix_socket_ioctl(struct unix_socket_entry *us, int cmd,
+	    int set, int32 val);
+extern	int unix_socket_modem_bits(struct unix_socket_entry *us, int setbits,
+	    int clearbits, int *readbits);
+
 #endif /* KA9Q_UNIX_SOCKET_H */
