@@ -28,7 +28,7 @@
 #include "udp.h"
 #include "smtp.h"
 #ifdef	ARCNET
-#include "arcnet.h"
+#include "msdos/arcnet.h"
 #endif
 #include "lapb.h"
 #include "ax25.h"
@@ -39,7 +39,9 @@
 #include "netrom.h"
 #include "tapdrvr.h"
 #include "tundrvr.h"
-#include "pktdrvr.h"
+#ifdef	MSDOS
+#include "msdos/pktdrvr.h"
+#endif
 #include "ppp.h"
 #include "slip.h"
 #include "arp.h"

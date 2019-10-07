@@ -18,7 +18,6 @@
 #include "asy.h"
 #include "slip.h"
 #include "trace.h"
-#include "pktdrvr.h"
 
 static struct mbuf *slip_decode(struct slip *sp,uint8 c);
 static struct mbuf *slip_encode(struct mbuf **bpp);

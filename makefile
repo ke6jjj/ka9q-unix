@@ -61,7 +61,7 @@ NET=	ftpsubr.o sockcmd.o sockuser.o locsock.o socket.o \
 	devparam.o stdio.o ahdlc.o crc.o md5c.o errno.o \
 	errlst.o getopt.o
 
-DUMP= 	trace.o enetdump.o arcdump.o \
+DUMP= 	trace.o enetdump.o \
 	kissdump.o ax25dump.o arpdump.o nrdump.o \
 	ipdump.o icmpdump.o udpdump.o tcpdump.o ripdump.o
 
