@@ -3,9 +3,9 @@
 #
 # parameters for typical UNIX installation
 #
-CC= gcc
-RM= del
-LIB= ar
+CC?= cc
+RM?= rm -f
+LIB?= ar
 CFLAGS= -g -DHOST_BSD -Werror -Wno-int-to-void-pointer-cast -O3
 # This was enabled by default, maintain backwards compatibility for now
 CFLAGS+= -DHAVE_NET_IF_TAP_H
@@ -132,7 +132,7 @@ srcrcs.zip:
 src.zip:
 	-pkzip -u src.zip makefile turboc.cfg dodeps.sh *.c *.h *.s
 
-clean:	nul
+clean:
 	$(RM) *.a
 	$(RM) *.o
 	$(RM) *.exe
