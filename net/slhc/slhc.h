@@ -37,19 +37,19 @@
  *			status display
  */
 #ifndef	_GLOBAL_H
-#include "global.h"
+#include "../../global.h"
 #endif
 
 #ifndef	_MBUF_H
-#include "mbuf.h"
+#include "../../mbuf.h"
 #endif
 
 #ifndef	_IP_H
-#include "ip.h"
+#include "../../ip.h"
 #endif
 
 #ifndef	_TCP_H
-#include "tcp.h"
+#include "../../tcp.h"
 #endif
 
 /*

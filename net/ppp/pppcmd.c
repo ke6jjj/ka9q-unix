@@ -8,18 +8,20 @@
  *
  *	Acknowledgements and correction history may be found in PPP.C
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "stdio.h"
-#include "global.h"
-#include "mbuf.h"
-#include "iface.h"
+#include "../../stdio.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../iface.h"
+
+#include "../../cmdparse.h"
+
 #include "ppp.h"
 #include "pppfsm.h"
 #include "ppplcp.h"
 #include "ppppap.h"
 #include "pppipcp.h"
-#include "cmdparse.h"
 
 static struct iface *ppp_lookup(char *ifname);
 

@@ -10,15 +10,16 @@
  *	Jan 91	[Bill Simpson] small changes to match rewrite of PPP
  *	Aug 91	[Bill Simpson] fixed some buffer loss
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "stdio.h"
-#include "global.h"
-#include "mbuf.h"
-#include "iface.h"
-#include "internet.h"
+#include "../../stdio.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../iface.h"
+#include "../../internet.h"
+#include "../../trace.h"
+
 #include "ppp.h"
-#include "trace.h"
 
 #ifdef TURBOC_SWITCH_BUG
 #pragma option -G-

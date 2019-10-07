@@ -2,7 +2,7 @@
 #define _PPPIPCP_H
 
 #ifndef _SLHC_H
-#include "slhc.h"
+#include "../slhc/slhc.h"
 #endif
 
 					/* IPCP option types */

@@ -1,13 +1,14 @@
 /* Ethernet header tracing routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "stdio.h"
-#include "global.h"
-#include "mbuf.h"
+#include "../../stdio.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../trace.h"
+
 #include "enet.h"
-#include "trace.h"
 
 void
 ether_dump(

@@ -2,19 +2,19 @@
 #define	_ARP_H
 
 #ifndef	_GLOBAL_H
-#include "global.h"
+#include "../../global.h"
 #endif
 
 #ifndef	_MBUF_H
-#include "mbuf.h"
+#include "../../mbuf.h"
 #endif
 
 #ifndef	_IFACE_H
-#include "iface.h"
+#include "../../iface.h"
 #endif
 
 #ifndef	_TIMER_H
-#include "timer.h"
+#include "../../timer.h"
 #endif
 
 /* Lifetime of a valid ARP entry */

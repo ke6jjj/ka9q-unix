@@ -21,7 +21,6 @@
 #include "ip.h"
 #include "internet.h"
 #include "rip.h"
-#include "arp.h"
 
 struct rip_stat Rip_stat;
 uint Rip_trace;

@@ -34,8 +34,9 @@
 #include "bootpd.h"
 #include "udp.h"
 #include "ip.h"
-#include "arp.h"
 #include "netuser.h"
+
+#include "net/arp/arp.h"
 
 void bootpd(struct iface *iface, struct udp_cb *sock, int cnt); 
 

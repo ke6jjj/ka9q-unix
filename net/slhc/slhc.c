@@ -37,13 +37,14 @@
  *			separate routines
  *			status display
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "global.h"
-#include "mbuf.h"
-#include "internet.h"
-#include "ip.h"
-#include "tcp.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../internet.h"
+#include "../../ip.h"
+#include "../../tcp.h"
+
 #include "slhc.h"
 
 static uint8 *encode(uint8 *cp,uint n);

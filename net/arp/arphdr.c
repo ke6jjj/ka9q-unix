@@ -1,10 +1,11 @@
 /* ARP header conversion routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "global.h"
-#include "mbuf.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+
 #include "arp.h"
 
 /* Copy a host format arp structure into mbuf for transmission */

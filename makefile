@@ -38,7 +38,7 @@ INTERNET= tcpcmd.o tcpsock.o tcpuser.o \
 	ripcmd.o rip.o \
 	ipcmd.o ipsock.o ip.o iproute.o iphdr.o \
 	icmpcmd.o ping.o icmp.o icmpmsg.o icmphdr.o \
-	arpcmd.o arp.o arphdr.o \
+	net/arp/arpcmd.o net/arp/arp.o net/arp/arphdr.o \
 	netuser.o sim.o
 
 IPSEC=	ipsec.o esp.o deskey.o des3port.o desport.o desspa.o ah.o
@@ -50,9 +50,9 @@ AX25=	ax25cmd.o axsock.o ax25user.o ax25.o \
 NETROM=	nrcmd.o nrsock.o nr4user.o nr4timer.o nr4.o nr4subr.o \
 	nr4hdr.o nr3.o nrs.o nrhdr.o nr4mail.o
 
-PPP=	asy.o asy_unix.o ppp.o pppcmd.o pppfsm.o ppplcp.o \
-	ppppap.o pppipcp.o pppdump.o \
-	slhc.o slhcdump.o slip.o sppp.o
+PPP=	asy.o asy_unix.o net/ppp/ppp.o net/ppp/pppcmd.o net/ppp/pppfsm.o \
+	net/ppp/ppplcp.o net/ppp/ppppap.o net/ppp/pppipcp.o net/ppp/pppdump.o \
+	net/slhc/slhc.o net/slhc/slhcdump.o net/slip/slip.o net/sppp/sppp.o
 
 NET=	ftpsubr.o sockcmd.o sockuser.o locsock.o socket.o \
 	sockutil.o iface.o timer.o ttydriv.o cmdparse.o \
@@ -61,12 +61,14 @@ NET=	ftpsubr.o sockcmd.o sockuser.o locsock.o socket.o \
 	devparam.o stdio.o ahdlc.o crc.o md5c.o errno.o \
 	errlst.o getopt.o
 
-DUMP= 	trace.o enetdump.o \
-	kissdump.o ax25dump.o arpdump.o nrdump.o \
+DUMP= 	trace.o net/enet/enetdump.o \
+	kissdump.o ax25dump.o net/arp/arpdump.o nrdump.o \
 	ipdump.o icmpdump.o udpdump.o tcpdump.o ripdump.o
 
 UNIX=	ksubr_unix.o timer_unix.o display_crs.o unix.o dirutil_unix.o \
-	tapdrvr.o tundrvr.o enet.o unix_socket.o
+	net/enet/enet.o unix_socket.o
+
+UNIX+=	tapdrvr.o tundrvr.o
 
 DSP=	fsk.o mdb.o qpsk.o fft.o r4bf.o fano.o tab.o
 

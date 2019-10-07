@@ -30,7 +30,6 @@
 #include "udp.h"
 #include "ax25.h"
 #include "kiss.h"
-#include "enet.h"
 #include "netrom.h"
 #include "ftpcli.h"
 #include "telnet.h"

@@ -8,9 +8,10 @@
 #include "iface.h"
 #include "kiss.h"
 #include "devparam.h"
-#include "slip.h"
 #include "asy.h"
 #include "ax25.h"
+
+#include "net/slip/slip.h"
 
 /* Set up a SLIP link to use AX.25 */
 int

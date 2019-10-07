@@ -7,17 +7,19 @@
  *			reflect changes to header compression calls
  *			revise status display
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "stdio.h"
-#include "global.h"
-#include "mbuf.h"
-#include "iface.h"
-#include "ip.h"
-#include "slhc.h"
-#include "asy.h"
+#include "../../stdio.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../iface.h"
+#include "../../ip.h"
+#include "../../asy.h"
+#include "../../trace.h"
+
+#include "../slhc/slhc.h"
+
 #include "slip.h"
-#include "trace.h"
 
 static struct mbuf *slip_decode(struct slip *sp,uint8 c);
 static struct mbuf *slip_encode(struct mbuf **bpp);

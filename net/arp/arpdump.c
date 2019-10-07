@@ -1,14 +1,15 @@
 /* ARP packet tracing routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "stdio.h"
-#include "global.h"
-#include "mbuf.h"
+#include "../../stdio.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../netuser.h"
+#include "../../trace.h"
+
 #include "arp.h"
-#include "netuser.h"
-#include "trace.h"
 
 void
 arp_dump(fp,bpp)

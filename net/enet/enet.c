@@ -1,14 +1,16 @@
 /* Stuff generic to all Ethernet controllers
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "stdio.h"
-#include "global.h"
-#include "mbuf.h"
-#include "iface.h"
-#include "arp.h"
-#include "ip.h"
+#include "../../stdio.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../iface.h"
+#include "../../ip.h"
+
+#include "../arp/arp.h"
+
 #include "enet.h"
 
 uint8 Ether_bdcst[] = { 0xff, 0xff, 0xff, 0xff, 0xff, 0xff };

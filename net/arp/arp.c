@@ -2,18 +2,20 @@
  * Level 2, mapping IP to Level 2 addresses for all outgoing datagrams.
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "global.h"
-#include "mbuf.h"
-#include "timer.h"
-#include "iface.h"
-#include "enet.h"
-#include "ax25.h"
-#include "icmp.h"
-#include "ip.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../timer.h"
+#include "../../iface.h"
+#include "../../ax25.h"
+#include "../../icmp.h"
+#include "../../ip.h"
+#include "../../icmp.h"
+
+#include "../enet/enet.h"
+
 #include "arp.h"
-#include "icmp.h"
 
 static void arp_output(struct iface *iface,enum arp_hwtype hardware,int32 target);
 

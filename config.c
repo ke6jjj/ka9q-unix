@@ -32,7 +32,7 @@
 #endif
 #include "lapb.h"
 #include "ax25.h"
-#include "enet.h"
+#include "net/enet/enet.h"
 #include "kiss.h"
 #include "nr4.h"
 #include "nrs.h"
@@ -42,9 +42,9 @@
 #ifdef	MSDOS
 #include "msdos/pktdrvr.h"
 #endif
-#include "ppp.h"
-#include "slip.h"
-#include "arp.h"
+#include "net/ppp/ppp.h"
+#include "net/slip/slip.h"
+#include "net/arp/arp.h"
 #include "icmp.h"
 #include "hardware.h"	/***/
 #include "usock.h"

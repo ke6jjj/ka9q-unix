@@ -1,18 +1,20 @@
 /* Simplified Point-to-Point Protocol
  * No negotiation, no address or ctl fields, 1-byte pids
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "global.h"
-#include "mbuf.h"
-#include "iface.h"
-#include "ip.h"
-#include "slhc.h"
-#include "asy.h"
-#include "crc.h"
-#include "ahdlc.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../iface.h"
+#include "../../ip.h"
+#include "../../asy.h"
+#include "../../crc.h"
+#include "../../ahdlc.h"
+
+#include "../../trace.h"
+#include "../slhc/slhc.h"
+
 #include "sppp.h"
-#include "trace.h"
 
 static uint8 *putbyte(uint8 *cp,uint8 c);
 

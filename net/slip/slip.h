@@ -2,15 +2,15 @@
 #define	_SLIP_H
 
 #ifndef	_GLOBAL_H
-#include "global.h"
+#include "../../global.h"
 #endif
 
 #ifndef _IFACE_H
-#include "iface.h"
+#include "../../iface.h"
 #endif
 
 #ifndef _SLHC_H
-#include "slhc.h"
+#include "../slhc/slhc.h"
 #endif
 
 #define SLIP_MAX 6		/* Maximum number of slip channels */

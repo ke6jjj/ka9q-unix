@@ -23,7 +23,7 @@
 #include "netuser.h"
 #include "iface.h"
 #include "udp.h"
-#include "arp.h"
+#include "net/arp/arp.h"
 
 #define BP_DEFAULT_TAB "bootptab"
 #define BP_DEFAULT_LOG "bootplog"

@@ -8,21 +8,22 @@
  *
  *	Acknowledgements and correction history may be found in PPP.C
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "stdio.h"
-#include "global.h"
-#include "mbuf.h"
-#include "iface.h"
-#include "socket.h"
+#include "../../stdio.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../iface.h"
+#include "../../socket.h"
+#include "../../cmdparse.h"
+#include "../../devparam.h"
+#include "../../trace.h"
+#include "../../errno.h"
+
 #include "ppp.h"
 #include "pppfsm.h"
 #include "ppplcp.h"
 #include "ppppap.h"
-#include "cmdparse.h"
-#include "devparam.h"
-#include "trace.h"
-#include "errno.h"
 
 
 /* These defaults are defined in the PPP RFCs, and must not be changed */
