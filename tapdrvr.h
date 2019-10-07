@@ -1,8 +1,6 @@
 #ifndef	_TAPDRVR_H
 #define	_TAPDRVR_H
 
-#include "pktdrvr.h"
-
 #ifdef UNIX
 #define TAP_MAX	4
 

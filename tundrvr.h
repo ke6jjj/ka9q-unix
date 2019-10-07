@@ -1,8 +1,6 @@
 #ifndef	_TUNDRVR_H
 #define	_TUNDRVR_H
 
-#include "pktdrvr.h"
-
 #ifdef UNIX
 #define TUN_MAX	4
 

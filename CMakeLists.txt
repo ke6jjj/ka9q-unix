@@ -36,7 +36,7 @@ add_library(ax25 ax25cmd.c axsock.c ax25user.c ax25.c axheard.c lapbtime.c lapb.
 add_library(netrom nrcmd.c nrsock.c nr4user.c nr4timer.c nr4.c nr4subr.c nr4hdr.c nr3.c nrs.c nrhdr.c nr4mail.c)
 add_library(ppp asy.c asy_unix.c ppp.c pppcmd.c pppfsm.c ppplcp.c ppppap.c pppipcp.c pppdump.c slhc.c slhcdump.c slip.c sppp.c)
 add_library(netinet ftpsubr.c sockcmd.c sockuser.c locsock.c socket.c sockutil.c iface.c timer.c ttydriv.c cmdparse.c mbuf.c misc.c pathname.c files.c kernel.c ksubr_unix.c wildmat.c devparam.c stdio.c ahdlc.c crc.c md5c.c errno.c errlst.c getopt.c)
-add_library(dump trace.c enetdump.c arcdump.c kissdump.c ax25dump.c arpdump.c nrdump.c ipdump.c icmpdump.c udpdump.c tcpdump.c ripdump.c)
+add_library(dump trace.c enetdump.c kissdump.c ax25dump.c arpdump.c nrdump.c ipdump.c icmpdump.c udpdump.c tcpdump.c ripdump.c)
 add_library(unix ksubr_unix.c timer_unix.c display_crs.c unix.c dirutil_unix.c enet.c)
 
 if (HAVE_NET_IF_TAP_H)

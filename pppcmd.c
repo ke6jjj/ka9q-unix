@@ -14,7 +14,6 @@
 #include "global.h"
 #include "mbuf.h"
 #include "iface.h"
-#include "pktdrvr.h"
 #include "ppp.h"
 #include "pppfsm.h"
 #include "ppplcp.h"

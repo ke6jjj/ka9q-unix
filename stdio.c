@@ -27,7 +27,6 @@
 #include "usock.h"
 #include "socket.h"
 #include "display.h"
-#include "sb.h"
 #include "asy.h"
 #include "errno.h"
 

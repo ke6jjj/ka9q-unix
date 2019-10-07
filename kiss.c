@@ -11,7 +11,6 @@
 #include "slip.h"
 #include "asy.h"
 #include "ax25.h"
-#include "pktdrvr.h"
 
 /* Set up a SLIP link to use AX.25 */
 int
