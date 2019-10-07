@@ -1,5 +1,5 @@
-#ifndef _SLHC_H
-#define _SLHC_H
+#ifndef _KA9Q_NET_SLHC_H
+#define _KA9Q_NET_SLHC_H
 /*
  * Definitions for tcp compression routines.
  *
@@ -36,21 +36,10 @@
  *			separate routines
  *			status display
  */
-#ifndef	_GLOBAL_H
 #include "../../global.h"
-#endif
-
-#ifndef	_MBUF_H
 #include "../../mbuf.h"
-#endif
-
-#ifndef	_IP_H
 #include "../../ip.h"
-#endif
-
-#ifndef	_TCP_H
 #include "../../tcp.h"
-#endif
 
 /*
  * Compressed packet format:
@@ -185,4 +174,4 @@ int slhc_toss(struct slcompress *comp);
 void slhc_i_status(struct slcompress *comp);
 void slhc_o_status(struct slcompress *comp);
 
-#endif	/* _SLHC_H */
+#endif	/* _KA9Q_NET_SLHC_H */

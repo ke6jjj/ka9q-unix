@@ -1,9 +1,7 @@
-#ifndef _PPPIPCP_H
-#define _PPPIPCP_H
+#ifndef _KA9Q_NET_PPPIPCP_H
+#define _KA9Q_NET_PPPIPCP_H
 
-#ifndef _SLHC_H
 #include "../slhc/slhc.h"
-#endif
 
 					/* IPCP option types */
 #define IPCP_ADDRESS		0x01
@@ -56,4 +54,4 @@ struct ipcp_s {
 int doppp_ipcp(int argc, char *argv[], void *p);
 void ipcp_init(struct ppp_s *ppp_p);
 
-#endif /* _PPPIPCP_H */
+#endif /* _KA9Q_NET_PPPIPCP_H */
