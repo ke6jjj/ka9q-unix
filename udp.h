@@ -1,29 +1,12 @@
-#ifndef	_UDP_H
-#define	_UDP_H
+#ifndef	_KA9Q_UDP_H
+#define	_KA9Q_UDP_H
 
-#ifndef	_GLOBAL_H
 #include "global.h"
-#endif
-
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef	_IFACE_H
 #include "iface.h"
-#endif
-
-#ifndef	_INTERNET_H
 #include "internet.h"
-#endif
-
-#ifndef _IP_H
 #include "ip.h"
-#endif
-
-#ifndef	_NETUSER_H
 #include "netuser.h"
-#endif
 
 /* SNMP MIB variables, used for statistics and control. See RFC 1066 */
 extern struct mib_entry Udp_mib[];
@@ -80,4 +63,4 @@ void htonudp(struct udp *udp,struct mbuf **data,struct pseudo_header *ph);
 int ntohudp(struct udp *udp,struct mbuf **bpp);
 uint udpcksum(struct mbuf *bp);
 
-#endif	/* _UDP_H */
+#endif	/* _KA9Q_UDP_H */

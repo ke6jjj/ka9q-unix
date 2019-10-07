@@ -1,21 +1,10 @@
-#ifndef	_ARP_H
-#define	_ARP_H
+#ifndef	_KA9Q_NET_ARP_H
+#define	_KA9Q_NET_ARP_H
 
-#ifndef	_GLOBAL_H
 #include "../../global.h"
-#endif
-
-#ifndef	_MBUF_H
 #include "../../mbuf.h"
-#endif
-
-#ifndef	_IFACE_H
 #include "../../iface.h"
-#endif
-
-#ifndef	_TIMER_H
 #include "../../timer.h"
-#endif
 
 /* Lifetime of a valid ARP entry */
 #define	ARPLIFE		900	/* 15 minutes */
@@ -122,4 +111,4 @@ uint8 *res_arp(struct iface *iface,enum arp_hwtype hardware,int32 target,struct 
 struct mbuf *htonarp(struct arp *arp);
 int ntoharp(struct arp *arp,struct mbuf **bpp);
 
-#endif /* _ARP_H */
+#endif /* _KA9Q_NET_ARP_H */

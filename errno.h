@@ -1,5 +1,5 @@
-#ifndef	_ERRNO_H
-#define	_ERRNO_H
+#ifndef	_KA9Q_ERRNO_H
+#define	_KA9Q_ERRNO_H
 
 #define kerrno (Curproc->perrno)
 
@@ -29,4 +29,4 @@ extern const char *ksys_errlist[];
 /* Translate native error numbers to KA9Q errno */
 int translate_sys_errno(int);
 
-#endif	/* _ERRNO_H */
+#endif	/* _KA9Q_ERRNO_H */

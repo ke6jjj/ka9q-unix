@@ -1,17 +1,9 @@
-#ifndef	_SLIP_H
-#define	_SLIP_H
+#ifndef	_KA9Q_NET_SLIP_H
+#define	_KA9Q_NET_SLIP_H
 
-#ifndef	_GLOBAL_H
 #include "../../global.h"
-#endif
-
-#ifndef _IFACE_H
 #include "../../iface.h"
-#endif
-
-#ifndef _SLHC_H
 #include "../slhc/slhc.h"
-#endif
 
 #define SLIP_MAX 6		/* Maximum number of slip channels */
 
@@ -57,4 +49,4 @@ int slip_send(struct mbuf **bp,struct iface *iface,int32 gateway,uint8 tos);
 int vjslip_send(struct mbuf **bp,struct iface *iface,int32 gateway,uint8 tos);
 void slip_status(struct iface *iface);
 
-#endif	/* _SLIP_H */
+#endif	/* _KA9Q_NET_SLIP_H */

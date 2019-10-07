@@ -3,7 +3,7 @@
 #ifdef UNIX
 #include "nosunix.h"
 #else
-#include "nospc.h"
+#include "msdos/nospc.h"
 #endif
 #endif	/* _HARDWARE_H */
 

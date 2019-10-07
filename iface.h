@@ -1,17 +1,9 @@
-#ifndef	_IFACE_H
-#define	_IFACE_H
+#ifndef	_KA9Q_IFACE_H
+#define	_KA9Q_IFACE_H
 
-#ifndef	_GLOBAL_H
 #include "global.h"
-#endif
-
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef _PROC_H
 #include "proc.h"
-#endif
 
 /* Interface type / packet driver classes */
 #define CL_NONE         0
@@ -166,4 +158,4 @@ int setencap(struct iface *ifp,char *mode);
 /* In config.c: */
 int net_route(struct iface *ifp,struct mbuf **bpp);
 
-#endif	/* _IFACE_H */
+#endif	/* _KA9Q_IFACE_H */

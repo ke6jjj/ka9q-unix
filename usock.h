@@ -1,37 +1,14 @@
-#ifndef	_USOCK_H
-#define	_USOCK_H
+#ifndef	_KA9Q_USOCK_H
+#define	_KA9Q_USOCK_H
 
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef	_LZW_H
 #include "lzw.h"
-#endif
-
-#ifndef _PROC_H
 #include "proc.h"
-#endif
-
-#ifndef _TCP_H
 #include "tcp.h"
-#endif
-
-#ifndef _UDP_H
 #include "udp.h"
-#endif
-
-#ifndef _IP_H
 #include "ip.h"
-#endif
-
-#ifndef _NETROM_H
 #include "netrom.h"
-#endif
-
-#ifndef _SOCKADDR_H
 #include "sockaddr.h"
-#endif
 
 struct loc {
 	struct usock *peer;
@@ -220,4 +197,4 @@ int so_udp_shut(struct usock *up,int how);
 int so_udp_close(struct usock *up);
 int so_udp_stat(struct usock *up);
 
-#endif /* _USOCK_H */
+#endif /* _KA9Q_USOCK_H */

@@ -1,19 +1,11 @@
 /* Generic ARCnet constants and templates */
 
-#ifndef	_ARCNET_H
-#define	_ARCNET_H
+#ifndef	_KA9Q_ARCNET_H
+#define	_KA9Q_ARCNET_H
 
-#ifndef	_GLOBAL_H
 #include "global.h"
-#endif
-
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef	_IFACE_H
 #include "iface.h"
-#endif
 
 #define	AADDR_LEN	1
 /* Format of an ARCnet header */
@@ -41,4 +33,4 @@ int anet_output(struct iface *iface,uint8 dest[],uint8 source[],uint type,
 	struct mbuf **data);
 void aproc(struct iface *iface,struct mbuf **bp);
 
-#endif	/* _ARCNET_H */
+#endif	/* _KA9Q_ARCNET_H */

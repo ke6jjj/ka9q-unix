@@ -1,18 +1,10 @@
-#ifndef	_ENET_H
-#define _ENET_H
+#ifndef	_KA9Q_NET_ENET_H
+#define _KA9Q_NET_ENET_H
 
 /* Generic Ethernet constants and templates */
-#ifndef	_GLOBAL_H
-#include "global.h"
-#endif
-
-#ifndef	_MBUF_H
-#include "mbuf.h"
-#endif
-
-#ifndef	_IFACE_H
-#include "iface.h"
-#endif
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../iface.h"
 
 #define	EADDR_LEN	6
 /* Format of an Ethernet header */
@@ -48,4 +40,4 @@ void eproc(struct iface *iface,struct mbuf **bpp);
 void htonether(struct ether *ether,struct mbuf **data);
 int ntohether(struct ether *ether,struct mbuf **bpp);
 
-#endif	/* _ENET_H */
+#endif	/* _KA9Q_NET_ENET_H */

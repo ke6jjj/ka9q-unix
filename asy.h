@@ -1,17 +1,9 @@
-#ifndef	_ASY_H
-#define	_ASY_H
+#ifndef	_KA9Q_ASY_H
+#define	_KA9Q_ASY_H
 
-#ifndef	_GLOBAL_H
 #include "global.h"
-#endif
-
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef	_IFACE_H
 #include "iface.h"
-#endif
 
 /* If you increase this, you must add additional interrupt vector
  * hooks in asyvec.asm (if using PC COM ports)
@@ -62,4 +54,4 @@ INTERRUPT asy5vec(void);
 INTERRUPT fp0vec(void);
 #endif
 
-#endif	/* _ASY_H */
+#endif	/* _KA9Q_ASY_H */

@@ -1,5 +1,5 @@
-#ifndef	_RIP_H
-#define	_RIP_H
+#ifndef	_KA9Q_RIP_H
+#define	_KA9Q_RIP_H
 
 /* Routing Information Protocol (RIP)
  *
@@ -13,17 +13,9 @@
  *
  * Substantially rewritten and integrated into NOS 9/1989 by KA9Q
  */
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef	_IFACE_H
 #include "iface.h"
-#endif
-
-#ifndef _UDP_H
 #include "udp.h"
-#endif
 
 #define	RIP_INFINITY	16
 #define	RIP_TTL		240	/* Default time-to-live for an entry */
@@ -117,5 +109,5 @@ extern struct rip_list *Rip_list;
 extern struct rip_refuse *Rip_refuse;
 extern struct udp_cb *Rip_cb;
 
-#endif	/* _RIP_H */
+#endif	/* _KA9Q_RIP_H */
 

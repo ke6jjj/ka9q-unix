@@ -10,9 +10,7 @@
 #include <stdarg.h>
 #endif
 
-#ifndef	_GLOBAL_H
 #include "global.h"
-#endif
 
 #define	EOL_LEN	3
 

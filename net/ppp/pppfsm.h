@@ -1,21 +1,10 @@
-#ifndef _PPPFSM_H
-#define _PPPFSM_H
+#ifndef _KA9Q_NET_PPPFSM_H
+#define _KA9Q_NET_PPPFSM_H
 
-#ifndef	_MBUF_H
-#include "mbuf.h"
-#endif
-
-#ifndef	_PROC_H
-#include "proc.h"
-#endif
-
-#ifndef	_IFACE_H
-#include "iface.h"
-#endif
-
-#ifndef	_TIMER_H
-#include "timer.h"
-#endif
+#include "../../mbuf.h"
+#include "../../proc.h"
+#include "../../iface.h"
+#include "../../timer.h"
 
 				/* 00: serious internal problems */
 				/* 01: interoperability problems */
@@ -216,4 +205,4 @@ void fsm_close(struct fsm_s *fsm_p);
 void fsm_init(struct fsm_s *fsm_p);
 void fsm_free(struct fsm_s *fsm_p);
 
-#endif /* _PPPFSM_H */
+#endif /* _KA9Q_NET_PPPFSM_H */

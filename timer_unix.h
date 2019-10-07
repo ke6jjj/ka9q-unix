@@ -15,8 +15,8 @@
  * "disable()" and "restore()" interrupt blocking methods as a lock
  * barrier.
  */
-#ifndef TIMER_UNIX_H
-#define TIMER_UNIX_H
+#ifndef _KA9Q_TIMER_UNIX_H
+#define _KA9Q_TIMER_UNIX_H
 
 #include "top.h"
 
@@ -29,4 +29,4 @@ int unix_timer_start(void);
 /* Stop timer tick thread */
 int unix_timer_stop(void);
 
-#endif /* TIMER_UNIX_H */
+#endif /* _KA9Q_TIMER_UNIX_H */

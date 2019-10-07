@@ -1,14 +1,10 @@
-#ifndef _MAILBOX_H
-#define _MAILBOX_H
+#ifndef _KA9Q_MAILBOX_H
+#define _KA9Q_MAILBOX_H
+
 /* Defines for the ax.25 mailbox facility */
 #define NUMMBX		10		/* max number of mailbox sessions */
-#ifndef _TIMER_H
 #include "timer.h"
-#endif
-
-#ifndef	_SOCKADDR_H
 #include "sockaddr.h"
-#endif
 
 /* a mailbox list entry */
 struct let {
@@ -110,5 +106,4 @@ int dombkick(int argc,char *argv[],void *p);
 /* In tipmail.c */
 extern unsigned Tiptimeout;
 
-#endif	/* _MAILBOX_H */
-
+#endif	/* _KA9Q_MAILBOX_H */

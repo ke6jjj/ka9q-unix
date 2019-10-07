@@ -1,34 +1,15 @@
-#ifndef	_TCP_H
-#define	_TCP_H
+#ifndef	_KA9Q_TCP_H
+#define	_KA9Q_TCP_H
 
 /* TCP implementation. Follows RFC 793 as closely as possible */
-#ifndef	_GLOBAL_H
+
 #include "global.h"
-#endif
-
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef	_IFACE_H
 #include "iface.h"
-#endif
-
-#ifndef	_INTERNET_H
 #include "internet.h"
-#endif
-
-#ifndef _IP_H
 #include "ip.h"
-#endif
-
-#ifndef	_NETUSER_H
 #include "netuser.h"
-#endif
-
-#ifndef	_TIMER_H
 #include "timer.h"
-#endif
 
 #define	DEF_MSS	512	/* Default maximum segment size */
 #define	DEF_WND	2048	/* Default receiver window */
@@ -318,4 +299,4 @@ long send_tcp(struct tcb *tcb,struct mbuf **bpp);
 char *tcp_port(uint n);
 int tcpval(struct tcb *tcb);
 
-#endif	/* _TCP_H */
+#endif	/* _KA9Q_TCP_H */

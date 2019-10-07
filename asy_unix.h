@@ -21,24 +21,16 @@
  * This header defines the private interfaces shared between the
  * UNIX-dependent setup code and the I/O threads for async interfaces.
  */
-#ifndef ASY_UNIX_H
-#define ASY_UNIX_H
+#ifndef _KA9Q_ASY_UNIX_H
+#define _KA9Q_ASY_UNIX_H
 
 #include "top.h"
 
 #include <pthread.h>
 
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef _PROC_H
 #include "proc.h"
-#endif
-
-#ifndef	_IFACE_H
 #include "iface.h"
-#endif
 
 #include "unix_socket.h"
 
@@ -60,4 +52,4 @@ extern int asy_tx_dma_busy(int dev);
 extern int asy_set_trigchar(int dev, int trigchar);
 extern int asy_get_trigchar(int dev);
 
-#endif /* ASY_UNIX_H */
+#endif /* _KA9Q_ASY_UNIX_H */

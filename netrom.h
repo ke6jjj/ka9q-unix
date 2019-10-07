@@ -1,25 +1,11 @@
-#ifndef	_NETROM_H
-#define	_NETROM_H
+#ifndef	_KA9Q_NETROM_H
+#define	_KA9Q_NETROM_H
 
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef	_IFACE_H
 #include "iface.h"
-#endif
-
-#ifndef	_AX25_H
 #include "ax25.h"
-#endif
-
-#ifndef	_LAPB_H
 #include "lapb.h"
-#endif
-
-#ifndef _NR4_H
 #include "nr4.h"
-#endif
 
 /* net/rom support definitions
  * Copyright 1989 by Daniel M. Frank, W9NK.  Permission granted for
@@ -192,4 +178,4 @@ struct mbuf *htonnrdest(struct nr3dest *);
 int ntohnr3(struct nr3hdr *, struct mbuf **);
 int ntohnrdest(struct nr3dest *ds,struct mbuf **bpp);
 
-#endif	/* _NETROM_H */
+#endif	/* _KA9Q_NETROM_H */

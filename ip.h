@@ -1,25 +1,11 @@
-#ifndef	_IP_H
-#define	_IP_H
+#ifndef	_KA9Q_IP_H
+#define	_KA9Q_IP_H
 
-#ifndef	_GLOBAL_H
 #include "global.h"
-#endif
-
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef	_IFACE_H
 #include "iface.h"
-#endif
-
-#ifndef	_INTERNET_H
 #include "internet.h"
-#endif
-
-#ifndef	_TIMER_H
 #include "timer.h"
-#endif
 
 #define TLB		30	/* Default reassembly timeout, sec */
 #define	IPVERSION	4
@@ -216,4 +202,4 @@ uint lcsum(uint16 *wp,uint len);
 /* In sim.c: */
 void net_sim(struct mbuf *bp);
 
-#endif /* _IP_H */
+#endif /* _KA9Q_IP_H */

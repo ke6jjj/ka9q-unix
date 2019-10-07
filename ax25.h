@@ -1,21 +1,10 @@
-#ifndef	_AX25_H
-#define	_AX25_H
+#ifndef	_KA9Q_AX25_H
+#define	_KA9Q_AX25_H
 
-#ifndef	_GLOBAL_H
 #include "global.h"
-#endif
-
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef	_IFACE_H
 #include "iface.h"
-#endif
-
-#ifndef _SOCKADDR_H
 #include "sockaddr.h"
-#endif
 
 extern char Ax25_eol[];
 
@@ -179,4 +168,4 @@ int setcall(uint8 *out,char *call);
 
 void beac_input(struct iface *iface,uint8 *src,struct mbuf **bpp);
 
-#endif  /* _AX25_H */
+#endif  /* _KA9Q_AX25_H */

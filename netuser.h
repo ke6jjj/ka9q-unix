@@ -1,11 +1,9 @@
-#ifndef	_NETUSER_H
-#define	_NETUSER_H
+#ifndef	_KA9Q_NETUSER_H
+#define	_KA9Q_NETUSER_H
 
 /* Global structures and constants needed by an Internet user process */
 
-#ifndef	_GLOBAL_H
 #include "global.h"
-#endif
 
 #define	NCONN	20		/* Maximum number of kopen network connections */
 
@@ -53,4 +51,4 @@ int32 aton(char *s);
 char *inet_ntoa(int32 a);
 char *pinet(struct ksocket *s);
 
-#endif	/* _NETUSER_H */
+#endif	/* _KA9Q_NETUSER_H */

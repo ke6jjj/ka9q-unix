@@ -3,13 +3,8 @@
 
 /* bm.h -- definitions for bmutil.c that aren't included elsewhere */
 
-#ifndef _SMTP_H
 #include "smtp.h"
-#endif
-
-#ifndef	_MAILBOX_H
 #include "mailbox.h"
-#endif
 
 /* Header types */
 #define	NOHEADER 	-1

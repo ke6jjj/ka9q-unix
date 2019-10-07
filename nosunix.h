@@ -1,10 +1,7 @@
-#ifndef	_UNIX_HARDWARE_H
-#define	_UNIX_HARDWARE_H
+#ifndef	_KA9Q_UNIX_HARDWARE_H
+#define	_KA9Q_UNIX_HARDWARE_H
 
-#ifndef	_GLOBAL_H
 #include "global.h"
-#endif
-
 #include "proc.h"
 
 extern void (*Shutdown[])();	/* List of functions to call at shutdown */
@@ -25,4 +22,4 @@ void interrupt_enter(void);
 void interrupt_cond_wait(pthread_cond_t *cond);
 void interrupt_leave(void);
 
-#endif	/* _UNIX_HARDWARE_H */
+#endif	/* _KA9Q_UNIX_HARDWARE_H */

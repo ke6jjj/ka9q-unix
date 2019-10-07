@@ -1,18 +1,10 @@
-#ifndef	_NR4_H
-#define	_NR4_H
+#ifndef	_KA9Q_NR4_H
+#define	_KA9Q_NR4_H
 /* nr4.h:  defines for netrom layer 4 (transport) support */
 
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef	_TIMER_H
 #include "timer.h"
-#endif
-
-#ifndef	_AX25_H
 #include "ax25.h"
-#endif
 
 /* compile-time limitations */
 
@@ -268,4 +260,4 @@ int send_nr4(struct nr4cb *, struct mbuf **);
 /* In nrcmd.c: */
 void nr4_state(struct nr4cb *, int, int);
 
-#endif	/* _NR4_H */
+#endif	/* _KA9Q_NR4_H */

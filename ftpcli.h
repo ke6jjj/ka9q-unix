@@ -4,14 +4,8 @@
 #include "top.h"
 
 #include "stdio.h"
-
-#ifndef	_FTP_H
 #include "ftp.h"
-#endif
-
-#ifndef _SESSION_H
 #include "session.h"
-#endif
 
 #define	LINELEN	256		/* Length of user command buffer */
 

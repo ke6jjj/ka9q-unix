@@ -1,25 +1,11 @@
-#ifndef	_LAPB_H
-#define	_LAPB_H
+#ifndef	_KA9Q_LAPB_H
+#define	_KA9Q_LAPB_H
 
-#ifndef	_GLOBAL_H
 #include "global.h"
-#endif
-
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef	_IFACE_H
 #include "iface.h"
-#endif
-
-#ifndef	_TIMER_H
 #include "timer.h"
-#endif
-
-#ifndef	_AX25_H
 #include "ax25.h"
-#endif
 
 /* Upper sub-layer (LAPB) definitions */
 
@@ -184,4 +170,4 @@ void s_arcall(struct ax25_cb *axp,int cnt);
 void s_ascall(struct ax25_cb *axp,int old,int new);
 void s_atcall(struct ax25_cb *axp,int cnt);
 
-#endif	/* _LAPB_H */
+#endif	/* _KA9Q_LAPB_H */

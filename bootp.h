@@ -11,17 +11,9 @@
 
 #ifndef BOOTREQUEST
 
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef	_SOCKET_H
 #include "socket.h"
-#endif
-
-#ifndef _IP_H
 #include "ip.h"
-#endif
 
 struct bootp {
 	uint8	op;			/* packet opcode type */

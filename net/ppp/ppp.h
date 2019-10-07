@@ -1,5 +1,5 @@
-#ifndef _PPP_H
-#define _PPP_H
+#ifndef _KA9Q_NET_PPP_H
+#define _KA9Q_NET_PPP_H
 /*
  *	This implementation of PPP is declared to be in the public domain.
  *
@@ -9,18 +9,9 @@
  *	Acknowledgements and correction history may be found in PPP.C
  */
 
-#ifndef	_GLOBAL_H
-#include "global.h"
-#endif
-
-#ifndef	_MBUF_H
-#include "mbuf.h"
-#endif
-
-#ifndef	_IFACE_H
-#include "iface.h"
-#endif
-
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../iface.h"
 
 /* PPP definitions */
 #define	PPP_ALLOC	128	/* mbuf allocation increment */
@@ -77,4 +68,4 @@ int doppp_close(int argc, char *argv[], void *p);
 int doppp_timeout(int argc, char *argv[], void *p);
 int doppp_try(int argc, char *argv[], void *p);
 
-#endif	/* _PPP_H */
+#endif	/* _KA9Q_NET_PPP_H */

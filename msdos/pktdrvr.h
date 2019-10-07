@@ -5,13 +5,8 @@
 #include <dpmi.h>
 #endif
 
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef	_IFACE_H
 #include "iface.h"
-#endif
 
 #ifdef PACKET
 #define	PK_MAX	3	/* Add extra interrupt hooks if you increase this */

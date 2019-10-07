@@ -1,5 +1,5 @@
-#ifndef	_TUNDRVR_H
-#define	_TUNDRVR_H
+#ifndef	_KA9Q_TUNDRVR_H
+#define	_KA9Q_TUNDRVR_H
 
 #ifdef UNIX
 #define TUN_MAX	4
@@ -9,4 +9,4 @@ int tun_attach(int argc, char *argv[], void *p);
 
 #endif	/* UNIX */
 
-#endif	/* _TUNDRVR_H */
+#endif	/* _KA9Q_TUNDRVR_H */

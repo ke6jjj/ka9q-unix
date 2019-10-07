@@ -1,23 +1,12 @@
 #ifndef	_SOCKET_H
 #define	_SOCKET_H
 
-#ifndef	_GLOBAL_H
-#include "global.h"
-#endif
-
 #include <stdarg.h>
 
-#ifndef	_MBUF_H
+#include "global.h"
 #include "mbuf.h"
-#endif
-
-#ifndef _PROC_H
 #include "proc.h"
-#endif
-
-#ifndef _SOCKADDR_H
 #include "sockaddr.h"
-#endif
 
 /* Local IP wildcard address */
 #define	kINADDR_ANY	0x0L

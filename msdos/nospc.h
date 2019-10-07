@@ -1,9 +1,7 @@
-#ifndef	_PC_H
-#define	_PC_H
+#ifndef	_KA9Q_PC_H
+#define	_KA9Q_PC_H
 
-#ifndef	_GLOBAL_H
 #include "global.h"
-#endif
 
 #define	NSW	10	/* Number of stopwatch "memories" */
 
@@ -61,4 +59,4 @@ uint stopval(void);
 /* In sw.c: */
 void swstop(int n);
 
-#endif	/* _PC_H */
+#endif	/* _KA9Q_PC_H */

@@ -1,23 +1,12 @@
-#ifndef	_SESSION_H
-#define	_SESSION_H
+#ifndef	_KA9Q_SESSION_H
+#define	_KA9Q_SESSION_H
 
 #include <stdio.h>
 
-#ifndef	_GLOBAL_H
 #include "global.h"
-#endif
-
-#ifndef	_PROC_H
 #include "proc.h"
-#endif
-
-#ifndef	_FTPCLI_H
 #include "ftpcli.h"
-#endif
-
-#ifndef	_TELNET_H
 #include "telnet.h"
-#endif
 
 struct ttystate {
 	uint8 *line;		/* Line buffer */
@@ -92,4 +81,4 @@ void upload(int unused,void *sp1,void *p);
 
 #define	ALERT_EOF	1
 
-#endif  /* _SESSION_H */
+#endif  /* _KA9Q_SESSION_H */
