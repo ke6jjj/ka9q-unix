@@ -57,7 +57,7 @@ PPP=	asy.o asy_unix.o net/ppp/ppp.o net/ppp/pppcmd.o net/ppp/pppfsm.o \
 NET=	ftpsubr.o sockcmd.o sockuser.o locsock.o socket.o \
 	sockutil.o iface.o timer.o ttydriv.o cmdparse.o \
 	mbuf.o misc.o pathname.o files.o \
-	kernel.o ksubr_unix.o wildmat.o \
+	kernel.o wildmat.o \
 	devparam.o stdio.o ahdlc.o crc.o md5c.o errno.o \
 	errlst.o getopt.o
 
@@ -65,10 +65,10 @@ DUMP= 	trace.o net/enet/enetdump.o \
 	kissdump.o ax25dump.o net/arp/arpdump.o nrdump.o \
 	ipdump.o icmpdump.o udpdump.o tcpdump.o ripdump.o
 
-UNIX=	ksubr_unix.o timer_unix.o display_crs.o unix.o dirutil_unix.o \
-	net/enet/enet.o unix_socket.o
+UNIX=	unix/ksubr_unix.o unix/timer_unix.o unix/display_crs.o unix/unix.o unix/dirutil_unix.o \
+	unix/ksubr_unix.o net/enet/enet.o unix_socket.o
 
-UNIX+=	tapdrvr.o tundrvr.o
+UNIX+=	net/tap/tapdrvr.o net/tun/tundrvr.o
 
 DSP=	fsk.o mdb.o qpsk.o fft.o r4bf.o fano.o tab.o
 

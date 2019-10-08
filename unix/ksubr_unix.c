@@ -30,7 +30,7 @@
  * with NOS processes it must first aqcuire the interrupt mutex, and when
  * it is done it releases the mutex.
  */
-#include "top.h"
+#include "../top.h"
 
 #ifndef UNIX
 #error "This file should only be built on POSIX/UNIX systems."
@@ -38,10 +38,10 @@
 
 #include <pthread.h>
 #include <assert.h>
-#include "stdio.h"
-#include "global.h"
-#include "proc.h"
-#include "commands.h"
+#include "../stdio.h"
+#include "../global.h"
+#include "../proc.h"
+#include "../commands.h"
 
 static void pproc(struct proc *pp); /* Print a process entry line for PS */
 static void *proc_entry(void *pptr);/* pthread entry point for new process */

@@ -1,7 +1,7 @@
 /* Driver for BSD user-mode "TUN" packet tunnel devices.
  * Copyright 2018 Jeremy Cooper.
  */
-#include "top.h"
+#include "../../top.h"
 
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -12,16 +12,17 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include "stdio.h"
-#include "global.h"
-#include "proc.h"
-#include "mbuf.h"
-#include "netuser.h"
-#include "iface.h"
-#include "trace.h"
+#include "../../stdio.h"
+#include "../../global.h"
+#include "../../proc.h"
+#include "../../mbuf.h"
+#include "../../netuser.h"
+#include "../../iface.h"
+#include "../../trace.h"
+#include "../../config.h"
+
+#include "../../unix/nosunix.h"
 #include "tundrvr.h"
-#include "config.h"
-#include "nosunix.h"
 
 /* Maximum number of fragments to tolerate in an outgoing packet */
 #define MAX_FRAGS	10

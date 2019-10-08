@@ -44,7 +44,8 @@
 #include "devparam.h"
 #include "dialer.h"
 #include "asy_unix.h"
-#include "nosunix.h"
+
+#include "unix/nosunix.h"
 
 #include "unix_socket.h"
 

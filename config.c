@@ -37,8 +37,15 @@
 #include "nr4.h"
 #include "nrs.h"
 #include "netrom.h"
-#include "tapdrvr.h"
-#include "tundrvr.h"
+
+#ifdef HAVE_NET_IF_TAP_H
+#include "net/tap/tapdrvr.h"
+#endif /* HAVE_NET_IF_TAP_H */
+
+#ifdef HAVE_NET_IF_TUN_H
+#include "net/tap/tundrvr.h"
+#endif /* HAVE_NET_IF_TUN_H */
+
 #ifdef	MSDOS
 #include "msdos/pktdrvr.h"
 #endif

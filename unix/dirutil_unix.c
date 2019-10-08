@@ -2,12 +2,12 @@
  *
  * Copyright 2017 Jeremy Cooper, KE6JJJ
  */
-#include "top.h"
+#include "../top.h"
 
-#include "global.h"
-#include "stdio.h"
-#include "dirutil.h"
-#include "commands.h"
+#include "../global.h"
+#include "../stdio.h"
+#include "../dirutil.h"
+#include "../commands.h"
 
 kFILE *
 dir(char *path,int full)

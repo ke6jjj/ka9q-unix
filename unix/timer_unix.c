@@ -14,7 +14,7 @@
  * "disable()" and "restore()" interrupt blocking methods as a lock
  * barrier.
  */
-#include "top.h"
+#include "../top.h"
 
 #ifndef UNIX
 #error "This file should only be built on POSIX/UNIX systems."
@@ -25,9 +25,10 @@
 #include <time.h>
 #include <unistd.h>
 
-#include "global.h"
-#include "proc.h"
-#include "timer.h"
+#include "../global.h"
+#include "../proc.h"
+#include "../timer.h"
+
 #include "timer_unix.h"
 #include "nosunix.h"
 

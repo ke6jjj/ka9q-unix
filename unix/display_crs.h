@@ -59,7 +59,7 @@
 #ifndef	_DISPLAY_CRS_H
 #define	_DISPLAY_CRS_H
 
-#include "top.h"
+#include "../top.h"
 
 #ifndef UNIX
 #error "This file should only be used for UNIX/POSIX builds"

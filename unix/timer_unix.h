@@ -18,7 +18,7 @@
 #ifndef _KA9Q_TIMER_UNIX_H
 #define _KA9Q_TIMER_UNIX_H
 
-#include "top.h"
+#include "../top.h"
 
 #ifndef UNIX
 #error "This file should only be built on POSIX/UNIX systems."

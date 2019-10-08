@@ -56,7 +56,7 @@
  * main.c to receive the keypress and pass it to its proper destination
  * process.
  */
-#include "top.h"
+#include "../top.h"
 
 #include <sys/ioctl.h>
 #include <pthread.h>
@@ -65,12 +65,14 @@
 #include <string.h>
 #include <unistd.h>
 #include <errno.h>
-#include "errno.h"
-#include "global.h"
-#include "display.h"
+
+#include "../errno.h"
+#include "../global.h"
+#include "../display.h"
+#include "../proc.h"
+
 #include "display_crs.h"
 #include "nosunix.h"	/* For keyboard character definitions */
-#include "proc.h"
 
 #define	DCOL	67
 #define	DSIZ	(81-DCOL)

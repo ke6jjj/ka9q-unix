@@ -56,9 +56,9 @@ add_library(arp net/arp/arp.c net/arp/arpcmd.c net/arp/arpdump.c net/arp/arphdr.
 # Ethernet networking
 add_library(enet net/enet/enet.c net/enet/enetdump.c)
 
-add_library(netinet ftpsubr.c sockcmd.c sockuser.c locsock.c socket.c sockutil.c iface.c timer.c ttydriv.c cmdparse.c mbuf.c misc.c pathname.c files.c kernel.c ksubr_unix.c wildmat.c devparam.c stdio.c ahdlc.c crc.c md5c.c errno.c errlst.c getopt.c)
+add_library(netinet ftpsubr.c sockcmd.c sockuser.c locsock.c socket.c sockutil.c iface.c timer.c ttydriv.c cmdparse.c mbuf.c misc.c pathname.c files.c kernel.c wildmat.c devparam.c stdio.c ahdlc.c crc.c md5c.c errno.c errlst.c getopt.c)
 add_library(dump trace.c kissdump.c ax25dump.c nrdump.c ipdump.c icmpdump.c udpdump.c tcpdump.c ripdump.c)
-add_library(unix ksubr_unix.c timer_unix.c display_crs.c unix.c dirutil_unix.c unix_socket.c)
+add_library(unix unix/ksubr_unix.c unix/timer_unix.c unix/display_crs.c unix/unix.c unix/dirutil_unix.c unix/ksubr_unix.c unix_socket.c)
 
 if (HAVE_NET_IF_TAP_H)
   add_library(tap tapdrvr.c)
