@@ -37,7 +37,8 @@
 #include "mbuf.h"
 #include "proc.h"
 #include "devparam.h"
-#include "nosunix.h"
+
+#include "unix/nosunix.h"
 
 #include "unix_socket.h"
 
