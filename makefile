@@ -24,22 +24,22 @@ LIBS = clients.a servers.a internet.a \
 # UNIX: mbuf audit is very DOS/malloc specific NET(audit.o)
 # UNIX: alloc routines are not UNIX compatible NET(alloc.o)
 # UNIX: NET(format.o). Not for HAVE_FUNOPEN.
-CLIENTS= telnet.o ftpcli.o finger.o smtpcli.o hop.o tip.o \
-	nntpcli.o bootp.o popcli.o lterm.o
+CLIENTS= telnet.o cmd/ftpcli/ftpcli.o cmd/finger/finger.o cmd/smtpcli/smtpcli.o cmd/inet/hop.o tip.o \
+	cmd/nntpcli/nntpcli.o bootp.o cmd/popcli/popcli.o lterm.o
 
-SERVERS= ttylink.o ftpserv.o smisc.o smtpserv.o \
-        fingerd.o mailbox.o rewrite.o bmutil.o forward.o tipmail.o \
-	bootpd.o bootpdip.o bootpcmd.o popserv.o tnserv.o
+SERVERS= ttylink.o service/ftp/ftpserv.o service/smisc/smisc.o service/smtp/smtpserv.o \
+	service/fingerd/fingerd.o mailbox.o rewrite.o bmutil.o forward.o tipmail.o \
+	bootpd.o bootpdip.o bootpcmd.o service/pop/popserv.o tnserv.o
 
-INTERNET= tcpcmd.o tcpsock.o tcpuser.o \
-	tcptimer.o tcpout.o tcpin.o tcpsubr.o tcphdr.o \
-	udpcmd.o udpsock.o udp.o udphdr.o \
+INTERNET= cmd/inet/tcpcmd.o net/inet/tcpsock.o net/inet/tcpuser.o \
+	net/inet/tcptimer.o net/inet/tcpout.o net/inet/tcpin.o net/inet/tcpsubr.o net/inet/tcphdr.o \
+	cmd/inet/udpcmd.o net/inet/udpsock.o net/inet/udp.o net/inet/udphdr.o \
 	domain.o domhdr.o \
-	ripcmd.o rip.o \
-	ipcmd.o ipsock.o ip.o iproute.o iphdr.o \
-	icmpcmd.o ping.o icmp.o icmpmsg.o icmphdr.o \
+	cmd/rip/ripcmd.o service/rip/rip.o \
+	cmd/inet/ipcmd.o net/inet/ipsock.o net/inet/ip.o net/inet/iproute.o net/inet/iphdr.o \
+	cmd/inet/icmpcmd.o net/inet/ping.o net/inet/icmp.o net/inet/icmpmsg.o net/inet/icmphdr.o \
 	net/arp/arpcmd.o net/arp/arp.o net/arp/arphdr.o \
-	netuser.o sim.o
+	lib/inet/netuser.o net/inet/sim.o
 
 IPSEC=	ipsec.o esp.o deskey.o des3port.o desport.o desspa.o ah.o
 
@@ -54,10 +54,10 @@ NETROM=	net/netrom/nrcmd.o net/netrom/nrsock.o net/netrom/nr4user.o \
 	net/netrom/nrhdr.o net/netrom/nr4mail.o
 
 PPP=	asy.o asy_unix.o net/ppp/ppp.o net/ppp/pppcmd.o net/ppp/pppfsm.o \
-	net/ppp/ppplcp.o net/ppp/ppppap.o net/ppp/pppipcp.o net/ppp/pppdump.o \
-	net/slhc/slhc.o net/slhc/slhcdump.o net/slip/slip.o net/sppp/sppp.o
+	net/ppp/ppplcp.o net/ppp/ppppap.o net/ppp/pppipcp.o cmd/pppdump/pppdump.o \
+	net/slhc/slhc.o cmd/slhcdump/slhcdump.o net/slip/slip.o net/sppp/sppp.o
 
-NET=	ftpsubr.o sockcmd.o sockuser.o locsock.o socket.o \
+NET=	lib/ftp/ftpsubr.o sockcmd.o sockuser.o locsock.o socket.o \
 	sockutil.o iface.o timer.o ttydriv.o cmdparse.o \
 	mbuf.o misc.o pathname.o files.o \
 	kernel.o wildmat.o \
@@ -66,7 +66,7 @@ NET=	ftpsubr.o sockcmd.o sockuser.o locsock.o socket.o \
 
 DUMP= 	trace.o net/enet/enetdump.o \
 	net/ax25/kissdump.o net/ax25/ax25dump.o net/arp/arpdump.o \
-	net/netrom/nrdump.o ipdump.o icmpdump.o udpdump.o tcpdump.o ripdump.o
+	net/netrom/nrdump.o cmd/inet/ipdump.o cmd/inet/icmpdump.o cmd/inet/udpdump.o cmd/inet/tcpdump.o cmd/rip/ripdump.o
 
 UNIX=	unix/ksubr_unix.o unix/timer_unix.o unix/display_crs.o unix/unix.o unix/dirutil_unix.o \
 	unix/ksubr_unix.o net/enet/enet.o unix_socket.o

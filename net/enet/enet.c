@@ -7,7 +7,7 @@
 #include "../../global.h"
 #include "../../mbuf.h"
 #include "../../iface.h"
-#include "../../ip.h"
+#include "../inet/ip.h"
 
 #include "../arp/arp.h"
 

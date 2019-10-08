@@ -6,8 +6,9 @@
 #include "../../stdio.h"
 #include "../../global.h"
 #include "../../mbuf.h"
-#include "../../netuser.h"
 #include "../../trace.h"
+
+#include "../../lib/inet/netuser.h"
 
 #include "arp.h"
 

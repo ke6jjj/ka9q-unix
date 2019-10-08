@@ -15,18 +15,19 @@
 #include "config.h"
 #include "bm.h"
 #include "mailbox.h"
-#include "smtp.h"
 #include "cmdparse.h"
 #include "proc.h"
 #include "socket.h"
 #include "timer.h"
 #include "usock.h"
-#include "netuser.h"
 #include "files.h"
 
 #include "net/ax25/ax25.h"
 #include "net/netrom/netrom.h"
 #include "net/netrom/nr4.h"
+#include "lib/inet/netuser.h"
+
+#include "service/smtp/smtp.h"
 
 #define ISPROMPT(s)	(strlen(s) > 1 && s[strlen(s)-2] == '>')
 static struct timer fwdtimer;

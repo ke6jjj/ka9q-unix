@@ -7,7 +7,6 @@
 #include "../../global.h"
 #include "../../mbuf.h"
 #include "../../timer.h"
-#include "../../ip.h"
 
 #include "ax25.h"
 #include "lapb.h"

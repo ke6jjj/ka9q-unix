@@ -8,7 +8,6 @@
 #include "../../global.h"
 #include "../../mbuf.h"
 #include "../../iface.h"
-#include "../../ip.h"
 #include "../../timer.h"
 
 #include "ax25.h"

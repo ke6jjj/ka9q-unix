@@ -7,8 +7,9 @@
 #include "global.h"
 #include "files.h"
 #include "mailbox.h"
-#include "smtp.h"
 #include "bm.h"
+
+#include "service/smtp/smtp.h"
 
 char *Hdrs[] = {
 	"Approved: ",

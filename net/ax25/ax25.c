@@ -13,10 +13,10 @@
 #include "../../global.h"
 #include "../../mbuf.h"
 #include "../../iface.h"
-#include "../../ip.h"
 #include "../../devparam.h"
 
 #include "../arp/arp.h"
+#include "../inet/ip.h"
 
 #include "ax25.h"
 #include "lapb.h"

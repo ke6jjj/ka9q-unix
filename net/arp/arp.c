@@ -8,10 +8,10 @@
 #include "../../mbuf.h"
 #include "../../timer.h"
 #include "../../iface.h"
-#include "../../icmp.h"
-#include "../../ip.h"
-#include "../../icmp.h"
 
+#include "../inet/icmp.h"
+#include "../inet/ip.h"
+#include "../inet/icmp.h"
 #include "../enet/enet.h"
 #include "../ax25/ax25.h"
 

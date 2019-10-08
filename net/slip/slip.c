@@ -13,10 +13,10 @@
 #include "../../global.h"
 #include "../../mbuf.h"
 #include "../../iface.h"
-#include "../../ip.h"
 #include "../../asy.h"
 #include "../../trace.h"
 
+#include "../inet/ip.h"
 #include "../slhc/slhc.h"
 
 #include "slip.h"

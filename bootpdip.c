@@ -31,11 +31,11 @@
 #include "global.h"
 #include "iface.h"
 #include "mbuf.h"
-#include "netuser.h"
 #include "timer.h"
 #include "bootpd.h"
 
 #include "net/arp/arp.h"
+#include "lib/inet/netuser.h"
 
 #define E_NOMEM 3101
 #define ERR_NOIPADDRESS	3103		/* No IP address available. */

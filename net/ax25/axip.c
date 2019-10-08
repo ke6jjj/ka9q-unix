@@ -7,13 +7,14 @@
 #include "../../global.h"
 #include "../../proc.h"
 #include "../../mbuf.h"
-#include "../../netuser.h"
 #include "../../iface.h"
 #include "../../trace.h"
 #include "../../config.h"
 #include "../../cmdparse.h"
 #include "../../socket.h"
 #include "../../errno.h"
+
+#include "../../lib/inet/netuser.h"
 
 #include "ax25.h"
 #include "axip.h"

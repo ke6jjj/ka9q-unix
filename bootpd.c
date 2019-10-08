@@ -32,11 +32,11 @@
 #include "proc.h"
 #include "socket.h"
 #include "bootpd.h"
-#include "udp.h"
-#include "ip.h"
-#include "netuser.h"
 
 #include "net/arp/arp.h"
+#include "net/inet/udp.h"
+#include "net/inet/ip.h"
+#include "lib/inet/netuser.h"
 
 void bootpd(struct iface *iface, struct udp_cb *sock, int cnt); 
 

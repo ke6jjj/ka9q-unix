@@ -6,7 +6,6 @@
 #include "errno.h"
 #include "global.h"
 #include "mbuf.h"
-#include "netuser.h"
 #include "socket.h"
 #include "usock.h"
 

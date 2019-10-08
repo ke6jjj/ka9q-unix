@@ -31,8 +31,8 @@
 #include "../../mbuf.h"
 #include "../../proc.h"
 #include "../../iface.h"
-#include "../../internet.h"
-#include "../../ip.h"
+#include "../../net/inet/internet.h"
+#include "../../net/inet/ip.h"
 #include "../slhc/slhc.h"
 #ifdef UNIX
 #include "../../asy_unix.h"

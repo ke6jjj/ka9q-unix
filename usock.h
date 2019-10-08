@@ -4,10 +4,10 @@
 #include "mbuf.h"
 #include "lzw.h"
 #include "proc.h"
-#include "tcp.h"
-#include "udp.h"
-#include "ip.h"
 #include "sockaddr.h"
+#include "net/inet/ip.h"
+#include "net/inet/tcp.h"
+#include "net/inet/udp.h"
 
 struct loc {
 	struct usock *peer;

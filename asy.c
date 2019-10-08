@@ -7,7 +7,6 @@
 #include "global.h"
 #include "proc.h"
 #include "iface.h"
-#include "netuser.h"
 #include "net/slhc/slhc.h"
 #ifdef UNIX
 #include "asy_unix.h"

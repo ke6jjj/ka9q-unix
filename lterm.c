@@ -3,8 +3,6 @@
 
 #include "stdio.h"
 #include "global.h"
-#include "internet.h"
-#include "netuser.h"
 #include "socket.h"
 #include "session.h"
 #if defined(UNIX)
@@ -13,6 +11,9 @@
 #include "n8250.h"
 #endif
 #include "asy.h"
+
+#include "net/inet/internet.h"
+#include "lib/inet/netuser.h"
 
 static void lterm_rx(int,void *,void *);
 

@@ -41,9 +41,9 @@
 
 #include "../../global.h"
 #include "../../mbuf.h"
-#include "../../internet.h"
-#include "../../ip.h"
-#include "../../tcp.h"
+#include "../../net/inet/internet.h"
+#include "../../net/inet/ip.h"
+#include "../../net/inet/tcp.h"
 
 #include "slhc.h"
 

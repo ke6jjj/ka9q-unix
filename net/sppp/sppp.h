@@ -1,3 +1,5 @@
+#ifndef	_KA9Q_SPPP_H
+#define	_KA9Q_SPPP_H
 /* HDLC envelope constants */
 #define HDLC_ENVLEN	8	/* Max bytes for HDLC envelope (outgoing) */
 
@@ -16,3 +18,5 @@ int sppp_send(struct mbuf **bpp,struct iface *ifp,int32 gateway,uint8 tos);
 int sppp_output(struct iface *iface,int protocol,struct mbuf **bpp);
 int sppp_init(struct iface *ifp);
 int sppp_free(struct iface *ifp);
+
+#endif	/* _KA9Q_SPPP_H */

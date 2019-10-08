@@ -9,12 +9,13 @@
 #include "../../stdio.h"
 #include "../../mbuf.h"
 #include "../../timer.h"
-#include "../../netuser.h"
 #include "../../cmdparse.h"
 #include "../../commands.h"
 
 #include "../enet/enet.h"
 #include "../arp/arp.h"
+
+#include "../../lib/inet/netuser.h"
 
 static int doarpadd(int argc,char *argv[],void *p);
 static int doarpdrop(int argc,char *argv[],void *p);

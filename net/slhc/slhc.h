@@ -38,8 +38,8 @@
  */
 #include "../../global.h"
 #include "../../mbuf.h"
-#include "../../ip.h"
-#include "../../tcp.h"
+#include "../../net/inet/ip.h"
+#include "../../net/inet/tcp.h"
 
 /*
  * Compressed packet format:

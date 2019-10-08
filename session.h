@@ -5,7 +5,6 @@
 
 #include "global.h"
 #include "proc.h"
-#include "ftpcli.h"
 #include "telnet.h"
 
 struct ttystate {

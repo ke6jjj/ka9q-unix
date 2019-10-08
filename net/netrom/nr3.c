@@ -10,13 +10,13 @@
 #include "../../global.h"
 #include "../../mbuf.h"
 #include "../../iface.h"
-#include "../../netuser.h"
 #include "../../socket.h"
 #include "../../trace.h"
-#include "../../ip.h"
 #include "../../commands.h"
 
 #include "../arp/arp.h"
+#include "../inet/ip.h"
+#include "../../lib/inet/netuser.h"
 
 #include "netrom.h"
 #include "nr4.h"

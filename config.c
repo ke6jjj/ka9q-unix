@@ -19,14 +19,14 @@
 #include "timer.h"
 #include "proc.h"
 #include "iface.h"
-#include "ip.h"
+#include "net/inet/ip.h"
 #ifdef	IPSEC
 #include "ipsec.h"
 #include "photuris.h"
 #endif
-#include "tcp.h"
-#include "udp.h"
-#include "smtp.h"
+#include "net/inet/tcp.h"
+#include "net/inet/udp.h"
+#include "service/smtp/smtp.h"
 #ifdef	ARCNET
 #include "msdos/arcnet.h"
 #endif
@@ -54,7 +54,7 @@
 #include "net/ppp/ppp.h"
 #include "net/slip/slip.h"
 #include "net/arp/arp.h"
-#include "icmp.h"
+#include "net/inet/icmp.h"
 #include "hardware.h"	/***/
 #include "usock.h"
 #include "cmdparse.h"

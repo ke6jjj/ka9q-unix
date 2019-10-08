@@ -13,7 +13,7 @@
 
 #include "mbuf.h"
 #include "socket.h"
-#include "ip.h"
+#include "net/inet/ip.h"
 
 struct bootp {
 	uint8	op;			/* packet opcode type */

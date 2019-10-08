@@ -6,12 +6,12 @@
 #include "../../global.h"
 #include "../../mbuf.h"
 #include "../../iface.h"
-#include "../../ip.h"
 #include "../../asy.h"
 #include "../../crc.h"
 #include "../../ahdlc.h"
-
 #include "../../trace.h"
+
+#include "../../net/inet/ip.h"
 #include "../slhc/slhc.h"
 
 #include "sppp.h"
