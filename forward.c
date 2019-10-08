@@ -23,9 +23,10 @@
 #include "usock.h"
 #include "netuser.h"
 #include "ax25.h"
-#include "netrom.h"
-#include "nr4.h"
 #include "files.h"
+
+#include "net/netrom/netrom.h"
+#include "net/netrom/nr4.h"
 
 #define ISPROMPT(s)	(strlen(s) > 1 && s[strlen(s)-2] == '>')
 static struct timer fwdtimer;

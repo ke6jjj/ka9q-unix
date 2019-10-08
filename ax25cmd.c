@@ -16,7 +16,6 @@
 #include "mailbox.h"
 #include "session.h"
 #include "tty.h"
-#include "nr4.h"
 #include "commands.h"
 #include "errno.h"
 

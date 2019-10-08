@@ -1,14 +1,15 @@
 /* NET/ROM header tracing routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "stdio.h"
-#include "global.h"
-#include "mbuf.h"
+#include "../../stdio.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../trace.h"
+
 #include "netrom.h"
 #include "nr4.h"
-#include "trace.h"
 
 /* Display NET/ROM network and transport headers */
 void

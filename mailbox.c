@@ -39,9 +39,11 @@
 #include "files.h"
 #include "bm.h"
 #include "mailbox.h"
+#include "ax25.h"
 #include "ax25mail.h"
-#include "nr4mail.h"
 #include "cmdparse.h"
+
+#include "net/netrom/nr4mail.h"
 
 /*
 #define MBDEBUG

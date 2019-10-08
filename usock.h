@@ -7,7 +7,6 @@
 #include "tcp.h"
 #include "udp.h"
 #include "ip.h"
-#include "netrom.h"
 #include "sockaddr.h"
 
 struct loc {

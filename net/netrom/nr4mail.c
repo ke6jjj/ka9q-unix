@@ -4,17 +4,19 @@
  *	May '91	Bill Simpson
  *		move to separate file for compilation & linking
  */
-#include "top.h"
+#include "../../top.h"
 
 #include <ctype.h>
-#include "global.h"
-#include "proc.h"
+
+#include "../../global.h"
+#include "../../proc.h"
+#include "../../socket.h"
+#include "../../session.h"
+#include "../../cmdparse.h"
+#include "../../commands.h"
+#include "../../mailbox.h"
+
 #include "netrom.h"
-#include "socket.h"
-#include "session.h"
-#include "cmdparse.h"
-#include "commands.h"
-#include "mailbox.h"
 #include "nr4mail.h"
 
 

@@ -3,17 +3,19 @@
  * non-commercial distribution only.
  * Ported to NOS by SM0RGV, 890525.
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "stdio.h"
-#include "global.h"
-#include "mbuf.h"
-#include "timer.h"
-#include "ax25.h"
-#include "lapb.h"
+#include <ctype.h>
+
+#include "../../stdio.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../timer.h"
+#include "../../ax25.h"
+#include "../../lapb.h"
+
 #include "netrom.h"
 #include "nr4.h"
-#include <ctype.h>
 
 #undef NR4DEBUG
 

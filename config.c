@@ -34,16 +34,16 @@
 #include "ax25.h"
 #include "net/enet/enet.h"
 #include "kiss.h"
-#include "nr4.h"
-#include "nrs.h"
-#include "netrom.h"
+#include "net/netrom/nr4.h"
+#include "net/netrom/nrs.h"
+#include "net/netrom/netrom.h"
 
 #ifdef HAVE_NET_IF_TAP_H
 #include "net/tap/tapdrvr.h"
 #endif /* HAVE_NET_IF_TAP_H */
 
 #ifdef HAVE_NET_IF_TUN_H
-#include "net/tap/tundrvr.h"
+#include "net/tun/tundrvr.h"
 #endif /* HAVE_NET_IF_TUN_H */
 
 #ifdef	MSDOS
@@ -59,7 +59,7 @@
 #include "commands.h"
 #include "mailbox.h"
 #include "ax25mail.h"
-#include "nr4mail.h"
+#include "net/netrom/nr4mail.h"
 #include "tipmail.h"
 #include "daemon.h"
 #include "bootp.h"

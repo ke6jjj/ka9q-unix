@@ -1,14 +1,14 @@
 /* Functions for level 3 net/rom support
  * Copyright 1989 Dan Frank, W9NK
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "global.h"
-#include "mbuf.h"
-#include "ax25.h"
-#include "netrom.h"
-#include "lapb.h"
 #include <ctype.h>
+
+#include "../../global.h"
+#include "../../mbuf.h"
+
+#include "netrom.h"
 
 /* Convert a net/rom network header to host format structure
  * Return -1 if error, 0 if OK

@@ -2,24 +2,26 @@
  * Copyright 1989 by Daniel M. Frank, W9NK.  Permission granted for
  * non-commercial distribution only.
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "stdio.h"
 #include <ctype.h>
-#include "global.h"
-#include "mbuf.h"
-#include "ax25.h"
-#include "mailbox.h"
+
+#include "../../stdio.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../ax25.h"
+#include "../../mailbox.h"
+#include "../../timer.h"
+#include "../../iface.h"
+#include "../../lapb.h"
+#include "../../cmdparse.h"
+#include "../../session.h"
+#include "../../socket.h"
+#include "../../commands.h"
+#include "../../errno.h"
+
 #include "netrom.h"
 #include "nr4.h"
-#include "timer.h"
-#include "iface.h"
-#include "lapb.h"
-#include "cmdparse.h"
-#include "session.h"
-#include "socket.h"
-#include "commands.h"
-#include "errno.h"
 
 uint8 Nr4user[AXALEN];
 

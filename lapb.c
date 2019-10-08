@@ -10,7 +10,6 @@
 #include "ax25.h"
 #include "lapb.h"
 #include "ip.h"
-#include "netrom.h"
 
 static void handleit(struct ax25_cb *axp,int pid,struct mbuf **bp);
 static void procdata(struct ax25_cb *axp,struct mbuf **bp);

@@ -15,9 +15,6 @@
 #include "msdos/n8250.h"
 #endif
 #include "asy.h"
-#include "ax25.h"
-#include "kiss.h"
-#include "nrs.h"
 #include "commands.h"
 
 static int asy_detach(struct iface *ifp);

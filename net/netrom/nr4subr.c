@@ -3,17 +3,17 @@
  * Copyright 1989 by Daniel M. Frank, W9NK.  Permission granted for
  * non-commercial distribution only.
  */
-#include "top.h"
- 
-#include "stdio.h"
-#include "global.h"
-#include "mbuf.h"
-#include "timer.h"
-#include "ax25.h"
+#include "../../top.h"
+
+#include <ctype.h>
+
+#include "../../stdio.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../timer.h"
+
 #include "netrom.h"
 #include "nr4.h"
-#include "lapb.h"
-#include <ctype.h>
 
 
 

@@ -14,7 +14,6 @@
 #include "net/arp/arp.h"
 #include "ax25.h"
 #include "lapb.h"
-#include "netrom.h"
 #include "ip.h"
 #include "devparam.h"
 #include <ctype.h>
