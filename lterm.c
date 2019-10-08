@@ -70,8 +70,8 @@ void *p;
 	suspend(ifp->rxproc);
 
 	/* Temporarily change the trigger character */
-	otrigchar = Asy[ifp->dev].trigchar;
-	Asy[ifp->dev].trigchar = -1;
+	otrigchar = asy_get_trigchar(ifp->dev);
+	asy_set_trigchar(ifp->dev, -1);
 
 #ifdef	notdef
 	/* Wait for CD (wired to DTR from local terminal) to go high */
