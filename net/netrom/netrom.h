@@ -3,8 +3,8 @@
 
 #include "../../mbuf.h"
 #include "../../iface.h"
-#include "../../ax25.h"
-#include "../../lapb.h"
+#include "../ax25/ax25.h"
+#include "../ax25/lapb.h"
 
 #include "nr4.h"
 

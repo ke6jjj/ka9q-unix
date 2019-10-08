@@ -1,12 +1,13 @@
-#include "top.h"
+#include "../../top.h"
 
-#include "errno.h"
-#include "global.h"
-#include "mbuf.h"
+#include "../../errno.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../socket.h"
+#include "../../usock.h"
+
 #include "lapb.h"
 #include "ax25.h"
-#include "socket.h"
-#include "usock.h"
 
 char Ax25_eol[] = "\r";
 

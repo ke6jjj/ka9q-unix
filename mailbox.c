@@ -39,10 +39,10 @@
 #include "files.h"
 #include "bm.h"
 #include "mailbox.h"
-#include "ax25.h"
-#include "ax25mail.h"
 #include "cmdparse.h"
 
+#include "net/ax25/ax25.h"
+#include "net/ax25/ax25mail.h"
 #include "net/netrom/nr4mail.h"
 
 /*

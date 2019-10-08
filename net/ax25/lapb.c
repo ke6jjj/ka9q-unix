@@ -2,14 +2,15 @@
  *
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "global.h"
-#include "mbuf.h"
-#include "timer.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../timer.h"
+#include "../../ip.h"
+
 #include "ax25.h"
 #include "lapb.h"
-#include "ip.h"
 
 static void handleit(struct ax25_cb *axp,int pid,struct mbuf **bp);
 static void procdata(struct ax25_cb *axp,struct mbuf **bp);

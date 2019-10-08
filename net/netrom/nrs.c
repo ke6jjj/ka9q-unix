@@ -11,10 +11,11 @@
 #include "../../global.h"
 #include "../../mbuf.h"
 #include "../../iface.h"
-#include "../../ax25.h"
 #include "../../asy.h"
 #include "../../trace.h"
 #include "../../commands.h"
+
+#include "../ax25/ax25.h"
 
 #include "nrs.h"
 

@@ -11,8 +11,6 @@
 #include "../../global.h"
 #include "../../mbuf.h"
 #include "../../timer.h"
-#include "../../ax25.h"
-#include "../../lapb.h"
 
 #include "netrom.h"
 #include "nr4.h"

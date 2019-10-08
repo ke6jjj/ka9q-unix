@@ -1,15 +1,16 @@
 /* AX25 header tracing
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "stdio.h"
-#include "global.h"
-#include "mbuf.h"
+#include "../../stdio.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../trace.h"
+#include "../../socket.h"
+
 #include "ax25.h"
 #include "lapb.h"
-#include "trace.h"
-#include "socket.h"
 
 static char *decode_type(uint type);
 

@@ -28,8 +28,6 @@
 #include "ip.h"
 #include "tcp.h"
 #include "udp.h"
-#include "ax25.h"
-#include "kiss.h"
 #include "ftpcli.h"
 #include "telnet.h"
 #include "tty.h"

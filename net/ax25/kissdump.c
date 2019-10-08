@@ -1,14 +1,15 @@
 /* Tracing routines for KISS TNC 
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "global.h"
-#include "mbuf.h"
-#include "kiss.h"
-#include "devparam.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../devparam.h"
+#include "../../trace.h"
+
 #include "ax25.h"
-#include "trace.h"
+#include "kiss.h"
 
 void
 ki_dump(fp,bpp,check)

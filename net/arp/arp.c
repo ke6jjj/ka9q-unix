@@ -8,12 +8,12 @@
 #include "../../mbuf.h"
 #include "../../timer.h"
 #include "../../iface.h"
-#include "../../ax25.h"
 #include "../../icmp.h"
 #include "../../ip.h"
 #include "../../icmp.h"
 
 #include "../enet/enet.h"
+#include "../ax25/ax25.h"
 
 #include "arp.h"
 

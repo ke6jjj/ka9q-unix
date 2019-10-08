@@ -1,10 +1,11 @@
 #ifndef	_KA9Q_LAPB_H
 #define	_KA9Q_LAPB_H
 
-#include "global.h"
-#include "mbuf.h"
-#include "iface.h"
-#include "timer.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../iface.h"
+#include "../../timer.h"
+
 #include "ax25.h"
 
 /* Upper sub-layer (LAPB) definitions */

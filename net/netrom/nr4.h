@@ -4,7 +4,8 @@
 
 #include "../../mbuf.h"
 #include "../../timer.h"
-#include "../../ax25.h"
+
+#include "../ax25/ax25.h"
 
 /* compile-time limitations */
 

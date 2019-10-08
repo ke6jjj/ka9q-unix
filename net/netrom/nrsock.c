@@ -3,7 +3,6 @@
 #include "../../errno.h"
 #include "../../global.h"
 #include "../../mbuf.h"
-#include "../../ax25.h"
 #include "../../socket.h"
 #include "../../usock.h"
 

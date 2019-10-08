@@ -4,15 +4,17 @@
  *
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "stdio.h"
-#include "global.h"
-#include "mbuf.h"
-#include "timer.h"
+#include <ctype.h>
+
+#include "../../stdio.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../timer.h"
+
 #include "ax25.h"
 #include "lapb.h"
-#include <ctype.h>
 
 struct ax25_cb *Ax25_cb;
 

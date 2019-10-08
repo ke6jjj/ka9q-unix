@@ -30,10 +30,12 @@
 #ifdef	ARCNET
 #include "msdos/arcnet.h"
 #endif
-#include "lapb.h"
-#include "ax25.h"
+#ifdef	AX25
+#include "net/ax25/lapb.h"
+#include "net/ax25/ax25.h"
+#include "net/ax25/kiss.h"
+#endif	/* AX25 */
 #include "net/enet/enet.h"
-#include "kiss.h"
 #include "net/netrom/nr4.h"
 #include "net/netrom/nrs.h"
 #include "net/netrom/netrom.h"
@@ -58,7 +60,9 @@
 #include "cmdparse.h"
 #include "commands.h"
 #include "mailbox.h"
-#include "ax25mail.h"
+#ifdef	AX25
+#include "net/ax25/ax25mail.h"
+#endif	/* AX25 */
 #include "net/netrom/nr4mail.h"
 #include "tipmail.h"
 #include "daemon.h"
@@ -74,10 +78,11 @@
 #include "ksp.h"
 #endif
 #ifdef	SOUND
-#include "sb.h"
+#include "msdos/sb.h"
 #endif
-#include "axip.h"
-
+#ifdef	AX25
+#include "net/ax25/axip.h"
+#endif	/* AX25 */
 static int dostart(int argc,char *argv[],void *p);
 static int dostop(int argc,char *argv[],void *p);
 

@@ -9,7 +9,6 @@
 #include "../../stdio.h"
 #include "../../mbuf.h"
 #include "../../timer.h"
-#include "../../ax25.h"
 #include "../../netuser.h"
 #include "../../cmdparse.h"
 #include "../../commands.h"

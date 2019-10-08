@@ -22,9 +22,9 @@
 #include "timer.h"
 #include "usock.h"
 #include "netuser.h"
-#include "ax25.h"
 #include "files.h"
 
+#include "net/ax25/ax25.h"
 #include "net/netrom/netrom.h"
 #include "net/netrom/nr4.h"
 

@@ -32,7 +32,7 @@ add_library(clients telnet.c ftpcli.c finger.c smtpcli.c hop.c tip.c nntpcli.c b
 add_library(servers ttylink.c ftpserv.c smisc.c smtpserv.c fingerd.c mailbox.c rewrite.c bmutil.c forward.c tipmail.c bootpd.c bootpdip.c bootpcmd.c popserv.c tnserv.c)
 add_library(internet tcpcmd.c tcpsock.c tcpuser.c tcptimer.c tcpout.c tcpin.c tcpsubr.c tcphdr.c udpcmd.c udpsock.c udp.c udphdr.c domain.c domhdr.c ripcmd.c rip.c ipcmd.c ipsock.c ip.c iproute.c iphdr.c icmpcmd.c ping.c icmp.c icmpmsg.c icmphdr.c netuser.c sim.c)
 # add_library(ipsec ipsec.c esp.c deskey.c des3port.c desport.c desspa.c ah.c)
-add_library(ax25 ax25cmd.c axsock.c ax25user.c ax25.c axheard.c lapbtime.c lapb.c kiss.c ax25subr.c ax25hdr.c ax25mail.c axip.c)
+add_library(ax25 net/ax25/ax25cmd.c net/ax25/axsock.c net/ax25/ax25user.c net/ax25/ax25.c net/ax25/axheard.c net/ax25/lapbtime.c net/ax25/lapb.c net/ax25/kiss.c net/ax25/ax25subr.c net/ax25/ax25hdr.c net/ax25/ax25mail.c net/ax25/axip.c)
 
 add_library(netrom net/netrom/nrcmd.c net/netrom/nrsock.c net/netrom/nr4user.c net/netrom/nr4timer.c net/netrom/nr4.c net/netrom/nr4subr.c net/netrom/nr4hdr.c net/netrom/nr3.c net/netrom/nrs.c net/netrom/nrhdr.c net/netrom/nr4mail.c)
 
@@ -58,7 +58,7 @@ add_library(arp net/arp/arp.c net/arp/arpcmd.c net/arp/arpdump.c net/arp/arphdr.
 add_library(enet net/enet/enet.c net/enet/enetdump.c)
 
 add_library(netinet ftpsubr.c sockcmd.c sockuser.c locsock.c socket.c sockutil.c iface.c timer.c ttydriv.c cmdparse.c mbuf.c misc.c pathname.c files.c kernel.c wildmat.c devparam.c stdio.c ahdlc.c crc.c md5c.c errno.c errlst.c getopt.c)
-add_library(dump trace.c kissdump.c ax25dump.c net/netrom/nrdump.c ipdump.c icmpdump.c udpdump.c tcpdump.c ripdump.c)
+add_library(dump trace.c net/ax25/kissdump.c net/ax25/ax25dump.c net/netrom/nrdump.c ipdump.c icmpdump.c udpdump.c tcpdump.c ripdump.c)
 add_library(unix unix/ksubr_unix.c unix/timer_unix.c unix/display_crs.c unix/unix.c unix/dirutil_unix.c unix/ksubr_unix.c unix_socket.c)
 
 if (HAVE_NET_IF_TAP_H)

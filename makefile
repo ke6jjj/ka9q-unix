@@ -43,9 +43,10 @@ INTERNET= tcpcmd.o tcpsock.o tcpuser.o \
 
 IPSEC=	ipsec.o esp.o deskey.o des3port.o desport.o desspa.o ah.o
 
-AX25=	ax25cmd.o axsock.o ax25user.o ax25.o \
-	axheard.o lapbtime.o \
-	lapb.o kiss.o ax25subr.o ax25hdr.o ax25mail.o axip.o
+AX25=	net/ax25/ax25cmd.o net/ax25/axsock.o net/ax25/ax25user.o net/ax25/ax25.o \
+	net/ax25/axheard.o net/ax25/lapbtime.o net/ax25/lapb.o \
+	net/ax25/kiss.o net/ax25/ax25subr.o net/ax25/ax25hdr.o \
+	net/ax25/ax25mail.o net/ax25/axip.o
 
 NETROM=	net/netrom/nrcmd.o net/netrom/nrsock.o net/netrom/nr4user.o \
 	net/netrom/nr4timer.o net/netrom/nr4.o net/netrom/nr4subr.o \
@@ -64,8 +65,8 @@ NET=	ftpsubr.o sockcmd.o sockuser.o locsock.o socket.o \
 	errlst.o getopt.o
 
 DUMP= 	trace.o net/enet/enetdump.o \
-	kissdump.o ax25dump.o net/arp/arpdump.o net/netrom/nrdump.o \
-	ipdump.o icmpdump.o udpdump.o tcpdump.o ripdump.o
+	net/ax25/kissdump.o net/ax25/ax25dump.o net/arp/arpdump.o \
+	net/netrom/nrdump.o ipdump.o icmpdump.o udpdump.o tcpdump.o ripdump.o
 
 UNIX=	unix/ksubr_unix.o unix/timer_unix.o unix/display_crs.o unix/unix.o unix/dirutil_unix.o \
 	unix/ksubr_unix.o net/enet/enet.o unix_socket.o

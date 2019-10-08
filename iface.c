@@ -11,7 +11,6 @@
 #include "ip.h"
 #include "icmp.h"
 #include "netuser.h"
-#include "ax25.h"
 #include "net/enet/enet.h"
 #include "cmdparse.h"
 #include "commands.h"
