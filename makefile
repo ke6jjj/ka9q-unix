@@ -75,12 +75,12 @@ UNIX+=	net/tap/tapdrvr.o net/tun/tundrvr.o
 
 DSP=	fsk.o mdb.o qpsk.o fft.o r4bf.o fano.o tab.o
 
-all:	net
+all:	ka9q_net
 
-debug:	net
-	gdb net
+debug:	ka9q_net
+	gdb ka9q_net
 
-net: main.o config.o version.o session.o $(LIBS)
+ka9q_net: main.o config.o version.o session.o $(LIBS)
 	$(CC) $(LFLAGS) -o $@ main.o config.o version.o session.o $(LIBS)
 
 mkpass.exe: mkpass.o md5c.o
