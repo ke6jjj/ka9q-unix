@@ -16,13 +16,13 @@
 #include "../../global.h"
 #include "../../proc.h"
 #include "../../mbuf.h"
-#include "../../netuser.h"
-#include "../../enet.h"
 #include "../../iface.h"
-#include "../../arp.h"
 #include "../../trace.h"
 #include "../../config.h"
 
+#include "../enet/enet.h"
+#include "../arp/arp.h"
+#include "../../lib/inet/netuser.h"
 #include "../../unix/nosunix.h"
 
 #include "tapdrvr.h"

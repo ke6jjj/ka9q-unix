@@ -16,11 +16,11 @@
 #include "../../global.h"
 #include "../../proc.h"
 #include "../../mbuf.h"
-#include "../../netuser.h"
 #include "../../iface.h"
 #include "../../trace.h"
 #include "../../config.h"
 
+#include "../../lib/inet/netuser.h"
 #include "../../unix/nosunix.h"
 #include "tundrvr.h"
 

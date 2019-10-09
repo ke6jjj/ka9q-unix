@@ -64,11 +64,11 @@ add_library(dump trace.c net/ax25/kissdump.c net/ax25/ax25dump.c net/netrom/nrdu
 add_library(unix unix/ksubr_unix.c unix/timer_unix.c unix/display_crs.c unix/unix.c unix/dirutil_unix.c unix/ksubr_unix.c unix_socket.c)
 
 if (HAVE_NET_IF_TAP_H)
-  add_library(tap tapdrvr.c)
+  add_library(tap net/tap/tapdrvr.c)
 endif()
 
 if (HAVE_NET_IF_TUN_H)
-  add_library(tun tundrvr.c)
+  add_library(tun net/tun/tundrvr.c)
 endif()
 
 add_executable(net main.c config.c version.c session.c)
