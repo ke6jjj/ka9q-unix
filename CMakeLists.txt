@@ -28,16 +28,40 @@ include_directories(${CURSES_INCLUDE_DIR})
 
 find_package(Threads REQUIRED)
 
-add_library(clients telnet.c ftpcli.c finger.c smtpcli.c hop.c tip.c nntpcli.c bootp.c popcli.c lterm.c)
-add_library(servers ttylink.c ftpserv.c smisc.c smtpserv.c fingerd.c mailbox.c rewrite.c bmutil.c forward.c tipmail.c bootpd.c bootpdip.c bootpcmd.c popserv.c tnserv.c)
-add_library(internet tcpcmd.c tcpsock.c tcpuser.c tcptimer.c tcpout.c tcpin.c tcpsubr.c tcphdr.c udpcmd.c udpsock.c udp.c udphdr.c domain.c domhdr.c ripcmd.c rip.c ipcmd.c ipsock.c ip.c iproute.c iphdr.c icmpcmd.c ping.c icmp.c icmpmsg.c icmphdr.c arpcmd.c arp.c arphdr.c netuser.c sim.c)
+add_library(clients telnet.c cmd/ftpcli/ftpcli.c cmd/finger/finger.c cmd/smtpcli/smtpcli.c cmd/inet/hop.c tip.c cmd/nntpcli/nntpcli.c bootp.c cmd/popcli/popcli.c lterm.c)
+
+add_library(servers ttylink.c service/ftp/ftpserv.c service/smisc/smisc.c service/smtp/smtpserv.c service/fingerd/fingerd.c mailbox.c rewrite.c bmutil.c forward.c tipmail.c bootpd.c bootpdip.c bootpcmd.c service/pop/popserv.c tnserv.c)
+
+add_library(internet cmd/inet/tcpcmd.c net/inet/tcpsock.c net/inet/tcpuser.c net/inet/tcptimer.c net/inet/tcpout.c net/inet/tcpin.c net/inet/tcpsubr.c net/inet/tcphdr.c cmd/inet/udpcmd.c net/inet/udpsock.c net/inet/udp.c net/inet/udphdr.c domain.c domhdr.c cmd/rip/ripcmd.c service/rip/rip.c cmd/inet/ipcmd.c net/inet/ipsock.c net/inet/ip.c net/inet/iproute.c net/inet/iphdr.c cmd/inet/icmpcmd.c net/inet/ping.c net/inet/icmp.c net/inet/icmpmsg.c net/inet/icmphdr.c lib/inet/netuser.c net/inet/sim.c)
 # add_library(ipsec ipsec.c esp.c deskey.c des3port.c desport.c desspa.c ah.c)
-add_library(ax25 ax25cmd.c axsock.c ax25user.c ax25.c axheard.c lapbtime.c lapb.c kiss.c ax25subr.c ax25hdr.c ax25mail.c axip.c)
-add_library(netrom nrcmd.c nrsock.c nr4user.c nr4timer.c nr4.c nr4subr.c nr4hdr.c nr3.c nrs.c nrhdr.c nr4mail.c)
-add_library(ppp asy.c asy_unix.c ppp.c pppcmd.c pppfsm.c ppplcp.c ppppap.c pppipcp.c pppdump.c slhc.c slhcdump.c slip.c sppp.c)
-add_library(netinet ftpsubr.c sockcmd.c sockuser.c locsock.c socket.c sockutil.c iface.c timer.c ttydriv.c cmdparse.c mbuf.c misc.c pathname.c files.c kernel.c ksubr_unix.c wildmat.c devparam.c stdio.c ahdlc.c crc.c md5c.c errno.c errlst.c getopt.c)
-add_library(dump trace.c enetdump.c arcdump.c kissdump.c ax25dump.c arpdump.c nrdump.c ipdump.c icmpdump.c udpdump.c tcpdump.c ripdump.c)
-add_library(unix ksubr_unix.c timer_unix.c display_crs.c unix.c dirutil_unix.c enet.c)
+add_library(ax25 net/ax25/ax25cmd.c net/ax25/axsock.c net/ax25/ax25user.c net/ax25/ax25.c net/ax25/axheard.c net/ax25/lapbtime.c net/ax25/lapb.c net/ax25/kiss.c net/ax25/ax25subr.c net/ax25/ax25hdr.c net/ax25/ax25mail.c net/ax25/axip.c)
+
+add_library(netrom net/netrom/nrcmd.c net/netrom/nrsock.c net/netrom/nr4user.c net/netrom/nr4timer.c net/netrom/nr4.c net/netrom/nr4subr.c net/netrom/nr4hdr.c net/netrom/nr3.c net/netrom/nrs.c net/netrom/nrhdr.c net/netrom/nr4mail.c)
+
+# Asynchronous serial (over device, TCP/IP)
+add_library(asy asy.c asy_unix.c)
+
+# Asynchronous PPP support
+add_library(ppp net/ppp/ppp.c net/ppp/pppcmd.c net/ppp/pppfsm.c net/ppp/ppplcp.c net/ppp/ppppap.c net/ppp/pppipcp.c cmd/pppdump/pppdump.c)
+
+# SLHC - TCP/IP header compression (used in PPP, SPPP)
+add_library(slhc net/slhc/slhc.c cmd/slhcdump/slhcdump.c)
+
+# SLIP support
+add_library(slip net/slip/slip.c)
+
+# Synchronous serial PPP over HDLC
+add_library(sppp net/sppp/sppp.c)
+
+# ARP
+add_library(arp net/arp/arp.c net/arp/arpcmd.c net/arp/arpdump.c net/arp/arphdr.c)
+
+# Ethernet networking
+add_library(enet net/enet/enet.c net/enet/enetdump.c)
+
+add_library(netinet lib/ftp/ftpsubr.c sockcmd.c sockuser.c locsock.c socket.c sockutil.c iface.c timer.c ttydriv.c cmdparse.c mbuf.c misc.c pathname.c files.c kernel.c wildmat.c devparam.c stdio.c ahdlc.c crc.c md5c.c errno.c errlst.c getopt.c)
+add_library(dump trace.c net/ax25/kissdump.c net/ax25/ax25dump.c net/netrom/nrdump.c cmd/inet/ipdump.c cmd/inet/icmpdump.c cmd/inet/udpdump.c cmd/inet/tcpdump.c cmd/rip/ripdump.c)
+add_library(unix unix/ksubr_unix.c unix/timer_unix.c unix/display_crs.c unix/unix.c unix/dirutil_unix.c unix/ksubr_unix.c unix_socket.c)
 
 if (HAVE_NET_IF_TAP_H)
   add_library(tap tapdrvr.c)
@@ -48,7 +72,8 @@ if (HAVE_NET_IF_TUN_H)
 endif()
 
 add_executable(net main.c config.c version.c session.c)
-target_link_libraries(net clients servers internet ax25 netrom ppp netinet dump unix)
+target_link_libraries(net clients servers internet ax25 netrom ppp netinet dump unix asy)
+target_link_libraries(net ppp sppp enet arp slip slhc)
 target_link_libraries(net ${CURSES_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 if (HAVE_NET_IF_TAP_H)
   target_link_libraries(net tap)

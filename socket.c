@@ -12,7 +12,6 @@
 #include "errno.h"
 #include "global.h"
 #include "mbuf.h"
-#include "netuser.h"
 #include "proc.h"
 #include "lzw.h"
 #include "usock.h"

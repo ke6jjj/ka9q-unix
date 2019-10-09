@@ -8,8 +8,6 @@
 #include "global.h"
 #include "mbuf.h"
 #include "proc.h"
-#include "ftpcli.h"
-#include "icmp.h"
 #include "telnet.h"
 #include "tty.h"
 #include "session.h"
@@ -18,6 +16,8 @@
 #include "cmdparse.h"
 #include "commands.h"
 #include "main.h"
+
+#include "cmd/ftpcli/ftpcli.h"
 
 struct session **Sessions;
 struct session *Command;

@@ -4,9 +4,9 @@
 #include "stdio.h"
 #include <ctype.h>
 #include "global.h"
-#include "netuser.h"
 #include "files.h"
 #include "md5.h"
+#include "lib/inet/netuser.h"
 
 #ifdef	MSDOS
 char System[] = "MSDOS";

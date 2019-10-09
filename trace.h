@@ -1,13 +1,8 @@
-#ifndef	_TRACE_H
-#define	_TRACE_H
+#ifndef	_KA9Q_TRACE_H
+#define	_KA9Q_TRACE_H
 
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef	_IFACE_H
 #include "iface.h"
-#endif
 
 /* Definitions for packet dumping */
 
@@ -86,4 +81,4 @@ void tcp_dump(kFILE *fp,struct mbuf **bpp,int32 source,int32 dest,int check);
 /* In udpdump.c: */
 void udp_dump(kFILE *fp,struct mbuf **bpp,int32 source,int32 dest,int check);
 
-#endif	/* _TRACE_H */
+#endif	/* _KA9Q_TRACE_H */

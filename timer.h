@@ -1,9 +1,7 @@
-#ifndef	_TIMER_H
-#define	_TIMER_H
+#ifndef	_KA9Q_TIMER_H
+#define	_KA9Q_TIMER_H
 
-#ifndef	_GLOBAL_H
 #include "global.h"
-#endif
 
 /* Software timers
  * There is one of these structures for each simulated timer.
@@ -54,4 +52,4 @@ int32 msclock(void);
 int32 secclock(void);
 int32 usclock(void);
 
-#endif	/* _TIMER_H */
+#endif	/* _KA9Q_TIMER_H */

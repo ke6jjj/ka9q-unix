@@ -1,3 +1,6 @@
+#ifndef	_KA9Q_CRC_H
+#define	_KA9Q_CRC_H
+
 /* 16 bit CRC-CCITT stuff. Extracted from Bill Simpson's PPP */
 
 #define FCS_START	0xffff	/* Starting bit string for FCS calculation */
@@ -13,3 +16,5 @@ void crc_init(uint16 *crc);
 void crc_update(uint8 *buf, uint len, uint16 *crc);
 int crc_final_check(uint16 crc);
 void crc_final_write(uint8 *buf, uint16 crc);
+
+#endif	/* _KA9Q_CRC_H */

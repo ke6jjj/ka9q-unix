@@ -20,10 +20,11 @@
 #include "config.h"
 #include "cmdparse.h"
 #include "bootpd.h"
-#include "netuser.h"
 #include "iface.h"
-#include "udp.h"
-#include "arp.h"
+
+#include "net/inet/udp.h"
+#include "net/arp/arp.h"
+#include "lib/inet/netuser.h"
 
 #define BP_DEFAULT_TAB "bootptab"
 #define BP_DEFAULT_LOG "bootplog"

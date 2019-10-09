@@ -3,8 +3,6 @@
 
 #include "stdio.h"
 #include "global.h"
-#include "internet.h"
-#include "netuser.h"
 #include "socket.h"
 #include "session.h"
 #if defined(UNIX)
@@ -13,6 +11,9 @@
 #include "n8250.h"
 #endif
 #include "asy.h"
+
+#include "net/inet/internet.h"
+#include "lib/inet/netuser.h"
 
 static void lterm_rx(int,void *,void *);
 
@@ -70,8 +71,8 @@ void *p;
 	suspend(ifp->rxproc);
 
 	/* Temporarily change the trigger character */
-	otrigchar = Asy[ifp->dev].trigchar;
-	Asy[ifp->dev].trigchar = -1;
+	otrigchar = asy_get_trigchar(ifp->dev);
+	asy_set_trigchar(ifp->dev, -1);
 
 #ifdef	notdef
 	/* Wait for CD (wired to DTR from local terminal) to go high */

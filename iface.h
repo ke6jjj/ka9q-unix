@@ -1,17 +1,31 @@
-#ifndef	_IFACE_H
-#define	_IFACE_H
+#ifndef	_KA9Q_IFACE_H
+#define	_KA9Q_IFACE_H
 
-#ifndef	_GLOBAL_H
 #include "global.h"
-#endif
-
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef _PROC_H
 #include "proc.h"
-#endif
+
+/* Interface type / packet driver classes */
+#define CL_NONE         0
+#define CL_ETHERNET     1
+#define CL_PRONET_10    2
+#define CL_IEEE8025     3
+#define CL_OMNINET      4
+#define CL_APPLETALK    5
+#define CL_SERIAL_LINE  6
+#define CL_STARLAN      7
+#define CL_ARCNET       8
+#define CL_AX25         9
+#define CL_KISS         10
+#define CL_IEEE8023     11
+#define CL_FDDI         12
+#define CL_INTERNET_X25 13
+#define CL_LANSTAR      14
+#define CL_SLFP         15
+#define CL_NETROM       16
+#define CL_PPP          17
+#define CL_QTSO         18
+#define NCLASS          19
 
 
 /* Interface encapsulation mode table entry. An array of these structures
@@ -144,4 +158,4 @@ int setencap(struct iface *ifp,char *mode);
 /* In config.c: */
 int net_route(struct iface *ifp,struct mbuf **bpp);
 
-#endif	/* _IFACE_H */
+#endif	/* _KA9Q_IFACE_H */

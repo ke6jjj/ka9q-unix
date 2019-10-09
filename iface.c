@@ -8,14 +8,14 @@
 #include "mbuf.h"
 #include "proc.h"
 #include "iface.h"
-#include "ip.h"
-#include "icmp.h"
-#include "netuser.h"
-#include "ax25.h"
-#include "enet.h"
+#include "net/enet/enet.h"
 #include "cmdparse.h"
 #include "commands.h"
 #include "trace.h"
+
+#include "net/inet/ip.h"
+#include "net/inet/icmp.h"
+#include "lib/inet/netuser.h"
 
 static void showiface(struct iface *ifp);
 static int mask2width(int32 mask);

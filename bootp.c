@@ -15,14 +15,17 @@
 #include "global.h"
 #include "mbuf.h"
 #include "socket.h"
-#include "netuser.h"
-#include "udp.h"
 #include "iface.h"
-#include "ip.h"
-#include "internet.h"
 #include "domain.h"
-#include "rip.h"
 #include "cmdparse.h"
+
+#include "lib/inet/netuser.h"
+#include "net/inet/ip.h"
+#include "net/inet/udp.h"
+#include "net/inet/internet.h"
+
+#include "service/rip/rip.h"
+
 #include "bootp.h"
 
 static int bootp_rx(struct iface *ifp,struct mbuf *bp);

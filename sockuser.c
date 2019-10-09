@@ -11,8 +11,6 @@
 #include "socket.h"
 #include "usock.h"
 #include "session.h"
-#include "nr4.h"
-
 
 /* Higher-level receive routine, intended for connection-oriented sockets.
  * Can be used with datagram sockets, although the sender id is lost.

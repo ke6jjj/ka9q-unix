@@ -1,11 +1,8 @@
-#ifndef	_MBUF_H
-#define	_MBUF_H
+#ifndef	_KA9Q_MBUF_H
+#define	_KA9Q_MBUF_H
 
 #include "stdio.h"
-
-#ifndef _GLOBAL_H
 #include "global.h"
-#endif
 
 extern unsigned Ibufsize;	/* Size of interrupt buffers to allocate */
 extern int Nibufs;		/* Number of interrupt buffers to allocate */
@@ -78,4 +75,4 @@ void mbuf_garbage(int red);
 
 #define AUDIT(bp)       audit(bp,__FILE__,__LINE__)
 
-#endif	/* _MBUF_H */
+#endif	/* _KA9Q_MBUF_H */

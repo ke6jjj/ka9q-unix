@@ -10,7 +10,7 @@
 /*************************************************/
 
 #include "socket.h"
-#include "arp.h"
+#include "net/arp/arp.h"
 
 #define MHOSTS  12     /* max number of 'hosts' structs */
 #define BP_MAXDNS 5

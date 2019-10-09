@@ -1,5 +1,5 @@
-#ifndef	_DAEMON_H
-#define	_DAEMON_H
+#ifndef	_KA9Q_DAEMON_H
+#define	_KA9Q_DAEMON_H
 
 struct daemon {
 	char *name;
@@ -25,5 +25,4 @@ void rand_init(int,void*,void*);
 /* In timer.c: */
 void timerproc(int,void*,void*);
 
-#endif	/* _DAEMON_H */
-
+#endif	/* _KA9Q_DAEMON_H */

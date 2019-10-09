@@ -17,9 +17,10 @@
 #include "proc.h"
 #include "tty.h"
 #include "commands.h"
-#include "internet.h"
-#include "netuser.h"
 #include "cmdparse.h"
+
+#include "lib/inet/netuser.h"
+#include "net/inet/internet.h"
 
 int Refuse_echo = 0;
 int Tn_cr_mode = 0;    /* if true turn <cr> to <cr-nul> */

@@ -6,12 +6,12 @@
 #if	defined(PROCLOG) || defined(PROCTRACE)
 #include "stdio.h"
 #endif
+#include "hardware.h"
 #if defined(MSDOS)
 #include <dos.h>
 #endif
 #ifdef UNIX
 #include <assert.h>
-#include "nosunix.h"
 #endif
 #include <setjmp.h>
 #include "global.h"

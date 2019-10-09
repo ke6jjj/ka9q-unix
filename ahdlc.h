@@ -1,5 +1,5 @@
-#ifndef	_AHDLC_H
-#define	_AHDLC_H
+#ifndef	_KA9Q_AHDLC_H
+#define	_KA9Q_AHDLC_H
 #include "global.h"
 #include "mbuf.h"
 
@@ -24,5 +24,4 @@ void init_hdlc(struct ahdlc *,int);
 struct mbuf *ahdlcrx(struct ahdlc *,uint8);
 struct mbuf *ahdlctx(struct mbuf *);
 
-#endif	/* _AHDLC_H */
-
+#endif	/* _KA9Q_AHDLC_H */
