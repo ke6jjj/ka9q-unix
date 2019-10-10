@@ -1,5 +1,5 @@
-#ifndef	_DISPLAY_H
-#define	_DISPLAY_H
+#ifndef	_KA9Q_DISPLAY_H
+#define	_KA9Q_DISPLAY_H
 
 #include "top.h"
 
@@ -59,5 +59,5 @@ void dcursup(struct display *dp);
 void dcursdown(struct display *dp);
 void debug(char *s);
 
-#endif /*_DISPLAY_H */
+#endif /*_KA9Q_DISPLAY_H */
 
