@@ -34,7 +34,7 @@ SERVERS= ttylink.o service/ftp/ftpserv.o service/smisc/smisc.o service/smtp/smtp
 INTERNET= cmd/inet/tcpcmd.o net/inet/tcpsock.o net/inet/tcpuser.o \
 	net/inet/tcptimer.o net/inet/tcpout.o net/inet/tcpin.o net/inet/tcpsubr.o net/inet/tcphdr.o \
 	cmd/inet/udpcmd.o net/inet/udpsock.o net/inet/udp.o net/inet/udphdr.o \
-	domain.o domhdr.o \
+	net/dns/domain.o net/dns/domhdr.o \
 	cmd/rip/ripcmd.o service/rip/rip.o \
 	cmd/inet/ipcmd.o net/inet/ipsock.o net/inet/ip.o net/inet/iproute.o net/inet/iphdr.o \
 	cmd/inet/icmpcmd.o net/inet/ping.o net/inet/icmp.o net/inet/icmpmsg.o net/inet/icmphdr.o \

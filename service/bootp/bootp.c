@@ -16,13 +16,13 @@
 #include "../../mbuf.h"
 #include "../../socket.h"
 #include "../../iface.h"
-#include "../../domain.h"
 #include "../../cmdparse.h"
 
 #include "../../lib/inet/netuser.h"
 #include "../../net/inet/ip.h"
 #include "../../net/inet/udp.h"
 #include "../../net/inet/internet.h"
+#include "../../net/dns/domain.h"
 
 #include "../../service/rip/rip.h"
 

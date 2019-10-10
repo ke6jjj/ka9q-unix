@@ -23,7 +23,8 @@
 #include "../../dirutil.h"
 #include "../../mailbox.h"
 #include "../../bm.h"
-#include "../../domain.h"
+
+#include "../../net/dns/domain.h"
 
 #include "smtp.h"
 

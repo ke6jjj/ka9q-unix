@@ -1,10 +1,11 @@
 /* Domain header conversion routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "global.h"
-#include "mbuf.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+
 #include "domain.h"
 
 static int dn_expand(uint8 *msg,uint8 *eom,uint8 *compressed,char *full,

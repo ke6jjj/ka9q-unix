@@ -35,7 +35,7 @@
 #include "commands.h"
 #include "daemon.h"
 #include "devparam.h"
-#include "domain.h"
+#include "net/dns/domain.h"
 #include "files.h"
 #include "main.h"
 #include "trace.h"

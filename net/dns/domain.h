@@ -1,17 +1,9 @@
 #ifndef	_DOMAIN_H
 #define	_DOMAIN_H
 
-#ifndef	_GLOBAL_H
-#include "global.h"
-#endif
-
-#ifndef	_MBUF_H
-#include "mbuf.h"
-#endif
-
-#ifndef _PROC_H
-#include "proc.h"
-#endif
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../proc.h"
 
 #define	INITRTT		2000L	/* Initial smoothed response time */
 #define	MAXCNAME	10	/* Maximum amount of cname recursion */

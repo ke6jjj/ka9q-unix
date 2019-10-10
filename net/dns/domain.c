@@ -9,28 +9,29 @@
  *	Feb 91	Bill Simpson added "query" command and TYPE_ANY processing.
  *	Jul 91	Bill Simpson added "more" sessions for query and cache list.
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "stdio.h"
+#include "../../stdio.h"
 #include <ctype.h>
 #include <time.h>
 #include <sys/stat.h>
-#include "errno.h"
-#include "global.h"
-#include "mbuf.h"
-#include "proc.h"
-#include "net/inet/ip.h"
-#include "lib/inet/netuser.h"
-#include "session.h"
-#include "socket.h"
-#include "cmdparse.h"
-#include "commands.h"
-#include "files.h"
-#include "main.h"
-#include "domain.h"
+#include "../../errno.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../proc.h"
+#include "../../session.h"
+#include "../../socket.h"
+#include "../../cmdparse.h"
+#include "../../commands.h"
+#include "../../files.h"
+#include "../../main.h"
 #ifdef UNIX
 #include <unistd.h>
 #endif
+
+#include "../../net/inet/ip.h"
+#include "../../lib/inet/netuser.h"
+#include "domain.h"
 
 #undef	DEBUG				/* for certain trace messages */
 #undef	DEBUG_PAIN			/* for painful debugging */

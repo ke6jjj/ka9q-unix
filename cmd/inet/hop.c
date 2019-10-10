@@ -19,16 +19,15 @@
 #include "../../session.h"
 #include "../../timer.h"
 #include "../../proc.h"
-#include "../../domain.h"
 #include "../../commands.h"
 #include "../../tty.h"
 #include "../../cmdparse.h"
-//#include "../../hardware.h"
 
 #include "../../lib/inet/netuser.h"
 #include "../../net/inet/ip.h"
 #include "../../net/inet/icmp.h"
 #include "../../net/inet/udp.h"
+#include "../../net/dns/domain.h"
 
 #define HOPMAXQUERY	5		/* Max# queries each TTL value */
 static uint Hoprport = 32768+666;	/* funny port for udp probes */
