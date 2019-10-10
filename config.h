@@ -9,6 +9,7 @@
 #endif
 
 /* Software options */
+#undef	BOOTP			/* IPv4 bootp/bootpd support */
 #define	MAILBOX		1	/* Include SM0RGV mailbox server */
 #define	NNTP		1	/* Netnews client */
 #define	SERVERS		1	/* Include TCP servers */

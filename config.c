@@ -66,7 +66,7 @@
 #include "net/netrom/nr4mail.h"
 #include "tipmail.h"
 #include "daemon.h"
-#include "bootp.h"
+#include "service/bootp/bootp.h"
 #include "asy.h"
 #include "trace.h"
 #include "session.h"

@@ -25,11 +25,11 @@ LIBS = clients.a servers.a internet.a \
 # UNIX: alloc routines are not UNIX compatible NET(alloc.o)
 # UNIX: NET(format.o). Not for HAVE_FUNOPEN.
 CLIENTS= telnet.o cmd/ftpcli/ftpcli.o cmd/finger/finger.o cmd/smtpcli/smtpcli.o cmd/inet/hop.o tip.o \
-	cmd/nntpcli/nntpcli.o bootp.o cmd/popcli/popcli.o lterm.o
+	cmd/nntpcli/nntpcli.o service/bootp/bootp.o cmd/popcli/popcli.o lterm.o
 
 SERVERS= ttylink.o service/ftp/ftpserv.o service/smisc/smisc.o service/smtp/smtpserv.o \
 	service/fingerd/fingerd.o mailbox.o rewrite.o bmutil.o forward.o tipmail.o \
-	bootpd.o bootpdip.o bootpcmd.o service/pop/popserv.o tnserv.o
+	service/bootpd/bootpd.o service/bootpd/bootpdip.o cmd/bootpdcmd/bootpcmd.o service/pop/popserv.o tnserv.o
 
 INTERNET= cmd/inet/tcpcmd.o net/inet/tcpsock.o net/inet/tcpuser.o \
 	net/inet/tcptimer.o net/inet/tcpout.o net/inet/tcpin.o net/inet/tcpsubr.o net/inet/tcphdr.o \

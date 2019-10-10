@@ -9,11 +9,15 @@
 /* BOOTP is documented in RFC 951 and RFC 1048   */
 /*************************************************/
 
+#ifndef	_KA9Q_BOOTP_H
+#define	_KA9Q_BOOTP_H
+
 #ifndef BOOTREQUEST
 
-#include "mbuf.h"
-#include "socket.h"
-#include "net/inet/ip.h"
+#include "../../mbuf.h"
+#include "../../socket.h"
+
+#include "../../net/inet/ip.h"
 
 struct bootp {
 	uint8	op;			/* packet opcode type */
@@ -72,3 +76,4 @@ int bootp_validPacket(struct ip *ip,struct mbuf *bp);
 
 #endif
 
+#endif	/* _KA9Q_BOOTP_H */

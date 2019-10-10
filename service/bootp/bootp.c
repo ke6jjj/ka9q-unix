@@ -9,22 +9,22 @@
  * BOOTP is documented in RFC 951 and RFC 1048
  * Delinted, ANSIfied and reformatted - 5/30/91 P. Karn
  */
-#include "top.h"
+#include "../../top.h"
 
 #include <time.h>
-#include "global.h"
-#include "mbuf.h"
-#include "socket.h"
-#include "iface.h"
-#include "domain.h"
-#include "cmdparse.h"
+#include "../../global.h"
+#include "../../mbuf.h"
+#include "../../socket.h"
+#include "../../iface.h"
+#include "../../domain.h"
+#include "../../cmdparse.h"
 
-#include "lib/inet/netuser.h"
-#include "net/inet/ip.h"
-#include "net/inet/udp.h"
-#include "net/inet/internet.h"
+#include "../../lib/inet/netuser.h"
+#include "../../net/inet/ip.h"
+#include "../../net/inet/udp.h"
+#include "../../net/inet/internet.h"
 
-#include "service/rip/rip.h"
+#include "../../service/rip/rip.h"
 
 #include "bootp.h"
 

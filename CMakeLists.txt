@@ -30,9 +30,9 @@ include_directories(${CURSES_INCLUDE_DIR})
 
 find_package(Threads REQUIRED)
 
-add_library(clients telnet.c cmd/ftpcli/ftpcli.c cmd/finger/finger.c cmd/smtpcli/smtpcli.c cmd/inet/hop.c tip.c cmd/nntpcli/nntpcli.c bootp.c cmd/popcli/popcli.c lterm.c)
+add_library(clients telnet.c cmd/ftpcli/ftpcli.c cmd/finger/finger.c cmd/smtpcli/smtpcli.c cmd/inet/hop.c tip.c cmd/nntpcli/nntpcli.c service/bootp/bootp.c cmd/popcli/popcli.c lterm.c)
 
-add_library(servers ttylink.c service/ftp/ftpserv.c service/smisc/smisc.c service/smtp/smtpserv.c service/fingerd/fingerd.c mailbox.c rewrite.c bmutil.c forward.c tipmail.c bootpd.c bootpdip.c bootpcmd.c service/pop/popserv.c tnserv.c)
+add_library(servers ttylink.c service/ftp/ftpserv.c service/smisc/smisc.c service/smtp/smtpserv.c service/fingerd/fingerd.c mailbox.c rewrite.c bmutil.c forward.c tipmail.c service/bootpd/bootpd.c service/bootpd/bootpdip.c cmd/bootpcmd/bootpcmd.c service/pop/popserv.c tnserv.c)
 
 add_library(internet cmd/inet/tcpcmd.c net/inet/tcpsock.c net/inet/tcpuser.c net/inet/tcptimer.c net/inet/tcpout.c net/inet/tcpin.c net/inet/tcpsubr.c net/inet/tcphdr.c cmd/inet/udpcmd.c net/inet/udpsock.c net/inet/udp.c net/inet/udphdr.c domain.c domhdr.c cmd/rip/ripcmd.c service/rip/rip.c cmd/inet/ipcmd.c net/inet/ipsock.c net/inet/ip.c net/inet/iproute.c net/inet/iphdr.c cmd/inet/icmpcmd.c net/inet/ping.c net/inet/icmp.c net/inet/icmpmsg.c net/inet/icmphdr.c lib/inet/netuser.c net/inet/sim.c)
 # add_library(ipsec ipsec.c esp.c deskey.c des3port.c desport.c desspa.c ah.c)

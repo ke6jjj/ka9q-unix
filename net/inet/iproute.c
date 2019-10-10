@@ -23,7 +23,7 @@
 #include "icmp.h"
 
 /* note: this is /only/ for a bootp packet check */
-#include "../../bootp.h"
+#include "../../service/bootp/bootp.h"
 
 struct route *Routes[32][HASHMOD];	/* Routing table */
 struct route R_default = {		/* Default route entry */

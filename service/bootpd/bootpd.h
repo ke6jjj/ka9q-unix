@@ -9,8 +9,11 @@
 /* BOOTP is documented in RFC 951 and RFC 1048   */
 /*************************************************/
 
-#include "socket.h"
-#include "net/arp/arp.h"
+#ifndef	_KA9Q_BOOTPD_H
+#define	_KA9Q_BOOTPD_H
+
+#include "../../socket.h"
+#include "../../net/arp/arp.h"
 
 #define MHOSTS  12     /* max number of 'hosts' structs */
 #define BP_MAXDNS 5
@@ -44,3 +47,4 @@ void da_shut(void);
 int da_done_net(struct iface *iface);
 int da_serve_net(struct iface *iface,int32 rstart,int32 rend);
 
+#endif	/* _KA9Q_BOOTPD_H */
