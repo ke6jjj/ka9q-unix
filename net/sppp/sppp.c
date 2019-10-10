@@ -7,12 +7,14 @@
 #include "../../mbuf.h"
 #include "../../iface.h"
 #include "../../asy.h"
-#include "../../crc.h"
 #include "../../ahdlc.h"
 #include "../../trace.h"
 
+#include "../../lib/util/crc.h"
+
 #include "../../net/inet/ip.h"
 #include "../slhc/slhc.h"
+
 
 #include "sppp.h"
 

@@ -10,7 +10,7 @@
 #include "global.h"
 #include "mbuf.h"
 #include "proc.h"
-#include "crc.h"
+#include "lib/util/crc.h"
 
 static int32 Pushdowns;		/* Total calls to pushdown() */
 static int32 Pushalloc;		/* Calls to pushalloc() that call malloc */

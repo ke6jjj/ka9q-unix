@@ -22,7 +22,8 @@
 #include "../../dirutil.h"
 #include "../../commands.h"
 #include "../../files.h"
-#include "../../md5.h"
+
+#include "../../lib/util/md5.h"
 
 #include "ftp.h"
 #include "ftpserv.h"

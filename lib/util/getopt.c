@@ -21,9 +21,9 @@
  * The current SVR2 man page reflects the actual behavor of this getopt.
  * However, I am not about to post a copy of anything licensed by AT&T.
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "global.h"
+#include "../../global.h"
 #define index strchr
 #ifdef BSD
 #include <strings.h>

@@ -10,7 +10,7 @@
 #include "../../proc.h"
 #include "../../service/ftp/ftp.h"
 #include "../../cmdparse.h"
-#include "../../md5.h"
+#include "../../lib/util/md5.h"
 
 #define	MD5BLOCK	64	/* Preferred MD5 block size */
 

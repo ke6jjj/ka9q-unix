@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include "global.h"
 #include "files.h"
-#include "md5.h"
+#include "lib/util/md5.h"
 #include "lib/inet/netuser.h"
 
 #ifdef	MSDOS

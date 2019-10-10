@@ -48,9 +48,9 @@ were, I'd use the code I mentioned above.
    argument. Each part of the string that matches '*' is returned as a
    null-terminated, malloced string in this array.
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "global.h"
+#include "../../global.h"
 static int Star(char *s,char *p,char **argv);
 
 static int

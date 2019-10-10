@@ -61,7 +61,7 @@ add_library(arp net/arp/arp.c net/arp/arpcmd.c net/arp/arpdump.c net/arp/arphdr.
 # Ethernet networking
 add_library(enet net/enet/enet.c net/enet/enetdump.c)
 
-add_library(netinet lib/ftp/ftpsubr.c sockcmd.c sockuser.c locsock.c socket.c sockutil.c iface.c timer.c ttydriv.c cmdparse.c mbuf.c misc.c pathname.c files.c kernel.c wildmat.c devparam.c stdio.c ahdlc.c crc.c md5c.c errno.c errlst.c getopt.c)
+add_library(netinet lib/ftp/ftpsubr.c sockcmd.c sockuser.c locsock.c socket.c sockutil.c iface.c timer.c ttydriv.c cmdparse.c mbuf.c lib/util/misc.c pathname.c files.c kernel.c lib/util/wildmat.c devparam.c stdio.c ahdlc.c lib/util/crc.c lib/util/md5c.c errno.c errlst.c lib/util/getopt.c)
 add_library(dump trace.c net/ax25/kissdump.c net/ax25/ax25dump.c net/netrom/nrdump.c cmd/inet/ipdump.c cmd/inet/icmpdump.c cmd/inet/udpdump.c cmd/inet/tcpdump.c cmd/rip/ripdump.c)
 add_library(unix unix/ksubr_unix.c unix/timer_unix.c unix/display_crs.c unix/unix.c unix/dirutil_unix.c unix/ksubr_unix.c unix_socket.c)
 

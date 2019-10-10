@@ -1,12 +1,12 @@
 /* Miscellaneous machine independent utilities
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "top.h"
+#include "../../top.h"
 
-#include "stdio.h"
-#include "global.h"
-#include "socket.h"
-#include "mbuf.h"
+#include "../../stdio.h"
+#include "../../global.h"
+//#include "socket.h"
+//#include "mbuf.h"
 
 char Whitespace[] = " \t\r\n";
 
