@@ -3,6 +3,9 @@
 
 #ifdef USE_CMAKE_CONFIG_H
 #include "cmake_config.h"
+#define KA9Q_VERSION_STRING X_CMAKE_SYSTEM_NAME
+#else
+#define KA9Q_VERSION_STRING "BSD"
 #endif
 
 /* Software options */

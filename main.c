@@ -6,6 +6,7 @@
  * Copyright 1986-1996 Phil Karn, KA9Q
  */
 #include "top.h"
+#include "config.h"
 
 #include <time.h>
 #include <ctype.h>
@@ -107,7 +108,7 @@ main(int argc,char *argv[])
 	Sessions = (struct session **)callocw(Nsessions,sizeof(struct session *));
 	Command = Lastcurr = newsession("command interpreter",COMMAND,1);
 	Display = newproc("display",350,display,0,NULL,NULL,0);
-	kprintf("KA9Q NOS version %s\n",Version);
+	kprintf("KA9Q NOS version %s (%s)\n",Version, KA9Q_VERSION_STRING);
 #ifdef	CPU386
 	kprintf("Compiled for 386/486 CPU\n");
 #endif
