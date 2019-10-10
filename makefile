@@ -59,7 +59,7 @@ PPP=	asy.o asy_unix.o net/ppp/ppp.o net/ppp/pppcmd.o net/ppp/pppfsm.o \
 
 NET=	lib/ftp/ftpsubr.o sockcmd.o sockuser.o locsock.o socket.o \
 	sockutil.o iface.o timer.o ttydriv.o cmdparse.o \
-	mbuf.o lib/util/misc.o pathname.o files.o \
+	mbuf.o lib/util/misc.o lib/util/pathname.o files.o \
 	kernel.o lib/util/wildmat.o \
 	devparam.o stdio.o ahdlc.o lib/util/crc.o lib/util/md5c.o errno.o \
 	errlst.o lib/util/getopt.o
