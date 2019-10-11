@@ -7,7 +7,6 @@
 #include "../../mbuf.h"
 #include "../../iface.h"
 #include "../../asy.h"
-#include "../../ahdlc.h"
 #include "../../trace.h"
 
 #include "../../lib/util/crc.h"
@@ -15,7 +14,7 @@
 #include "../../net/inet/ip.h"
 #include "../slhc/slhc.h"
 
-
+#include "ahdlc.h"
 #include "sppp.h"
 
 static uint8 *putbyte(uint8 *cp,uint8 c);
