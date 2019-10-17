@@ -6,7 +6,7 @@
 CC?= cc
 RM?= rm -f
 LIB?= ar
-CFLAGS= -g -DHOST_BSD -Werror -Wno-int-to-void-pointer-cast -O3
+CFLAGS= -g -DHOST_BSD -Werror -Wno-int-to-void-pointer-cast -O3 -I.
 # This was enabled by default, maintain backwards compatibility for now
 CFLAGS+= -DHAVE_NET_IF_TAP_H
 CFLAGS+= -DHAVE_NET_IF_TUN_H
@@ -29,7 +29,7 @@ CLIENTS= telnet.o cmd/ftpcli/ftpcli.o cmd/finger/finger.o cmd/smtpcli/smtpcli.o 
 
 SERVERS= ttylink.o service/ftp/ftpserv.o service/smisc/smisc.o service/smtp/smtpserv.o \
 	service/fingerd/fingerd.o mailbox.o rewrite.o bmutil.o forward.o tipmail.o \
-	service/bootpd/bootpd.o service/bootpd/bootpdip.o cmd/bootpdcmd/bootpcmd.o service/pop/popserv.o tnserv.o
+	service/bootpd/bootpd.o service/bootpd/bootpdip.o cmd/bootpcmd/bootpcmd.o service/pop/popserv.o tnserv.o
 
 INTERNET= cmd/inet/tcpcmd.o net/inet/tcpsock.o net/inet/tcpuser.o \
 	net/inet/tcptimer.o net/inet/tcpout.o net/inet/tcpin.o net/inet/tcpsubr.o net/inet/tcphdr.o \
