@@ -25,17 +25,17 @@
  *		Improve PAP user interface and fix related bugs.
  *		Remove kwaits and "phase machine".
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../proc.h"
 #include "../../iface.h"
-#include "../../net/inet/internet.h"
-#include "../../net/inet/ip.h"
-#include "../slhc/slhc.h"
+#include "net/inet/internet.h"
+#include "net/inet/ip.h"
+#include "net/slhc/slhc.h"
 #ifdef UNIX
-#include "../../asy_unix.h"
+#include "unix/asy_unix.h"
 #else
 #include "../../msdos/n8250.h"
 #endif
@@ -45,11 +45,11 @@
 
 #include "../../trace.h"
 
-#include "ppp.h"
-#include "pppfsm.h"
-#include "ppplcp.h"
-#include "ppppap.h"
-#include "pppipcp.h"
+#include "net/ppp/ppp.h"
+#include "net/ppp/pppfsm.h"
+#include "net/ppp/ppplcp.h"
+#include "net/ppp/ppppap.h"
+#include "net/ppp/pppipcp.h"
 
 /* Routines local to this file */
 static void htonppp(struct ppp_hdr *ppp, struct mbuf **data);

@@ -8,13 +8,13 @@
 #include "../../mbuf.h"
 #include "../../socket.h"
 #include "../../proc.h"
-#include "../../net/inet/tcp.h"
+#include "net/inet/tcp.h"
 #include "../../commands.h"
 #include "../../hardware.h"
 #include "../../mailbox.h"
 #include "../../asy.h"
 #ifdef UNIX
-#include "../../asy_unix.h"
+#include "unix/asy_unix.h"
 #else
 #include "../../msdos/n8250.h"
 #endif

@@ -53,7 +53,7 @@ NETROM=	net/netrom/nrcmd.o net/netrom/nrsock.o net/netrom/nr4user.o \
 	net/netrom/nr4hdr.o net/netrom/nr3.o net/netrom/nrs.o \
 	net/netrom/nrhdr.o net/netrom/nr4mail.o
 
-PPP=	asy.o asy_unix.o net/ppp/ppp.o net/ppp/pppcmd.o net/ppp/pppfsm.o \
+PPP=	asy.o unix/asy_unix.o net/ppp/ppp.o net/ppp/pppcmd.o net/ppp/pppfsm.o \
 	net/ppp/ppplcp.o net/ppp/ppppap.o net/ppp/pppipcp.o cmd/pppdump/pppdump.o \
 	net/slhc/slhc.o cmd/slhcdump/slhcdump.o net/slip/slip.o net/sppp/sppp.o
 
@@ -69,7 +69,7 @@ DUMP= 	trace.o net/enet/enetdump.o \
 	net/netrom/nrdump.o cmd/inet/ipdump.o cmd/inet/icmpdump.o cmd/inet/udpdump.o cmd/inet/tcpdump.o cmd/rip/ripdump.o
 
 UNIX=	unix/ksubr_unix.o unix/timer_unix.o unix/display_crs.o unix/unix.o unix/dirutil_unix.o \
-	unix/ksubr_unix.o net/enet/enet.o unix_socket.o
+	unix/ksubr_unix.o net/enet/enet.o unix/unix_socket.o
 
 UNIX+=	net/tap/tapdrvr.o net/tun/tundrvr.o
 

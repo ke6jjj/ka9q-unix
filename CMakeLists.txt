@@ -45,7 +45,7 @@ add_library(ax25 net/ax25/ax25cmd.c net/ax25/axsock.c net/ax25/ax25user.c net/ax
 add_library(netrom net/netrom/nrcmd.c net/netrom/nrsock.c net/netrom/nr4user.c net/netrom/nr4timer.c net/netrom/nr4.c net/netrom/nr4subr.c net/netrom/nr4hdr.c net/netrom/nr3.c net/netrom/nrs.c net/netrom/nrhdr.c net/netrom/nr4mail.c)
 
 # Asynchronous serial (over device, TCP/IP)
-add_library(asy asy.c asy_unix.c)
+add_library(asy asy.c)
 
 # Asynchronous PPP support
 add_library(ppp net/ppp/ppp.c net/ppp/pppcmd.c net/ppp/pppfsm.c net/ppp/ppplcp.c net/ppp/ppppap.c net/ppp/pppipcp.c cmd/pppdump/pppdump.c)
@@ -67,7 +67,7 @@ add_library(enet net/enet/enet.c net/enet/enetdump.c)
 
 add_library(netinet lib/ftp/ftpsubr.c sockcmd.c sockuser.c locsock.c socket.c sockutil.c iface.c timer.c ttydriv.c cmdparse.c mbuf.c lib/util/misc.c lib/util/pathname.c files.c kernel.c lib/util/wildmat.c devparam.c lib/util/crc.c lib/util/md5c.c lib/util/getopt.c)
 add_library(dump trace.c net/ax25/kissdump.c net/ax25/ax25dump.c net/netrom/nrdump.c cmd/inet/ipdump.c cmd/inet/icmpdump.c cmd/inet/udpdump.c cmd/inet/tcpdump.c cmd/rip/ripdump.c)
-add_library(unix unix/ksubr_unix.c unix/timer_unix.c unix/display_crs.c unix/unix.c unix/dirutil_unix.c unix/ksubr_unix.c unix_socket.c)
+add_library(unix unix/ksubr_unix.c unix/timer_unix.c unix/display_crs.c unix/unix.c unix/dirutil_unix.c unix/ksubr_unix.c unix/unix_socket.c unix/asy_unix.c)
 
 if (HAVE_NET_IF_TAP_H)
   add_library(tap net/tap/tapdrvr.c)

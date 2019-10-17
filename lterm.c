@@ -6,7 +6,7 @@
 #include "socket.h"
 #include "session.h"
 #if defined(UNIX)
-#include "asy_unix.h"
+#include "unix/asy_unix.h"
 #else
 #include "n8250.h"
 #endif

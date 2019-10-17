@@ -15,7 +15,7 @@
 #include "proc.h"
 #include "iface.h"
 #ifdef UNIX
-#include "asy_unix.h"
+#include "unix/asy_unix.h"
 #else
 #include "n8250.h"
 #endif

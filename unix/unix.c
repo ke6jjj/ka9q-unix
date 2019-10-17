@@ -17,7 +17,6 @@
 
 #include "global.h"
 #include "../asy.h"
-#include "../asy_unix.h"
 #include "../commands.h"
 #include "../display.h"
 #include "lib/std/errno.h"
@@ -28,6 +27,7 @@
 
 #include "unix/display_crs.h"
 #include "unix/timer_unix.h"
+#include "unix/asy_unix.h"
 
 /* Initialize the machine-dependent I/O (misnomer)
  *
