@@ -2,12 +2,12 @@
  * Copyright 1989 by Daniel M. Frank, W9NK.  Permission granted for
  * non-commercial distribution only.
  */
-#include "../../top.h"
+#include "top.h"
 
 #include <ctype.h>
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../mailbox.h"
 #include "../../timer.h"
@@ -16,10 +16,10 @@
 #include "../../session.h"
 #include "../../socket.h"
 #include "../../commands.h"
-#include "../../errno.h"
+#include "lib/std/errno.h"
 
-#include "netrom.h"
-#include "nr4.h"
+#include "net/netrom/netrom.h"
+#include "net/netrom/nr4.h"
 
 uint8 Nr4user[AXALEN];
 

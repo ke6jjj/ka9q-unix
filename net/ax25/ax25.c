@@ -5,21 +5,21 @@
  *
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
 #include <ctype.h>
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../iface.h"
 #include "../../devparam.h"
 
-#include "../arp/arp.h"
-#include "../inet/ip.h"
+#include "net/arp/arp.h"
+#include "net/inet/ip.h"
 
-#include "ax25.h"
-#include "lapb.h"
+#include "net/ax25/ax25.h"
+#include "net/ax25/lapb.h"
 
 /* List of AX.25 multicast addresses in network format (shifted ascii).
  * Only the first entry is used for transmission, but an incoming

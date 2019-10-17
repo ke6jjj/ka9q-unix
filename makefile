@@ -61,8 +61,8 @@ NET=	lib/ftp/ftpsubr.o sockcmd.o sockuser.o locsock.o socket.o \
 	sockutil.o iface.o timer.o ttydriv.o cmdparse.o \
 	mbuf.o lib/util/misc.o lib/util/pathname.o files.o \
 	kernel.o lib/util/wildmat.o \
-	devparam.o stdio.o net/sppp/ahdlc.o lib/util/crc.o lib/util/md5c.o errno.o \
-	errlst.o lib/util/getopt.o
+	devparam.o lib/std/stdio.o net/sppp/ahdlc.o lib/util/crc.o lib/util/md5c.o lib/std/errno.o \
+	lib/std/errlst.o lib/util/getopt.o
 
 DUMP= 	trace.o net/enet/enetdump.o \
 	net/ax25/kissdump.o net/ax25/ax25dump.o net/arp/arpdump.o \

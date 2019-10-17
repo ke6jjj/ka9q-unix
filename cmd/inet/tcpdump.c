@@ -3,16 +3,15 @@
  */
 #include "../../top.h"
 
-#include "../../stdio.h"
+#include "lib/std/stdio.h"
 #include "../../global.h"
 #include "../../mbuf.h"
 #include "../../trace.h"
 
-#include "../../lib/inet/netuser.h"
-
-#include "../../net/inet/internet.h"
-#include "../../net/inet/tcp.h"
-#include "../../net/inet/ip.h"
+#include "lib/inet/netuser.h"
+#include "net/inet/internet.h"
+#include "net/inet/tcp.h"
+#include "net/inet/ip.h"
 
 /* TCP segment header flags */
 static char *Tcpflags[] = {

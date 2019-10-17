@@ -1,10 +1,10 @@
 /* ICMP-related user commands
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 
 #include "../../timer.h"
@@ -13,10 +13,10 @@
 #include "../../cmdparse.h"
 #include "../../commands.h"
 
-#include "../../lib/inet/netuser.h"
-#include "../../net/inet/internet.h"
-#include "../../net/inet/icmp.h"
-#include "../../net/inet/ip.h"
+#include "lib/inet/netuser.h"
+#include "net/inet/internet.h"
+#include "net/inet/icmp.h"
+#include "net/inet/ip.h"
 
 static int doicmpec(int argc, char *argv[],void *p);
 static int doicmpstat(int argc, char *argv[],void *p);

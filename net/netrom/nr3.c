@@ -2,24 +2,24 @@
  * Copyright 1989 by Daniel M. Frank, W9NK.  Permission granted for
  * non-commercial distribution only.
  */
-#include "../../top.h"
+#include "top.h"
 
 #include <ctype.h>
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../iface.h"
 #include "../../socket.h"
 #include "../../trace.h"
 #include "../../commands.h"
 
-#include "../arp/arp.h"
-#include "../inet/ip.h"
-#include "../../lib/inet/netuser.h"
+#include "net/arp/arp.h"
+#include "net/inet/ip.h"
+#include "lib/inet/netuser.h"
 
-#include "netrom.h"
-#include "nr4.h"
+#include "net/netrom/netrom.h"
+#include "net/netrom/nr4.h"
 
 static int accept_bc(uint8 *addr,unsigned ifnum);
 static struct nr_bind *find_best(struct nr_bind *list,unsigned obso);

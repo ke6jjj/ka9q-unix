@@ -1,10 +1,10 @@
 /* AX25 control commands
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../timer.h"
 #include "../../proc.h"
@@ -15,10 +15,10 @@
 #include "../../session.h"
 #include "../../tty.h"
 #include "../../commands.h"
-#include "../../errno.h"
+#include "lib/std/errno.h"
 
-#include "ax25.h"
-#include "lapb.h"
+#include "net/ax25/ax25.h"
+#include "net/ax25/lapb.h"
 
 static int axdest(struct iface *ifp);
 static int axheard(struct iface *ifp);

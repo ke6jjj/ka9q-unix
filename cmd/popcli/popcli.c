@@ -20,9 +20,9 @@
  *	Permission granted for non-commercial copying and use, provided
  *	this notice is retained.
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
+#include "lib/std/stdio.h"
 #include <fcntl.h>
 #include <time.h>
 #include <setjmp.h>
@@ -46,7 +46,7 @@
 #include "../../dirutil.h"
 #include "../../files.h"
 
-#include "../../lib/inet/netuser.h"
+#include "lib/inet/netuser.h"
 
 extern char Badhost[];
 

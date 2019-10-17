@@ -1,10 +1,10 @@
 /* Miscellaneous Internet servers: discard, echo
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../socket.h"
 #include "../../proc.h"
@@ -20,7 +20,7 @@
 #endif
 #include "../../devparam.h"
 #include "../../telnet.h"
-#include "../../errno.h"
+#include "lib/std/errno.h"
 
 static void discserv(int s,void *unused,void *p);
 static void echoserv(int s,void *unused,void *p);

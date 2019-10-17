@@ -1,21 +1,21 @@
 /* TCP control and status routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../timer.h"
 #include "../../mbuf.h"
 #include "../../cmdparse.h"
 #include "../../commands.h"
 #include "../../socket.h"
 #include "../../session.h"
-#include "../../errno.h"
+#include "lib/std/errno.h"
 
-#include "../../lib/inet/netuser.h"
-#include "../../net/inet/internet.h"
-#include "../../net/inet/tcp.h"
+#include "lib/inet/netuser.h"
+#include "net/inet/internet.h"
+#include "net/inet/tcp.h"
 
 int Tcp_tstamps = 1;
 

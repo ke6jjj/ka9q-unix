@@ -2,7 +2,7 @@
 #define _KA9Q_NET_ENET_H
 
 /* Generic Ethernet constants and templates */
-#include "../../global.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../iface.h"
 

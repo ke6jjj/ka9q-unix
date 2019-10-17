@@ -23,20 +23,20 @@
  *	Timer, and arp on address with little activity
  *   Reassignment to same machine if possible.
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
+#include "lib/std/stdio.h"
 #include <time.h>
 
-#include "../../global.h"
+#include "global.h"
 #include "../../iface.h"
 #include "../../mbuf.h"
 #include "../../timer.h"
 
-#include "../../net/arp/arp.h"
-#include "../../lib/inet/netuser.h"
+#include "net/arp/arp.h"
+#include "lib/inet/netuser.h"
 
-#include "bootpd.h"
+#include "service/bootpd/bootpd.h"
 
 #define E_NOMEM 3101
 #define ERR_NOIPADDRESS	3103		/* No IP address available. */

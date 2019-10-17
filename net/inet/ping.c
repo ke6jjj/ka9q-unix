@@ -1,22 +1,22 @@
 /* ICMP-related user commands
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../socket.h"
 #include "../../proc.h"
 #include "../../session.h"
 #include "../../commands.h"
-#include "../../errno.h"
+#include "lib/std/errno.h"
 
-#include "../../lib/inet/netuser.h"
-#include "../../net/inet/icmp.h"
-#include "../../net/inet/internet.h"
+#include "lib/inet/netuser.h"
+#include "net/inet/icmp.h"
+#include "net/inet/internet.h"
 
-#include "ping.h"
+#include "net/inet/ping.h"
 
 static void pingtx(int s,void *ping1,void *p);
 static void pinghdr(struct session *sp,struct ping *ping);

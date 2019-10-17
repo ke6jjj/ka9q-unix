@@ -2,20 +2,20 @@
  *   Al Broscious, N3FCT
  *   Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../cmdparse.h"
 #include "../../timer.h"
 #include "../../iface.h"
 #include "../../commands.h"
 
-#include "../../lib/inet/netuser.h"
-#include "../../net/inet/internet.h"
-#include "../../net/inet/udp.h"
-#include "../../service/rip/rip.h"
+#include "lib/inet/netuser.h"
+#include "net/inet/internet.h"
+#include "net/inet/udp.h"
+#include "service/rip/rip.h"
 
 struct cmds Ripcmds[] = {
 	{ "accept",	dodroprefuse,	0,	2,	"rip accept <gateway> " },

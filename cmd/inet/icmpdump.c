@@ -3,16 +3,15 @@
  */
 #include "../../top.h"
 
-#include "../../stdio.h"
+#include "lib/std/stdio.h"
 #include "../../global.h"
 #include "../../mbuf.h"
 #include "../../trace.h"
 
-#include "../../net/inet/icmp.h"
-#include "../../net/inet/ip.h"
-#include "../../net/inet/internet.h"
-
-#include "../../lib/inet/netuser.h"
+#include "net/inet/icmp.h"
+#include "net/inet/ip.h"
+#include "net/inet/internet.h"
+#include "lib/inet/netuser.h"
 
 /* Dump an ICMP header */
 void

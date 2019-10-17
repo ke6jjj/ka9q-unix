@@ -1,14 +1,14 @@
 /* Miscellaneous integer and IP address format conversion subroutines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
 #define LINELEN 256
 #include <ctype.h>
 
-#include "../../stdio.h"
-#include "../../global.h"
-#include "../../lib/inet/netuser.h"
+#include "lib/std/stdio.h"
+#include "global.h"
+#include "lib/inet/netuser.h"
 
 int Net_error;
 

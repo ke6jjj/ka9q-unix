@@ -33,9 +33,9 @@
 #include <unistd.h>
 #include <string.h>
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include <errno.h>
-#include "errno.h"
+#include "lib/std/errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "proc.h"

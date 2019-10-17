@@ -25,13 +25,8 @@
 
 #include <pthread.h>
 
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef _PROC_H
 #include "proc.h"
-#endif
 
 struct unix_socket_stats {
 	long rxchar;

@@ -1,16 +1,16 @@
 /* Internet Control Message Protocol (ICMP)
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../iface.h"
-#include "../../lib/inet/netuser.h"
-#include "ip.h"
-#include "icmp.h"
-#include "ping.h"
+#include "lib/inet/netuser.h"
+#include "net/inet/ip.h"
+#include "net/inet/icmp.h"
+#include "net/inet/ping.h"
 
 struct mib_entry Icmp_mib[] = {
 	{ "",				{ 0 } },

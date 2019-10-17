@@ -3,13 +3,13 @@
  */
 #include "../../top.h"
 
-#include "../../stdio.h"
+#include "lib/std/stdio.h"
 #include "../../global.h"
 #include "../../mbuf.h"
 #include "../../trace.h"
 
-#include "netrom.h"
-#include "nr4.h"
+#include "net/netrom/netrom.h"
+#include "net/netrom/nr4.h"
 
 /* Display NET/ROM network and transport headers */
 void

@@ -5,11 +5,11 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #ifdef	__STDC__
 #include <stdarg.h>
 #endif
-#include "errno.h"
+#include "lib/std/errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "proc.h"

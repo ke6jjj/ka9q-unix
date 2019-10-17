@@ -1,9 +1,9 @@
 /* SMTP Server state machine - see RFC 821
  *  enhanced 4/88 Dave Trulli nn2z
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
+#include "lib/std/stdio.h"
 #include <time.h>
 #ifdef UNIX
 #include <sys/types.h>
@@ -13,7 +13,7 @@
 #endif
 #include <ctype.h>
 #include <setjmp.h>
-#include "../../global.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../cmdparse.h"
 #include "../../socket.h"
@@ -24,9 +24,9 @@
 #include "../../mailbox.h"
 #include "../../bm.h"
 
-#include "../../net/dns/domain.h"
+#include "net/dns/domain.h"
 
-#include "smtp.h"
+#include "service/smtp/smtp.h"
 
 char *Days[7] = {  "Sun","Mon","Tue","Wed","Thu","Fri","Sat" };
 char *Months[12] = { "Jan","Feb","Mar","Apr","May","Jun",

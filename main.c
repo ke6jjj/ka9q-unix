@@ -19,7 +19,7 @@
 #ifdef UNIX
 #include <unistd.h>
 #endif
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include "global.h"
 #include <stdarg.h>
 #include "mbuf.h"
@@ -40,7 +40,7 @@
 #include "main.h"
 #include "trace.h"
 #include "display.h"
-#include "errno.h"
+#include "lib/std/errno.h"
 
 #if	!defined(MSDOS) && !defined(UNIX) /* PC and CURSES use F-10 key */
 static char Escape = 0x1d;	/* default escape character is ^] */

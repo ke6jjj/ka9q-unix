@@ -11,7 +11,7 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include "global.h"
 #include "proc.h"
 #include "cmdparse.h"

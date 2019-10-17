@@ -3,7 +3,7 @@
  */
 #include "top.h"
 
-#include "errno.h"
+#include "lib/std/errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "socket.h"

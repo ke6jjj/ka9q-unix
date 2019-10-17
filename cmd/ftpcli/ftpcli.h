@@ -1,11 +1,12 @@
 #ifndef	_FTPCLI_H
 #define	_FTPCLI_H
 
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../service/ftp/ftp.h"
-#include "../../session.h"
+#include "lib/std/stdio.h"
+#include "service/ftp/ftp.h"
+
+#include "session.h"
 
 #define	LINELEN	256		/* Length of user command buffer */
 

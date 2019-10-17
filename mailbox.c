@@ -12,10 +12,10 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include <time.h>
 #include <ctype.h>
-#include "errno.h"
+#include "lib/std/errno.h"
 #ifdef	UNIX
 #include <sys/types.h>
 #include <sys/stat.h>

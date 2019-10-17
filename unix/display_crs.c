@@ -56,7 +56,7 @@
  * main.c to receive the keypress and pass it to its proper destination
  * process.
  */
-#include "../top.h"
+#include "top.h"
 
 #include <sys/ioctl.h>
 #include <pthread.h>
@@ -66,8 +66,8 @@
 #include <unistd.h>
 #include <errno.h>
 
-#include "../errno.h"
-#include "../global.h"
+#include "lib/std/errno.h"
+#include "global.h"
 #include "../display.h"
 #include "../proc.h"
 

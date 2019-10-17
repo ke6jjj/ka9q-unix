@@ -1,9 +1,9 @@
 /* Internet finger client
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
+#include "lib/std/stdio.h"
 #include <string.h>
 #include "../../global.h"
 #include "../../mbuf.h"
@@ -12,9 +12,9 @@
 #include "../../proc.h"
 #include "../../commands.h"
 #include "../../tty.h"
-#include "../../errno.h"
+#include "lib/std/errno.h"
 
-#include "../../lib/inet/netuser.h"
+#include "lib/inet/netuser.h"
 
 static int keychar(int c);
 

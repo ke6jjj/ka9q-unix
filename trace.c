@@ -3,7 +3,7 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include <ctype.h>
 #include <time.h>
 #include "global.h"

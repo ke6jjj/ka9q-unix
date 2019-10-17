@@ -1,7 +1,7 @@
 #ifndef	_KA9Q_MBUF_H
 #define	_KA9Q_MBUF_H
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include "global.h"
 
 extern unsigned Ibufsize;	/* Size of interrupt buffers to allocate */

@@ -1,14 +1,14 @@
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../trace.h"
 
-#include "../../net/inet/internet.h"
-#include "../../net/inet/ip.h"
+#include "net/inet/internet.h"
+#include "net/inet/ip.h"
 
-#include "../../net/slhc/slhc.h"
+#include "net/slhc/slhc.h"
 
 static uint decodeint(struct mbuf **bpp);
 

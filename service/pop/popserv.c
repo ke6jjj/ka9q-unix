@@ -5,9 +5,9 @@
  *  Modified 5/27/90 by Allen Gwinn, N5CKP, for later NOS releases.
  *  Added to NOS by PA0GRI 2/6/90 (and linted into "standard" C)
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
+#include "lib/std/stdio.h"
 #include <time.h>
 #include <sys/stat.h>
 #ifdef UNIX
@@ -26,7 +26,7 @@
 #include "../../proc.h"
 #include "../../files.h"
 
-#include "pop.h"
+#include "service/pop/pop.h"
 
 extern char Nospace[];
 

@@ -6,11 +6,11 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
-#include "errno.h"
+#include "lib/std/errno.h"
 #include "global.h"
 #include "config.h"
 #include "bm.h"

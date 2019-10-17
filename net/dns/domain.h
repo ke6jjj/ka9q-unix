@@ -1,7 +1,7 @@
-#ifndef	_DOMAIN_H
-#define	_DOMAIN_H
+#ifndef	_NET_DOMAIN_H
+#define	_NET_DOMAIN_H
 
-#include "../../global.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../proc.h"
 
@@ -141,4 +141,4 @@ struct rr *resolve_mailb(char *name);
 /* In domhdr.c: */
 int ntohdomain(struct dhdr *dhdr,struct mbuf **bpp);
 
-#endif	/* _DOMAIN_H */
+#endif	/* _NET_DOMAIN_H */

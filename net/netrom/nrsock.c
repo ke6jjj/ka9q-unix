@@ -1,13 +1,13 @@
-#include "../../top.h"
+#include "top.h"
 
-#include "../../errno.h"
-#include "../../global.h"
+#include "lib/std/errno.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../socket.h"
 #include "../../usock.h"
 
-#include "netrom.h"
-#include "nr4.h"
+#include "net/netrom/netrom.h"
+#include "net/netrom/nr4.h"
 
 static void autobind(struct usock *up);
 static void s_nrcall(struct nr4cb *cb,uint cnt);

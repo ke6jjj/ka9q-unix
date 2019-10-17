@@ -1,10 +1,10 @@
 /* Convert relative to absolute pathnames
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
+#include "global.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
 #include "../../dirutil.h"
 
 static void crunch(char *buf,char *path);

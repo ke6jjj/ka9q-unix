@@ -1,11 +1,11 @@
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
+#include "global.h"
 #include "../../socket.h"
 #include "../../usock.h"
-#include "../../errno.h"
+#include "lib/std/errno.h"
 
-#include "tcp.h"
+#include "net/inet/tcp.h"
 
 static void s_trcall(struct tcb *tcb,int32 cnt);
 static void s_tscall(struct tcb *tcb,int old,int new);

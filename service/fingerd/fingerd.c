@@ -1,11 +1,11 @@
 /* Internet Finger server
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
+#include "lib/std/stdio.h"
 #include <string.h>
-#include "../../global.h"
+#include "global.h"
 #include "../../files.h"
 #include "../../mbuf.h"
 #include "../../socket.h"
@@ -15,7 +15,7 @@
 #include "../../commands.h"
 #include "../../mailbox.h"
 
-#include "../../service/ftp/ftp.h"
+#include "service/ftp/ftp.h"
 
 static void fingerd(int s,void *unused,void *p);
 

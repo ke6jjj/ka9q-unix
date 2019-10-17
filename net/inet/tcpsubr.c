@@ -7,17 +7,17 @@
  *
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../timer.h"
 #include "../../mbuf.h"
-#include "../../lib/inet/netuser.h"
+#include "lib/inet/netuser.h"
 
-#include "internet.h"
-#include "tcp.h"
-#include "ip.h"
+#include "net/inet/internet.h"
+#include "net/inet/tcp.h"
+#include "net/inet/ip.h"
 
 /* TCP connection states */
 char *Tcpstates[] = {

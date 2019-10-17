@@ -1,10 +1,10 @@
 /* Driver for AX.25 exchanges over UDP (and later, IP).
  * Copyright 2018 Jeremy Cooper.
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../proc.h"
 #include "../../mbuf.h"
 #include "../../iface.h"
@@ -12,12 +12,12 @@
 #include "../../config.h"
 #include "../../cmdparse.h"
 #include "../../socket.h"
-#include "../../errno.h"
+#include "lib/std/errno.h"
 
-#include "../../lib/inet/netuser.h"
+#include "lib/inet/netuser.h"
 
-#include "ax25.h"
-#include "axip.h"
+#include "net/ax25/ax25.h"
+#include "net/ax25/axip.h"
 
 #define DEST_HASH_SIZE 23
 

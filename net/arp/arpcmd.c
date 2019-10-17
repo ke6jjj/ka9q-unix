@@ -1,21 +1,20 @@
 /* ARP commands
  * Copyright 1991, Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
 #include <ctype.h>
-#include "../../global.h"
+#include "global.h"
 
-#include "../../stdio.h"
+#include "lib/std/stdio.h"
 #include "../../mbuf.h"
 #include "../../timer.h"
 #include "../../cmdparse.h"
 #include "../../commands.h"
 
-#include "../enet/enet.h"
-#include "../arp/arp.h"
-
-#include "../../lib/inet/netuser.h"
+#include "net/enet/enet.h"
+#include "net/arp/arp.h"
+#include "lib/inet/netuser.h"
 
 static int doarpadd(int argc,char *argv[],void *p);
 static int doarpdrop(int argc,char *argv[],void *p);

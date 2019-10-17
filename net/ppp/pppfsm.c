@@ -8,19 +8,19 @@
  *
  *	Acknowledgements and correction history may be found in PPP.C
  */
-#include "../../top.h"
+#include "top.h"
 
 #include <ctype.h>
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../iface.h"
 #include "../../trace.h"
 
-#include "ppp.h"
-#include "pppfsm.h"
-#include "ppplcp.h"
+#include "net/ppp/ppp.h"
+#include "net/ppp/pppfsm.h"
+#include "net/ppp/ppplcp.h"
 
 
 char *fsmStates[] = {

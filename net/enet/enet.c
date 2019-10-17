@@ -1,15 +1,15 @@
 /* Stuff generic to all Ethernet controllers
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../iface.h"
-#include "../inet/ip.h"
 
-#include "../arp/arp.h"
+#include "net/inet/ip.h"
+#include "net/arp/arp.h"
 
 #include "enet.h"
 

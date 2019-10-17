@@ -3,12 +3,12 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #ifdef	__TURBOC__
 #include <io.h>
 #include <fcntl.h>
 #endif
-#include "errno.h"
+#include "lib/std/errno.h"
 #include "global.h"
 #include "mbuf.h"
 #include "socket.h"

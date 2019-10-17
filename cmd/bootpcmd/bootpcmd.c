@@ -8,9 +8,9 @@
 /*                                               */
 /* BOOTP is documented in RFC 951 and RFC 1048   */
 /*************************************************/
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
+#include "lib/std/stdio.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <time.h>
@@ -22,11 +22,11 @@
 #include "../../cmdparse.h"
 #include "../../iface.h"
 
-#include "../../net/inet/udp.h"
-#include "../../net/arp/arp.h"
-#include "../../lib/inet/netuser.h"
+#include "net/inet/udp.h"
+#include "net/arp/arp.h"
+#include "lib/inet/netuser.h"
 
-#include "../../service/bootpd/bootpd.h"
+#include "service/bootpd/bootpd.h"
 
 #define BP_DEFAULT_TAB "bootptab"
 #define BP_DEFAULT_LOG "bootplog"

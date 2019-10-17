@@ -1,12 +1,12 @@
-#include "../../top.h"
+#include "top.h"
 
-#include "../../errno.h"
-#include "../../global.h"
+#include "lib/std/errno.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../usock.h"
 #include "../../socket.h"
 
-#include "../../net/inet/ip.h"
+#include "net/inet/ip.h"
 
 char Inet_eol[] = "\r\n";
 static uint Lport = 1024;

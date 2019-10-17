@@ -3,17 +3,17 @@
  * non-commercial distribution only.
  */
 
-#include "../../top.h"
+#include "top.h"
 
 #include <ctype.h>
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../timer.h"
 
-#include "netrom.h"
-#include "nr4.h"
+#include "net/netrom/netrom.h"
+#include "net/netrom/nr4.h"
 
 #undef NR4DEBUG
 

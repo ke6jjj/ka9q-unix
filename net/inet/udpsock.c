@@ -1,11 +1,11 @@
-#include "../../top.h"
+#include "top.h"
 
-#include "../../errno.h"
-#include "../../global.h"
+#include "lib/std/errno.h"
+#include "global.h"
 #include "../../socket.h"
 #include "../../usock.h"
 
-#include "../../net/inet/udp.h"
+#include "net/inet/udp.h"
 
 static void s_urcall(struct iface *iface,struct udp_cb *udp,int cnt);
 

@@ -1,11 +1,11 @@
 /* Internet FTP client (interactive user)
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
+#include "global.h"
 
-#include "../../stdio.h"
-#include "../../errno.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "lib/std/errno.h"
 #include "../../mbuf.h"
 #include "../../session.h"
 #include "../../cmdparse.h"
@@ -15,11 +15,11 @@
 #include "../../commands.h"
 #include "../../dirutil.h"
 
-#include "../../service/ftp/ftp.h"
-#include "../../lib/inet/netuser.h"
-#include "../../net/inet/internet.h"
+#include "service/ftp/ftp.h"
+#include "lib/inet/netuser.h"
+#include "net/inet/internet.h"
 
-#include "ftpcli.h"
+#include "cmd/ftpcli/ftpcli.h"
 
 #define	POLLRATE	500	/* 500ms between more file polls */
 #define	DIRBUF	256

@@ -1,20 +1,20 @@
 /* IP-related user commands
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../timer.h"
 #include "../../iface.h"
 #include "../../cmdparse.h"
 #include "../../commands.h"
 
-#include "../../lib/inet/netuser.h"
+#include "lib/inet/netuser.h"
 
-#include "../../net/inet/internet.h"
-#include "../../net/inet/ip.h"
+#include "net/inet/internet.h"
+#include "net/inet/ip.h"
 
 
 int32 Ip_addr;

@@ -8,10 +8,10 @@
  *
  *	Acknowledgements and correction history may be found in PPP.C
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../proc.h"
 #include "../../iface.h"
@@ -21,12 +21,12 @@
 #include "../../files.h"
 #include "../../trace.h"
 #include "../../main.h"
-#include "../../errno.h"
+#include "lib/std/errno.h"
 
-#include "ppp.h"
-#include "pppfsm.h"
-#include "ppplcp.h"
-#include "ppppap.h"
+#include "net/ppp/ppp.h"
+#include "net/ppp/pppfsm.h"
+#include "net/ppp/ppplcp.h"
+#include "net/ppp/ppppap.h"
 
 static int dopap_user(int argc, char *argv[], void *p);
 

@@ -7,12 +7,12 @@
  *	04-90	-- Modified by Phil Karn to use raw IP sockets to read replies
  *	08-90	-- Modified by Bill Simpson to display domain names
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
+#include "lib/std/stdio.h"
 #include <string.h>
-#include "../../errno.h"
-#include "../../global.h"
+#include "lib/std/errno.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../usock.h"
 #include "../../socket.h"
@@ -23,11 +23,11 @@
 #include "../../tty.h"
 #include "../../cmdparse.h"
 
-#include "../../lib/inet/netuser.h"
-#include "../../net/inet/ip.h"
-#include "../../net/inet/icmp.h"
-#include "../../net/inet/udp.h"
-#include "../../net/dns/domain.h"
+#include "lib/inet/netuser.h"
+#include "net/inet/ip.h"
+#include "net/inet/icmp.h"
+#include "net/inet/udp.h"
+#include "net/dns/domain.h"
 
 #define HOPMAXQUERY	5		/* Max# queries each TTL value */
 static uint Hoprport = 32768+666;	/* funny port for udp probes */

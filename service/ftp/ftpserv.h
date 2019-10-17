@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "../../sockaddr.h"
-#include "ftp.h"
+#include "service/ftp/ftp.h"
 
 extern char *Userfile;	/* List of user names and permissions */
 

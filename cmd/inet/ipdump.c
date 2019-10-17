@@ -2,16 +2,16 @@
  * Copyright 1991 Phil Karn, KA9Q
  */
 #include "../../top.h"
-#include "../../stdio.h"
+#include "lib/std/stdio.h"
 #include "../../global.h"
 #include "../../mbuf.h"
 #include "../../trace.h"
 #include "../../session.h"
 #include "../../iface.h"
 
-#include "../../net/inet/internet.h"
-#include "../../net/inet/ip.h"
-#include "../../lib/inet/netuser.h"
+#include "net/inet/internet.h"
+#include "net/inet/ip.h"
+#include "lib/inet/netuser.h"
 
 void ipldump(kFILE *fp,struct ip *ip,struct mbuf **bpp,int check);
 

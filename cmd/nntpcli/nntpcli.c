@@ -29,9 +29,9 @@
  *     July 19, 1990 pa0gri Delinted and cleaned up. (calls and includes)
  *
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
+#include "lib/std/stdio.h"
 #include <sys/types.h>
 #include <time.h>
 #include <ctype.h>
@@ -43,7 +43,7 @@
 #include <sys/stat.h> /* for mkdir() */
 #include <unistd.h>  /* for unlink() */
 #endif
-#include "../../global.h"
+#include "global.h"
 #include "../../timer.h"
 #include "../../cmdparse.h"
 #include "../../commands.h"
@@ -52,8 +52,8 @@
 #include "../../proc.h"
 #include "../../files.h"
 
-#include "../../lib/inet/netuser.h"
-#include "../../service/smtp/smtp.h"
+#include "lib/inet/netuser.h"
+#include "service/smtp/smtp.h"
 
 #define NNTPMAXLEN	512
 

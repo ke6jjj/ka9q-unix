@@ -1,17 +1,17 @@
 /* TCP timeout routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../timer.h"
 
-#include "../../lib/inet/netuser.h"
+#include "lib/inet/netuser.h"
 
-#include "internet.h"
-#include "tcp.h"
+#include "net/inet/internet.h"
+#include "net/inet/tcp.h"
 
 /* Timer timeout */
 void

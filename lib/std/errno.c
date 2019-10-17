@@ -6,7 +6,7 @@
 #include "top.h"
 
 #include <errno.h>
-#include "errno.h"
+#include "lib/std/errno.h"
 
 int
 translate_sys_errno(int err)

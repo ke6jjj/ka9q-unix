@@ -15,15 +15,15 @@
  * BOOTP (bootstrap protocol) server daemon.
  *
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
+#include "lib/std/stdio.h"
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <ctype.h>
 #include <time.h>
 
-#include "../../global.h"
+#include "global.h"
 #include "../../config.h"
 #include "../../cmdparse.h"
 #include "../../iface.h"
@@ -31,13 +31,13 @@
 #include "../../proc.h"
 #include "../../socket.h"
 
-#include "../../net/arp/arp.h"
-#include "../../net/inet/udp.h"
-#include "../../net/inet/ip.h"
-#include "../../lib/inet/netuser.h"
+#include "net/arp/arp.h"
+#include "net/inet/udp.h"
+#include "net/inet/ip.h"
+#include "lib/inet/netuser.h"
 
-#include "../bootp/bootp.h"
-#include "bootpd.h"
+#include "service/bootp/bootp.h"
+#include "service/bootpd/bootpd.h"
 
 void bootpd(struct iface *iface, struct udp_cb *sock, int cnt); 
 

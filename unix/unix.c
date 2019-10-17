@@ -3,7 +3,7 @@
  * Copyright 1991 Phil Karn, KA9Q
  * Copyright 2017 Jeremy Cooper, KE6JJJ
  */
-#include "../top.h"
+#include "top.h"
 
 #ifndef UNIX
 #error "This file should only be built on POSIX/UNIX systems."
@@ -15,19 +15,19 @@
 #include <pthread.h>
 #include <stdlib.h>
 
-#include "../global.h"
+#include "global.h"
 #include "../asy.h"
 #include "../asy_unix.h"
 #include "../commands.h"
 #include "../display.h"
-#include "../errno.h"
+#include "lib/std/errno.h"
 #include "../iface.h"
 #include "../proc.h"
 #include "../session.h"
-#include "../stdio.h"
+#include "lib/std/stdio.h"
 
-#include "display_crs.h"
-#include "timer_unix.h"
+#include "unix/display_crs.h"
+#include "unix/timer_unix.h"
 
 /* Initialize the machine-dependent I/O (misnomer)
  *

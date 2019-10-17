@@ -3,7 +3,7 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include "global.h"
 #include "timer.h"
 #include "proc.h"
@@ -12,7 +12,7 @@
 #include "daemon.h"
 #include "hardware.h"
 #include "socket.h"
-#include "errno.h"
+#include "lib/std/errno.h"
 
 /* Head of running timer chain.
  * The list of running timers is sorted in increasing order of expiration;

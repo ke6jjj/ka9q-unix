@@ -8,23 +8,23 @@
  *
  *	Acknowledgements and correction history may be found in PPP.C
  */
-#include "../../top.h"
+#include "top.h"
 
 #include <ctype.h>
 #include <time.h>
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../iface.h"
-#include "../slhc/slhc.h"
+#include "net/slhc/slhc.h"
 #include "../../cmdparse.h"
 #include "../../files.h"
 #include "../../trace.h"
 
-#include "ppp.h"
-#include "pppfsm.h"
-#include "pppipcp.h"
+#include "net/ppp/ppp.h"
+#include "net/ppp/pppfsm.h"
+#include "net/ppp/pppipcp.h"
 
 
 /* These defaults are defined in the PPP RFCs, and must not be changed */

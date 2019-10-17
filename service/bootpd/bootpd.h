@@ -13,7 +13,7 @@
 #define	_KA9Q_BOOTPD_H
 
 #include "../../socket.h"
-#include "../../net/arp/arp.h"
+#include "net/arp/arp.h"
 
 #define MHOSTS  12     /* max number of 'hosts' structs */
 #define BP_MAXDNS 5

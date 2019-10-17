@@ -1,17 +1,17 @@
 /* UDP-related user commands
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../cmdparse.h"
 #include "../../commands.h"
 
-#include "../../lib/inet/netuser.h"
-#include "../../net/inet/udp.h"
-#include "../../net/inet/internet.h"
+#include "lib/inet/netuser.h"
+#include "net/inet/udp.h"
+#include "net/inet/internet.h"
 
 static int doudpstat(int argc,char *argv[],void *p);
 

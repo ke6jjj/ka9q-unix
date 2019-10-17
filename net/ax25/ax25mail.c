@@ -4,16 +4,16 @@
  *	May '91	Bill Simpson
  *		move to separate file for compilation & linking
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
+#include "global.h"
 #include "../../proc.h"
 #include "../../socket.h"
 #include "../../session.h"
 #include "../../mailbox.h"
 
-#include "ax25.h"
-#include "ax25mail.h"
+#include "net/ax25/ax25.h"
+#include "net/ax25/ax25mail.h"
 
 /* Axi_sock is kept in Socket.c, so that this module won't be called */
 

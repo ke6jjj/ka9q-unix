@@ -5,19 +5,19 @@
  *
  * Copyright 1989 Dan Frank, W9NK
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
-#include "../../global.h"
+#include "lib/std/stdio.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../iface.h"
 #include "../../asy.h"
 #include "../../trace.h"
 #include "../../commands.h"
 
-#include "../ax25/ax25.h"
+#include "net/ax25/ax25.h"
 
-#include "nrs.h"
+#include "net/netrom/nrs.h"
 
 static struct mbuf *nrs_encode(struct mbuf *bp);
 static struct mbuf *nrs_decode(int dev,uint8 c);

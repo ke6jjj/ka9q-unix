@@ -1,9 +1,9 @@
 /* Internet FTP Server
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../stdio.h"
+#include "lib/std/stdio.h"
 #include <ctype.h>
 #include <time.h>
 #ifdef	__TURBOC__
@@ -14,8 +14,8 @@
 #include <sys/stat.h> /* mkdir */
 #include <unistd.h> /* access(), unlink() */
 #endif
-#include "../../errno.h"
-#include "../../global.h"
+#include "lib/std/errno.h"
+#include "global.h"
 #include "../../mbuf.h"
 #include "../../proc.h"
 #include "../../socket.h"
@@ -23,10 +23,10 @@
 #include "../../commands.h"
 #include "../../files.h"
 
-#include "../../lib/util/md5.h"
+#include "lib/util/md5.h"
 
-#include "ftp.h"
-#include "ftpserv.h"
+#include "service/ftp/ftp.h"
+#include "service/ftp/ftpserv.h"
 
 static void ftpserv(int s,void *unused,void *p);
 static int pport(struct ksockaddr_in *sock,char *arg);
