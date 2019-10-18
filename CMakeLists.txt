@@ -8,7 +8,6 @@ set(CMAKE_C_FLAGS "-DHOST_BSD -Wall")
 INCLUDE(CheckIncludeFiles)
 include(CheckFunctionExists)
 
-
 set(X_CMAKE_SYSTEM_NAME ${CMAKE_SYSTEM_NAME})
 
 # FreeBSD-10 uses u_char in if_tap.h / if_tun.h; so include if

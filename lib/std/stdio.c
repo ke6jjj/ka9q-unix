@@ -3,6 +3,7 @@
  * Copyright 1992 Phil Karn, KA9Q
  */
 #include "top.h"
+#include "config.h"
 
 #include <string.h>
 #include <stdarg.h>
