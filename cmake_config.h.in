@@ -9,3 +9,9 @@
 
 /* cmake target operating system */
 #cmakedefine X_CMAKE_SYSTEM_NAME "@X_CMAKE_SYSTEM_NAME@"
+
+/* whether srandomdev() exists */
+#cmakedefine HAVE_SRANDOMDEV 1
+
+/* whether funopen() exists */
+#cmakedefine HAVE_FUNOPEN 1
