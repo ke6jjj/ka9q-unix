@@ -134,7 +134,8 @@ struct cmds Cmds[] = {
 #endif
 /* This one is out of alpabetical order to allow abbreviation to "c" */
 #ifdef	AX25
-	{ "connect",	doconnect,	1024, 3, "connect <interface> <callsign>" },
+	{ "connect",	doconnect,	1024, 3, "connect <interface> <callsign> [<digipeater path>]" },
+	{ "unproto_connect",	do_unproto_connect,	1024, 3, "connect <interface> <callsign> [<digipeater path>]" },
 #endif
 #if	!defined(AMIGA)
 	{ "cd",		docd,		0, 0, NULL },

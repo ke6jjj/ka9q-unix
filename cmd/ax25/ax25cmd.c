@@ -613,3 +613,56 @@ int c;
 	return 0;
 }
 
+/* Initiate unproto AX.25 session to the given digipeater path/call */
+int
+do_unproto_connect(int argc,char *argv[], void *p)
+{
+	struct ksockaddr_ax fsocket;
+	struct session *sp;
+	int ndigis,i,s;
+	uint8 digis[MAXDIGIS][AXALEN];
+	uint8 target[AXALEN];
+
+	/* If digipeaters are given, put them in the routing table */
+	if(argc > 3){
+		setcall(target,argv[2]);
+		ndigis = argc - 3;
+		if(ndigis > MAXDIGIS){
+			kprintf("Too many digipeaters\n");
+			return 1;
+		}
+		for(i=0;i<ndigis;i++){
+			if(setcall(digis[i],argv[i+3]) == -1){
+				kprintf("Bad digipeater %s\n",argv[i+3]);
+				return 1;
+			}
+		}
+		if(ax_add(target,kAX_LOCAL,digis,ndigis) == NULL){
+			kprintf("Route add failed\n");
+			return 1;
+		}
+	}
+	/* Allocate a session descriptor */
+	if((sp = newsession(Cmdline,AX25TNC,1)) == NULL){
+		kprintf("Too many sessions\n");
+		return 1;
+	}
+	sp->inproc = keychar;	/* Intercept ^C */
+	if((s = ksocket(kAF_AX25,kSOCK_DGRAM,0)) == -1){
+		kprintf("Can't create socket\n");
+		freesession(&sp);
+		keywait(NULL,1);
+		return 1;
+	}
+	fsocket.sax_family = kAF_AX25;
+	setcall(fsocket.ax25_addr,argv[2]);
+	strncpy(fsocket.iface,argv[1],ILEN);
+	sp->network = kfdopen(s,"r+t");
+	ksetvbuf(sp->network,NULL,_kIOLBF,kBUFSIZ);
+	if(SETSIG(kEABORT)){
+		keywait(NULL,1);
+		freesession(&sp);
+		return 1;
+	}
+	return tel_connect(sp, (struct ksockaddr *)&fsocket, sizeof(struct ksockaddr_ax));
+}
