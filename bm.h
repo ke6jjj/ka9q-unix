@@ -1,15 +1,10 @@
-#ifndef _BM_H
-#define _BM_H
+#ifndef _KA9Q_BM_H
+#define _KA9Q_BM_H
 
 /* bm.h -- definitions for bmutil.c that aren't included elsewhere */
 
-#ifndef _SMTP_H
-#include "smtp.h"
-#endif
-
-#ifndef	_MAILBOX_H
+#include "service/smtp/smtp.h"
 #include "mailbox.h"
-#endif
 
 /* Header types */
 #define	NOHEADER 	-1
@@ -63,4 +58,4 @@ long isnewprivmail(struct mbx *m);
 int htype(char *s);
 char *getaddress(char *string,int cont);
 
-#endif  /* _BM_H */
+#endif  /* _KA9Q_BM_H */

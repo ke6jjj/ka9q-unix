@@ -1,5 +1,5 @@
-#ifndef TOP_H
-#define TOP_H
+#ifndef	_KA9Q_TOP_H
+#define	_KA9Q_TOP_H
 
 #ifdef HOST_BSD
 #define HAVE_STDINT
@@ -13,4 +13,4 @@
 #define MODERN_UNIX
 #endif
 
-#endif
+#endif	/* _KA9Q_TOP_H */

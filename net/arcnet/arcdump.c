@@ -3,11 +3,11 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include "global.h"
-#include "mbuf.h"
-#include "arcnet.h"
-#include "trace.h"
+#include "net/core/mbuf.h"
+#include "net/arcnet/arcnet.h"
+#include "core/trace.h"
 
 void
 arc_dump(fp,bpp,check)

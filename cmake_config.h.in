@@ -6,3 +6,6 @@
 
 /* Whether you have net/if_tun.h */
 #cmakedefine HAVE_NET_IF_TUN_H 1
+
+/* cmake target operating system */
+#cmakedefine X_CMAKE_SYSTEM_NAME "@X_CMAKE_SYSTEM_NAME@"

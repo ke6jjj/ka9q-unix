@@ -5,15 +5,15 @@
 #include "top.h"
 
 #include "global.h"
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include <dos.h>
-#include "mbuf.h"
-#include "dma.h"
-#include "sb.h"
-#include "nospc.h"
-#include "socket.h"
-#include "cmdparse.h"
-#include "netuser.h"
+#include "net/core/mbuf.h"
+#include "msdos/dma.h"
+#include "msdos/sb.h"
+#include "msdos/nospc.h"
+#include "core/socket.h"
+#include "lib/util/cmdparse.h"
+#include "lib/inet/netuser.h"
 
 struct gain {
 	char *name;

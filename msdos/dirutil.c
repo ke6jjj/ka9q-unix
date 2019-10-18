@@ -7,13 +7,13 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include <dir.h>
 #include <dos.h>
 #include <stdlib.h>
 #include "global.h"
-#include "dirutil.h"
-#include "proc.h"
+#include "lib/std/dirutil.h"
+#include "core/proc.h"
 #include "commands.h"
 
 struct dirsort {

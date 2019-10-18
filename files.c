@@ -1,12 +1,12 @@
 /* System-dependent definitions of various files, spool directories, etc */
 #include "top.h"
-
-#include "stdio.h"
-#include <ctype.h>
 #include "global.h"
-#include "netuser.h"
+
+#include "lib/std/stdio.h"
+#include <ctype.h>
 #include "files.h"
-#include "md5.h"
+#include "lib/util/md5.h"
+#include "lib/inet/netuser.h"
 
 #ifdef	MSDOS
 char System[] = "MSDOS";

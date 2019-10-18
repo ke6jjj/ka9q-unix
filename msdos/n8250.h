@@ -10,17 +10,9 @@
 #include <dpmi.h>
 #endif
 
-#ifndef	_MBUF_H
 #include "mbuf.h"
-#endif
-
-#ifndef _PROC_H
 #include "proc.h"
-#endif
-
-#ifndef	_IFACE_H
 #include "iface.h"
-#endif
 
 /* Output pseudo-dma control structure */
 struct dma {

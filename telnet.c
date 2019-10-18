@@ -3,23 +3,24 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #ifdef	__TURBOC__
 #include <io.h>
 #include <fcntl.h>
 #endif
-#include "errno.h"
+#include "lib/std/errno.h"
 #include "global.h"
-#include "mbuf.h"
-#include "socket.h"
+#include "net/core/mbuf.h"
+#include "core/socket.h"
 #include "telnet.h"
-#include "session.h"
-#include "proc.h"
-#include "tty.h"
+#include "core/session.h"
+#include "core/proc.h"
+#include "core/tty.h"
 #include "commands.h"
-#include "internet.h"
-#include "netuser.h"
-#include "cmdparse.h"
+#include "lib/util//cmdparse.h"
+
+#include "lib/inet/netuser.h"
+#include "net/inet/internet.h"
 
 int Refuse_echo = 0;
 int Tn_cr_mode = 0;    /* if true turn <cr> to <cr-nul> */

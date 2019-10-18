@@ -8,69 +8,81 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #if defined(MSDOS)
 #include <dos.h>
 #endif
 #include <time.h>
 #include "global.h"
 #include "config.h"
-#include "mbuf.h"
-#include "timer.h"
-#include "proc.h"
-#include "iface.h"
-#include "ip.h"
+#include "net/core/mbuf.h"
+#include "core/timer.h"
+#include "core/proc.h"
+#include "net/core/iface.h"
+#include "net/inet/ip.h"
 #ifdef	IPSEC
 #include "ipsec.h"
 #include "photuris.h"
 #endif
-#include "tcp.h"
-#include "udp.h"
-#include "smtp.h"
+#include "net/inet/tcp.h"
+#include "net/inet/udp.h"
+#include "service/smtp/smtp.h"
 #ifdef	ARCNET
 #include "msdos/arcnet.h"
 #endif
-#include "lapb.h"
-#include "ax25.h"
-#include "enet.h"
-#include "kiss.h"
-#include "nr4.h"
-#include "nrs.h"
-#include "netrom.h"
-#include "tapdrvr.h"
-#include "tundrvr.h"
+#ifdef	AX25
+#include "net/ax25/lapb.h"
+#include "net/ax25/ax25.h"
+#include "net/ax25/kiss.h"
+#endif	/* AX25 */
+#include "net/enet/enet.h"
+#include "net/netrom/nr4.h"
+#include "net/netrom/nrs.h"
+#include "net/netrom/netrom.h"
+
+#ifdef HAVE_NET_IF_TAP_H
+#include "net/tap/tapdrvr.h"
+#endif /* HAVE_NET_IF_TAP_H */
+
+#ifdef HAVE_NET_IF_TUN_H
+#include "net/tun/tundrvr.h"
+#endif /* HAVE_NET_IF_TUN_H */
+
 #ifdef	MSDOS
 #include "msdos/pktdrvr.h"
 #endif
-#include "ppp.h"
-#include "slip.h"
-#include "arp.h"
-#include "icmp.h"
+#include "net/ppp/ppp.h"
+#include "net/slip/slip.h"
+#include "net/arp/arp.h"
+#include "net/inet/icmp.h"
 #include "hardware.h"	/***/
-#include "usock.h"
-#include "cmdparse.h"
+#include "core/usock.h"
+#include "lib/util/cmdparse.h"
 #include "commands.h"
 #include "mailbox.h"
-#include "ax25mail.h"
-#include "nr4mail.h"
+#ifdef	AX25
+#include "net/ax25/ax25mail.h"
+#endif	/* AX25 */
+#include "net/netrom/nr4mail.h"
 #include "tipmail.h"
-#include "daemon.h"
-#include "bootp.h"
-#include "asy.h"
-#include "trace.h"
-#include "session.h"
+#include "core/daemon.h"
+#include "service/bootp/bootp.h"
+#include "core/asy.h"
+#include "core/trace.h"
+#include "core/session.h"
 #ifdef	SPPP
-#include "sppp.h"
+#include "net/sppp/sppp.h"
 #endif
-#include "dialer.h"
+#include "core/dialer.h"
 #ifdef	KSP
 #include "ksp.h"
 #endif
 #ifdef	SOUND
-#include "sb.h"
+#include "msdos/sb.h"
 #endif
-#include "axip.h"
-
+#ifdef	AX25
+#include "net/ax25/axip.h"
+#endif	/* AX25 */
 static int dostart(int argc,char *argv[],void *p);
 static int dostop(int argc,char *argv[],void *p);
 
@@ -980,7 +992,7 @@ struct mbuf *bp;
 
 /* Packet tracing stuff */
 #ifdef	TRACE
-#include "trace.h"
+#include "core/trace.h"
 
 #else	/* TRACE */
 

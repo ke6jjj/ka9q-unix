@@ -12,21 +12,22 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include <string.h>
 #include <ctype.h>
 #include <time.h>
-#include "errno.h"
+#include "lib/std/errno.h"
 #include "global.h"
-#include "ftpserv.h"
-#include "smtp.h"
-#include "proc.h"
-#include "usock.h"
-#include "socket.h"
+#include "core/proc.h"
+#include "core/usock.h"
+#include "core/socket.h"
 #include "telnet.h"
-#include "timer.h"
-#include "session.h"
+#include "core/timer.h"
+#include "core/session.h"
 #include "files.h"
+
+#include "service/ftp/ftpserv.h"
+#include "service/smtp/smtp.h"
 
 #define		SETVBUF
 #if	defined(UNIX) || defined(MICROSOFT)

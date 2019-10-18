@@ -1,13 +1,8 @@
-#ifndef	_TELNET_H
-#define	_TELNET_H
+#ifndef	_KA9Q_TELNET_H
+#define	_KA9Q_TELNET_H
 
-#ifndef _SESSION_H
-#include "session.h"
-#endif
-
-#ifndef _SOCKADDR_H
-#include "sockaddr.h"
-#endif
+#include "core/session.h"
+#include "core/sockaddr.h"
 
 #define	LINESIZE	256	/* Length of local editing buffer */
 
@@ -50,4 +45,4 @@ void answer(struct telnet *tn,int r1,int r2);
 /* In ttylink.c: */
 void ttylhandle(int s,void *unused,void *p);
 
-#endif	/* _TELNET_H */
+#endif	/* _KA9Q_TELNET_H */

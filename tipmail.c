@@ -8,24 +8,24 @@
  */
 #include "top.h"
 
-#include "errno.h"
+#include "lib/std/errno.h"
 #include "global.h"
-#include "mbuf.h"
-#include "timer.h"
-#include "proc.h"
-#include "iface.h"
+#include "net/core/mbuf.h"
+#include "core/timer.h"
+#include "core/proc.h"
+#include "net/core/iface.h"
 #ifdef UNIX
-#include "asy_unix.h"
+#include "unix/asy_unix.h"
 #else
-#include "n8250.h"
+#include "msdos/n8250.h"
 #endif
-#include "asy.h"
-#include "socket.h"
-#include "usock.h"
+#include "core/asy.h"
+#include "core/socket.h"
+#include "core/usock.h"
 #include "telnet.h"
 #include "mailbox.h"
 #include "tipmail.h"
-#include "devparam.h"
+#include "core/devparam.h"
 
 static struct tipcb {
 	struct tipcb *next;

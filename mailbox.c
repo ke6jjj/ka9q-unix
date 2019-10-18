@@ -12,10 +12,10 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include <time.h>
 #include <ctype.h>
-#include "errno.h"
+#include "lib/std/errno.h"
 #ifdef	UNIX
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -24,24 +24,27 @@
 
 #include "global.h"
 #include "config.h"
-#include "timer.h"
-#include "proc.h"
-#include "socket.h"
-#include "usock.h"
-#include "session.h"
-#include "smtp.h"
-#include "dirutil.h"
+#include "core/timer.h"
+#include "core/proc.h"
+#include "core/socket.h"
+#include "core/usock.h"
+#include "core/session.h"
+#include "lib/std/dirutil.h"
 #include "telnet.h"
-#include "ftp.h"
-#include "ftpserv.h"
 #include "commands.h"
-#include "netuser.h"
 #include "files.h"
 #include "bm.h"
 #include "mailbox.h"
-#include "ax25mail.h"
-#include "nr4mail.h"
-#include "cmdparse.h"
+#include "lib/util/cmdparse.h"
+
+#include "lib/inet/netuser.h"
+#include "net/ax25/ax25.h"
+#include "net/ax25/ax25mail.h"
+#include "net/netrom/nr4mail.h"
+
+#include "service/smtp/smtp.h"
+#include "service/ftp/ftp.h"
+#include "service/ftp/ftpserv.h"
 
 /*
 #define MBDEBUG

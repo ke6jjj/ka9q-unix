@@ -6,6 +6,7 @@
  * Copyright 1986-1996 Phil Karn, KA9Q
  */
 #include "top.h"
+#include "config.h"
 
 #include <time.h>
 #include <ctype.h>
@@ -18,37 +19,28 @@
 #ifdef UNIX
 #include <unistd.h>
 #endif
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include "global.h"
 #include <stdarg.h>
-#include "mbuf.h"
-#include "timer.h"
-#include "proc.h"
-#include "iface.h"
-#include "ip.h"
-#include "tcp.h"
-#include "udp.h"
-#include "ax25.h"
-#include "kiss.h"
-#include "enet.h"
-#include "netrom.h"
-#include "ftpcli.h"
-#include "telnet.h"
-#include "tty.h"
-#include "session.h"
+#include "net/core/mbuf.h"
+#include "core/timer.h"
+#include "core/proc.h"
+#include "net/core/iface.h"
+#include "core/tty.h"
+#include "core/session.h"
 #include "hardware.h"
-#include "usock.h"
-#include "socket.h"
-#include "cmdparse.h"
+#include "core/usock.h"
+#include "core/socket.h"
+#include "lib/util/cmdparse.h"
 #include "commands.h"
-#include "daemon.h"
-#include "devparam.h"
-#include "domain.h"
+#include "core/daemon.h"
+#include "core/devparam.h"
+#include "net/dns/domain.h"
 #include "files.h"
 #include "main.h"
-#include "trace.h"
-#include "display.h"
-#include "errno.h"
+#include "core/trace.h"
+#include "core/display.h"
+#include "lib/std/errno.h"
 
 #if	!defined(MSDOS) && !defined(UNIX) /* PC and CURSES use F-10 key */
 static char Escape = 0x1d;	/* default escape character is ^] */
@@ -116,7 +108,7 @@ main(int argc,char *argv[])
 	Sessions = (struct session **)callocw(Nsessions,sizeof(struct session *));
 	Command = Lastcurr = newsession("command interpreter",COMMAND,1);
 	Display = newproc("display",350,display,0,NULL,NULL,0);
-	kprintf("KA9Q NOS version %s\n",Version);
+	kprintf("KA9Q NOS version %s (%s)\n",Version, KA9Q_VERSION_STRING);
 #ifdef	CPU386
 	kprintf("Compiled for 386/486 CPU\n");
 #endif
