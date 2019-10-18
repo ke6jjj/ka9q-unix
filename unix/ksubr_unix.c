@@ -39,9 +39,9 @@
 #include <pthread.h>
 #include <assert.h>
 #include "lib/std//stdio.h"
-#include "../global.h"
-#include "../proc.h"
-#include "../commands.h"
+#include "global.h"
+#include "core/proc.h"
+#include "commands.h"
 
 static void pproc(struct proc *pp); /* Print a process entry line for PS */
 static void *proc_entry(void *pptr);/* pthread entry point for new process */

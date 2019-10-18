@@ -5,11 +5,11 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../timer.h"
-#include "../../mbuf.h"
+#include "core/timer.h"
+#include "net/core/mbuf.h"
 #include "lib/inet/netuser.h"
-#include "../../socket.h"
-#include "../../proc.h"
+#include "core/socket.h"
+#include "core/proc.h"
 
 #include "net/inet/internet.h"
 #include "net/inet/tcp.h"

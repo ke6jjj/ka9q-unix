@@ -1,14 +1,14 @@
 /* AX25 header tracing
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
 #include "lib/std/stdio.h"
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../trace.h"
-#include "../../socket.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "core/trace.h"
+#include "core/socket.h"
 
 #include "net/ax25/ax25.h"
 #include "net/ax25/lapb.h"

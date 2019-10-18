@@ -24,12 +24,12 @@
 #include <time.h>
 
 #include "global.h"
-#include "../../config.h"
-#include "../../cmdparse.h"
-#include "../../iface.h"
-#include "../../mbuf.h"
-#include "../../proc.h"
-#include "../../socket.h"
+#include "config.h"
+#include "lib/util/cmdparse.h"
+#include "net/core/iface.h"
+#include "net/core/mbuf.h"
+#include "core/proc.h"
+#include "core/socket.h"
 
 #include "net/arp/arp.h"
 #include "net/inet/udp.h"

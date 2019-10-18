@@ -1,13 +1,13 @@
 /* ICMP header conversion routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "internet.h"
-#include "ip.h"
-#include "icmp.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "net/inet/internet.h"
+#include "net/inet/ip.h"
+#include "net/inet/icmp.h"
 
 /* Generate ICMP header in network byte order, link data, compute checksum */
 void

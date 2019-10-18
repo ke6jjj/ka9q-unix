@@ -15,12 +15,12 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
 #include "net/slhc/slhc.h"
-#include "../../cmdparse.h"
-#include "../../files.h"
-#include "../../trace.h"
+#include "lib/util/cmdparse.h"
+#include "files.h"
+#include "core/trace.h"
 
 #include "net/ppp/ppp.h"
 #include "net/ppp/pppfsm.h"

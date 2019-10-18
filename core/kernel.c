@@ -4,7 +4,7 @@
 #include "top.h"
 
 #if	defined(PROCLOG) || defined(PROCTRACE)
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #endif
 #include "hardware.h"
 #if defined(MSDOS)
@@ -15,13 +15,13 @@
 #endif
 #include <setjmp.h>
 #include "global.h"
-#include "mbuf.h"
-#include "proc.h"
+#include "net/core/mbuf.h"
+#include "core/proc.h"
 #include "timer.h"
-#include "socket.h"
-#include "daemon.h"
+#include "core/socket.h"
+#include "core/daemon.h"
 #include "hardware.h"
-#include "display.h"
+#include "core/display.h"
 
 #ifdef	PROCLOG
 kFILE *proclog;

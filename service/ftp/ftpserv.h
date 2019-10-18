@@ -1,9 +1,8 @@
 #ifndef	_KA9Q_FTPSERV_H
 #define	_KA9Q_FTPSERV_H
 
-#include <stdio.h>
-
-#include "../../sockaddr.h"
+#include "lib/std/stdio.h"
+#include "core/sockaddr.h"
 #include "service/ftp/ftp.h"
 
 extern char *Userfile;	/* List of user names and permissions */

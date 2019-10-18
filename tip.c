@@ -7,19 +7,19 @@
 #include "top.h"
 
 #include "global.h"
-#include "stdio.h"
-#include "mbuf.h"
-#include "proc.h"
-#include "iface.h"
+#include "lib/std/stdio.h"
+#include "net/core/mbuf.h"
+#include "core/proc.h"
+#include "net/core/iface.h"
 #ifndef	UNIX
 #include "n8250.h"
 #endif
-#include "asy.h"
-#include "tty.h"
-#include "session.h"
-#include "socket.h"
+#include "core/asy.h"
+#include "core/tty.h"
+#include "core/session.h"
+#include "core/socket.h"
 #include "commands.h"
-#include "devparam.h"
+#include "core/devparam.h"
 
 
 static void tip_out(int i,void *n1,void *n2);

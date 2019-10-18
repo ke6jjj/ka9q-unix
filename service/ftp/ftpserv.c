@@ -16,12 +16,12 @@
 #endif
 #include "lib/std/errno.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../proc.h"
-#include "../../socket.h"
-#include "../../dirutil.h"
-#include "../../commands.h"
-#include "../../files.h"
+#include "net/core/mbuf.h"
+#include "core/proc.h"
+#include "core/socket.h"
+#include "lib/std/dirutil.h"
+#include "commands.h"
+#include "files.h"
 
 #include "lib/util/md5.h"
 

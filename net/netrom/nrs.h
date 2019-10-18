@@ -1,9 +1,9 @@
 #ifndef	_KA9Q_NRS_H
 #define	_KA9Q_NRS_H
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
 
 #define NRS_MAX 5		/* Maximum number of Nrs channels */
 

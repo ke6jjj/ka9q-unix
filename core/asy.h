@@ -2,8 +2,8 @@
 #define	_KA9Q_ASY_H
 
 #include "global.h"
-#include "mbuf.h"
-#include "iface.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
 
 /* If you increase this, you must add additional interrupt vector
  * hooks in asyvec.asm (if using PC COM ports)

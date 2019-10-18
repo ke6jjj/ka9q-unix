@@ -2,14 +2,14 @@
  * bandwidth (delay as a function of packet size), duplication and loss.
  * Intended for use with the loopback interface
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../timer.h"
-#include "../../iface.h"
-#include "../../cmdparse.h"
-#include "ip.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "core/timer.h"
+#include "net/core/iface.h"
+#include "lib/util/cmdparse.h"
+#include "net/inet/ip.h"
 
 static void simfunc(void *p);
 

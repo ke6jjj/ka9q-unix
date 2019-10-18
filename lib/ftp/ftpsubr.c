@@ -1,16 +1,16 @@
 /* Routines common to both the FTP client and server
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
 #include "lib/std/stdio.h"
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../socket.h"
-#include "../../proc.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "core/socket.h"
+#include "core/proc.h"
 
 #include "service/ftp/ftp.h"
-#include "../../cmdparse.h"
+#include "lib/util/cmdparse.h"
 #include "lib/util/md5.h"
 
 #define	MD5BLOCK	64	/* Preferred MD5 block size */

@@ -1,12 +1,12 @@
 #ifndef	_KA9Q_IP_H
 #define	_KA9Q_IP_H
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
-#include "../../timer.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
+#include "core/timer.h"
 
-#include "internet.h"
+#include "net/inet/internet.h"
 
 #define TLB		30	/* Default reassembly timeout, sec */
 #define	IPVERSION	4

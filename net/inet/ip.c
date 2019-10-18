@@ -4,17 +4,17 @@
  * Not needed when running as a standalone gateway.
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../timer.h"
-#include "../../iface.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "core/timer.h"
+#include "net/core/iface.h"
 
-#include "../../lib/inet/netuser.h"
-#include "internet.h"
-#include "ip.h"
-#include "icmp.h"
+#include "lib/inet/netuser.h"
+#include "net/inet/internet.h"
+#include "net/inet/ip.h"
+#include "net/inet/icmp.h"
 
 static int fraghandle(struct ip *ip,struct mbuf **bpp);
 static void ip_timeout(void *arg);

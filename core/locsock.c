@@ -2,9 +2,9 @@
 
 #include "lib/std/errno.h"
 #include "global.h"
-#include "mbuf.h"
-#include "socket.h"
-#include "usock.h"
+#include "net/core/mbuf.h"
+#include "core/socket.h"
+#include "core/usock.h"
 
 int
 so_los(struct usock *up,int protocol)

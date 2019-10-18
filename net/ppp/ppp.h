@@ -9,9 +9,9 @@
  *	Acknowledgements and correction history may be found in PPP.C
  */
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
 
 /* PPP definitions */
 #define	PPP_ALLOC	128	/* mbuf allocation increment */

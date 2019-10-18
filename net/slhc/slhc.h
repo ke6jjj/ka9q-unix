@@ -36,10 +36,10 @@
  *			separate routines
  *			status display
  */
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../net/inet/ip.h"
-#include "../../net/inet/tcp.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "net/inet/ip.h"
+#include "net/inet/tcp.h"
 
 /*
  * Compressed packet format:

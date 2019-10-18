@@ -3,14 +3,14 @@
 
 /* TCP implementation. Follows RFC 793 as closely as possible */
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
-#include "../../timer.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
+#include "core/timer.h"
 
-#include "internet.h"
-#include "ip.h"
-#include "../../lib/inet/netuser.h"
+#include "net/inet/internet.h"
+#include "net/inet/ip.h"
+#include "lib/inet/netuser.h"
 
 #define	DEF_MSS	512	/* Default maximum segment size */
 #define	DEF_WND	2048	/* Default receiver window */

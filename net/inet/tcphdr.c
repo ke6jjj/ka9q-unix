@@ -1,14 +1,14 @@
 /* TCP header conversion routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
-#include "../../mbuf.h"
+#include "global.h"
+#include "net/core/mbuf.h"
 
-#include "tcp.h"
-#include "ip.h"
-#include "internet.h"
+#include "net/inet/tcp.h"
+#include "net/inet/ip.h"
+#include "net/inet/internet.h"
 
 /* Convert TCP header in host format into mbuf ready for transmission,
  * link in data (if any).

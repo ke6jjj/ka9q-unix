@@ -5,10 +5,10 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../trace.h"
+#include "net/core/mbuf.h"
+#include "core/trace.h"
 
-#include "enet.h"
+#include "net/enet/enet.h"
 
 void
 ether_dump(

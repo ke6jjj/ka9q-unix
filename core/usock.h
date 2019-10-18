@@ -1,10 +1,10 @@
 #ifndef	_KA9Q_USOCK_H
 #define	_KA9Q_USOCK_H
 
-#include "mbuf.h"
+#include "net/core/mbuf.h"
 #include "lzw.h"
-#include "proc.h"
-#include "sockaddr.h"
+#include "core/proc.h"
+#include "core/sockaddr.h"
 #include "net/inet/ip.h"
 #include "net/inet/tcp.h"
 #include "net/inet/udp.h"

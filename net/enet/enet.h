@@ -3,8 +3,8 @@
 
 /* Generic Ethernet constants and templates */
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
 
 #define	EADDR_LEN	6
 /* Format of an Ethernet header */

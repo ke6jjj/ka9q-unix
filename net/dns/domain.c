@@ -17,14 +17,14 @@
 #include <sys/stat.h>
 #include "lib/std/errno.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../proc.h"
-#include "../../session.h"
-#include "../../socket.h"
-#include "../../cmdparse.h"
-#include "../../commands.h"
-#include "../../files.h"
-#include "../../main.h"
+#include "net/core/mbuf.h"
+#include "core/proc.h"
+#include "core/session.h"
+#include "core/socket.h"
+#include "lib/util/cmdparse.h"
+#include "commands.h"
+#include "files.h"
+#include "main.h"
 #ifdef UNIX
 #include <unistd.h>
 #endif

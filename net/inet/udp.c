@@ -2,17 +2,17 @@
  * Copyright 1991 Phil Karn, KA9Q
  * Copyright 2019 Jeremy Cooper, KE6JJJ
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
 
-#include "../../lib/inet/netuser.h"
-#include "../../net/inet/udp.h"
-#include "../../net/inet/ip.h"
-#include "../../net/inet/internet.h"
-#include "../../net/inet/icmp.h"
+#include "lib/inet/netuser.h"
+#include "net/inet/udp.h"
+#include "net/inet/ip.h"
+#include "net/inet/internet.h"
+#include "net/inet/icmp.h"
 
 static struct udp_cb *lookup_udp(struct ksocket *socket);
 

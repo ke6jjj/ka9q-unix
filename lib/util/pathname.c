@@ -5,7 +5,7 @@
 #include "global.h"
 
 #include "lib/std/stdio.h"
-#include "../../dirutil.h"
+#include "lib/std/dirutil.h"
 
 static void crunch(char *buf,char *path);
 

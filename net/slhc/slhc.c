@@ -37,15 +37,15 @@
  *			separate routines
  *			status display
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../net/inet/internet.h"
-#include "../../net/inet/ip.h"
-#include "../../net/inet/tcp.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "net/inet/internet.h"
+#include "net/inet/ip.h"
+#include "net/inet/tcp.h"
 
-#include "slhc.h"
+#include "net/slhc/slhc.h"
 
 static uint8 *encode(uint8 *cp,uint n);
 static long decode(struct mbuf **bpp);

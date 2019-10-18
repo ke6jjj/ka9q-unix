@@ -1,8 +1,8 @@
 #ifndef	_KA9Q_TELNET_H
 #define	_KA9Q_TELNET_H
 
-#include "session.h"
-#include "sockaddr.h"
+#include "core/session.h"
+#include "core/sockaddr.h"
 
 #define	LINESIZE	256	/* Length of local editing buffer */
 

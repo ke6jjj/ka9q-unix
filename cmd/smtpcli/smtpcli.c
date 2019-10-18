@@ -34,14 +34,14 @@
 #endif
 #include "global.h"
 #include <stdarg.h>
-#include "../../mbuf.h"
-#include "../../cmdparse.h"
-#include "../../proc.h"
-#include "../../socket.h"
-#include "../../timer.h"
-#include "../../dirutil.h"
-#include "../../commands.h"
-#include "../../session.h"
+#include "net/core/mbuf.h"
+#include "lib/util/cmdparse.h"
+#include "core/proc.h"
+#include "core/socket.h"
+#include "core/timer.h"
+#include "lib/std/dirutil.h"
+#include "commands.h"
+#include "core/session.h"
 
 #include "service/smtp/smtp.h"
 #include "lib/inet/netuser.h"

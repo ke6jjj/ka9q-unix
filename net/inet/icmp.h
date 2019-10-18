@@ -1,12 +1,12 @@
 #ifndef	_ICMP_H
 #define	_ICMP_H
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
 
-#include "internet.h"
-#include "ip.h"
+#include "net/inet/internet.h"
+#include "net/inet/ip.h"
 
 /* SNMP MIB variables, used for statistics and control. See RFC 1066 */
 extern struct mib_entry Icmp_mib[];

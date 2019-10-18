@@ -5,9 +5,9 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../cmdparse.h"
-#include "../../commands.h"
+#include "net/core/mbuf.h"
+#include "lib/util/cmdparse.h"
+#include "commands.h"
 
 #include "lib/inet/netuser.h"
 #include "net/inet/udp.h"

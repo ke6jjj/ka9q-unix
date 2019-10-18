@@ -1,13 +1,13 @@
 #ifndef	_KA9Q_UDP_H
 #define	_KA9Q_UDP_H
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
 
-#include "../../net/inet/internet.h"
-#include "../../net/inet/ip.h"
-#include "../../lib/inet/netuser.h"
+#include "net/inet/internet.h"
+#include "net/inet/ip.h"
+#include "lib/inet/netuser.h"
 
 /* SNMP MIB variables, used for statistics and control. See RFC 1066 */
 extern struct mib_entry Udp_mib[];

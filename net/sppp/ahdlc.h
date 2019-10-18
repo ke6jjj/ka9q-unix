@@ -1,7 +1,8 @@
 #ifndef	_KA9Q_AHDLC_H
 #define	_KA9Q_AHDLC_H
-#include "../../global.h"
-#include "../../mbuf.h"
+
+#include "global.h"
+#include "net/core/mbuf.h"
 
 /* Asynch HDLC receiver control block */
 struct ahdlc {

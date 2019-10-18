@@ -6,7 +6,7 @@
 #include "lib/std/stdio.h"
 #include "service/ftp/ftp.h"
 
-#include "session.h"
+#include "core/session.h"
 
 #define	LINELEN	256		/* Length of user command buffer */
 

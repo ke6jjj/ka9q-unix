@@ -3,15 +3,15 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #ifdef MSDOS
 #include <conio.h>
 #endif
 #include "global.h"
-#include "mbuf.h"
-#include "session.h"
-#include "tty.h"
-#include "socket.h"
+#include "net/core/mbuf.h"
+#include "core/session.h"
+#include "core/tty.h"
+#include "core/socket.h"
 
 #define	OFF	0
 #define	ON	1

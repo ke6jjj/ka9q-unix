@@ -1,10 +1,10 @@
 #ifndef	_KA9Q_AX25_H
 #define	_KA9Q_AX25_H
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
-#include "../../sockaddr.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
+#include "core/sockaddr.h"
 
 extern char Ax25_eol[];
 

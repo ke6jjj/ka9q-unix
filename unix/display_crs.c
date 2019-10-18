@@ -68,11 +68,11 @@
 
 #include "lib/std/errno.h"
 #include "global.h"
-#include "../display.h"
-#include "../proc.h"
+#include "core/display.h"
+#include "core/proc.h"
 
-#include "display_crs.h"
-#include "nosunix.h"	/* For keyboard character definitions */
+#include "unix/display_crs.h"
+#include "unix/nosunix.h"	/* For keyboard character definitions */
 
 #define	DCOL	67
 #define	DSIZ	(81-DCOL)

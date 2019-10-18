@@ -3,13 +3,13 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #if defined(MSDOS)
 #include <dos.h>	/* TEMP */
 #endif
 #include "global.h"
-#include "mbuf.h"
-#include "proc.h"
+#include "net/core/mbuf.h"
+#include "core/proc.h"
 #include "lib/util/crc.h"
 
 static int32 Pushdowns;		/* Total calls to pushdown() */

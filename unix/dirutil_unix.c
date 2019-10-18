@@ -6,8 +6,8 @@
 
 #include "global.h"
 #include "lib/std/stdio.h"
-#include "../dirutil.h"
-#include "../commands.h"
+#include "lib/std/dirutil.h"
+#include "commands.h"
 
 kFILE *
 dir(char *path,int full)

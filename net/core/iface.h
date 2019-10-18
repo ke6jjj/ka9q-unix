@@ -2,8 +2,8 @@
 #define	_KA9Q_IFACE_H
 
 #include "global.h"
-#include "mbuf.h"
-#include "proc.h"
+#include "net/core/mbuf.h"
+#include "core/proc.h"
 
 /* Interface type / packet driver classes */
 #define CL_NONE         0

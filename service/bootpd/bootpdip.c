@@ -29,9 +29,9 @@
 #include <time.h>
 
 #include "global.h"
-#include "../../iface.h"
-#include "../../mbuf.h"
-#include "../../timer.h"
+#include "net/core/iface.h"
+#include "net/core/mbuf.h"
+#include "core/timer.h"
 
 #include "net/arp/arp.h"
 #include "lib/inet/netuser.h"

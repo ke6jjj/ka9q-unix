@@ -3,13 +3,8 @@
 
 #include <setjmp.h>
 
-#ifndef _MBUF_H
-#include "mbuf.h"
-#endif
-
-#ifndef	_TIMER_H
-#include "timer.h"
-#endif
+#include "net/core/mbuf.h"
+#include "core/timer.h"
 
 #ifdef UNIX
 #include <pthread.h>

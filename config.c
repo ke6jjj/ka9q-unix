@@ -8,17 +8,17 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #if defined(MSDOS)
 #include <dos.h>
 #endif
 #include <time.h>
 #include "global.h"
 #include "config.h"
-#include "mbuf.h"
-#include "timer.h"
-#include "proc.h"
-#include "iface.h"
+#include "net/core/mbuf.h"
+#include "core/timer.h"
+#include "core/proc.h"
+#include "net/core/iface.h"
 #include "net/inet/ip.h"
 #ifdef	IPSEC
 #include "ipsec.h"
@@ -56,8 +56,8 @@
 #include "net/arp/arp.h"
 #include "net/inet/icmp.h"
 #include "hardware.h"	/***/
-#include "usock.h"
-#include "cmdparse.h"
+#include "core/usock.h"
+#include "lib/util/cmdparse.h"
 #include "commands.h"
 #include "mailbox.h"
 #ifdef	AX25
@@ -65,15 +65,15 @@
 #endif	/* AX25 */
 #include "net/netrom/nr4mail.h"
 #include "tipmail.h"
-#include "daemon.h"
+#include "core/daemon.h"
 #include "service/bootp/bootp.h"
-#include "asy.h"
-#include "trace.h"
-#include "session.h"
+#include "core/asy.h"
+#include "core/trace.h"
+#include "core/session.h"
 #ifdef	SPPP
-#include "sppp.h"
+#include "net/sppp/sppp.h"
 #endif
-#include "dialer.h"
+#include "core/dialer.h"
 #ifdef	KSP
 #include "ksp.h"
 #endif
@@ -992,7 +992,7 @@ struct mbuf *bp;
 
 /* Packet tracing stuff */
 #ifdef	TRACE
-#include "trace.h"
+#include "core/trace.h"
 
 #else	/* TRACE */
 

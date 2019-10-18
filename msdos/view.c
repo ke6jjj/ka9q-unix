@@ -1,14 +1,14 @@
 /* Random access file viewer. PC specific */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include <conio.h>
-#include "errno.h"
+#include "lib/std/errno.h"
 #include "global.h"
-#include "session.h"
-#include "tty.h"
+#include "core/session.h"
+#include "core/tty.h"
 #include "commands.h"
-#include "socket.h"
+#include "core/socket.h"
 
 #include <dos.h>
 

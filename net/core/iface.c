@@ -3,15 +3,15 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include "global.h"
-#include "mbuf.h"
-#include "proc.h"
-#include "iface.h"
+#include "net/core/mbuf.h"
+#include "core/proc.h"
+#include "net/core/iface.h"
 #include "net/enet/enet.h"
-#include "cmdparse.h"
+#include "lib/util/cmdparse.h"
 #include "commands.h"
-#include "trace.h"
+#include "core/trace.h"
 
 #include "net/inet/ip.h"
 #include "net/inet/icmp.h"

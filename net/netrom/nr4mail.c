@@ -4,20 +4,20 @@
  *	May '91	Bill Simpson
  *		move to separate file for compilation & linking
  */
-#include "../../top.h"
+#include "top.h"
 
 #include <ctype.h>
 
-#include "../../global.h"
-#include "../../proc.h"
-#include "../../socket.h"
-#include "../../session.h"
-#include "../../cmdparse.h"
-#include "../../commands.h"
-#include "../../mailbox.h"
+#include "global.h"
+#include "core/proc.h"
+#include "core/socket.h"
+#include "core/session.h"
+#include "lib/util/cmdparse.h"
+#include "commands.h"
+#include "mailbox.h"
 
-#include "netrom.h"
-#include "nr4mail.h"
+#include "net/netrom/netrom.h"
+#include "net/netrom/nr4mail.h"
 
 
 static int Nrsocket = -1;

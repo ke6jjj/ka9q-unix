@@ -21,14 +21,14 @@
 #endif
 #include <assert.h>
 #include "global.h"
-#include "stdio.h"
-#include "mbuf.h"
-#include "proc.h"
-#include "usock.h"
-#include "socket.h"
-#include "display.h"
-#include "asy.h"
-#include "errno.h"
+#include "lib/std/stdio.h"
+#include "net/core/mbuf.h"
+#include "core/proc.h"
+#include "core/usock.h"
+#include "core/socket.h"
+#include "core/display.h"
+#include "core/asy.h"
+#include "lib/std/errno.h"
 
 #define	_CREAT(a,b)	creat((a),(b))
 #ifdef UNIX

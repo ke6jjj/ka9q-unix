@@ -1,8 +1,8 @@
 #ifndef	_KA9Q_UNIX_HARDWARE_H
 #define	_KA9Q_UNIX_HARDWARE_H
 
-#include "../global.h"
-#include "../proc.h"
+#include "global.h"
+#include "core/proc.h"
 
 extern void (*Shutdown[])();	/* List of functions to call at shutdown */
 

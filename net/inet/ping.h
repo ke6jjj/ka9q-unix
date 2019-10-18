@@ -1,7 +1,7 @@
 #ifndef	_PING_H
 #define	_PING_H
 
-#include "../../session.h"
+#include "core/session.h"
 
 struct ping {
 	struct session *sp;

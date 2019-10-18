@@ -1,13 +1,13 @@
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include "global.h"
-#include "socket.h"
+#include "core/socket.h"
 #include "telnet.h"
-#include "proc.h"
+#include "core/proc.h"
 #include "files.h"
 #include "commands.h"
-#include "cmdparse.h"
+#include "lib/util/cmdparse.h"
 
 static void tnserv(int s,void *p1,void *p2);
 

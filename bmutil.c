@@ -18,12 +18,12 @@
 #include <time.h>
 #include "lib/std/errno.h"
 #include "global.h"
-#include "proc.h"
-#include "usock.h"
-#include "socket.h"
+#include "core/proc.h"
+#include "core/usock.h"
+#include "core/socket.h"
 #include "telnet.h"
-#include "timer.h"
-#include "session.h"
+#include "core/timer.h"
+#include "core/session.h"
 #include "files.h"
 
 #include "service/ftp/ftpserv.h"

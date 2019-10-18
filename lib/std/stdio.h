@@ -75,9 +75,7 @@ typedef struct _file kFILE;
 #define	kSEEK_CUR	1
 #define	kSEEK_END	2
 
-#ifndef _PROC_H
-#include "proc.h"
-#endif
+#include "core/proc.h"
 
 #define	kstdout	Curproc->output
 #define	kstdin	Curproc->input

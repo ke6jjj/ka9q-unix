@@ -5,12 +5,12 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../timer.h"
-#include "../../mbuf.h"
-#include "../../cmdparse.h"
-#include "../../commands.h"
-#include "../../socket.h"
-#include "../../session.h"
+#include "core/timer.h"
+#include "net/core/mbuf.h"
+#include "lib/util/cmdparse.h"
+#include "commands.h"
+#include "core/socket.h"
+#include "core/session.h"
 #include "lib/std/errno.h"
 
 #include "lib/inet/netuser.h"

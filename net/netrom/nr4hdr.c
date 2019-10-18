@@ -2,12 +2,12 @@
  * Copyright 1989 by Daniel M. Frank, W9NK.  Permission granted for
  * non-commercial distribution only.
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
-#include "../../mbuf.h"
+#include "global.h"
+#include "net/core/mbuf.h"
 
-#include "nr4.h"
+#include "net/netrom/nr4.h"
 
 /* Convert a net/rom transport header to host format structure.
  * Return -1 if error, 0 if OK.

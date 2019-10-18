@@ -12,10 +12,10 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
 
-#include "../../cmdparse.h"
+#include "lib/util/cmdparse.h"
 
 #include "net/ppp/ppp.h"
 #include "net/ppp/pppfsm.h"

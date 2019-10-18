@@ -4,9 +4,9 @@
 #include <stdarg.h>
 
 #include "global.h"
-#include "mbuf.h"
-#include "proc.h"
-#include "sockaddr.h"
+#include "net/core/mbuf.h"
+#include "core/proc.h"
+#include "core/sockaddr.h"
 
 /* Local IP wildcard address */
 #define	kINADDR_ANY	0x0L

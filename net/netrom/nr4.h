@@ -2,10 +2,10 @@
 #define	_KA9Q_NR4_H
 /* nr4.h:  defines for netrom layer 4 (transport) support */
 
-#include "../../mbuf.h"
-#include "../../timer.h"
+#include "net/core/mbuf.h"
+#include "core/timer.h"
 
-#include "../ax25/ax25.h"
+#include "net/ax25/ax25.h"
 
 /* compile-time limitations */
 

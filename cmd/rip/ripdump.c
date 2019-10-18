@@ -1,15 +1,15 @@
 /* RIP packet tracing
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../timer.h"
-#include "../../trace.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "core/timer.h"
+#include "core/trace.h"
 
-#include "../../lib/inet/netuser.h"
-#include "../../service/rip/rip.h"
+#include "lib/inet/netuser.h"
+#include "service/rip/rip.h"
 
 void
 rip_dump(fp,bpp)

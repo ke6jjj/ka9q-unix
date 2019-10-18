@@ -2,8 +2,8 @@
 #define	_NET_DOMAIN_H
 
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../proc.h"
+#include "net/core/mbuf.h"
+#include "core/proc.h"
 
 #define	INITRTT		2000L	/* Initial smoothed response time */
 #define	MAXCNAME	10	/* Maximum amount of cname recursion */

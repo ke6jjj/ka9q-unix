@@ -9,24 +9,24 @@
  * BOOTP is documented in RFC 951 and RFC 1048
  * Delinted, ANSIfied and reformatted - 5/30/91 P. Karn
  */
-#include "../../top.h"
+#include "top.h"
 
 #include <time.h>
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../socket.h"
-#include "../../iface.h"
-#include "../../cmdparse.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "core/socket.h"
+#include "net/core/iface.h"
+#include "lib/util/cmdparse.h"
 
-#include "../../lib/inet/netuser.h"
-#include "../../net/inet/ip.h"
-#include "../../net/inet/udp.h"
-#include "../../net/inet/internet.h"
-#include "../../net/dns/domain.h"
+#include "lib/inet/netuser.h"
+#include "net/inet/ip.h"
+#include "net/inet/udp.h"
+#include "net/inet/internet.h"
+#include "net/dns/domain.h"
 
-#include "../../service/rip/rip.h"
+#include "service/rip/rip.h"
 
-#include "bootp.h"
+#include "service/bootp/bootp.h"
 
 static int bootp_rx(struct iface *ifp,struct mbuf *bp);
 static void ntoh_bootp(struct mbuf **bpp,struct bootp *bootpp);

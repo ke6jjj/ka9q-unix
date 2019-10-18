@@ -5,8 +5,8 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "proc.h"
-#include "iface.h"
+#include "core/proc.h"
+#include "net/core/iface.h"
 #include "net/slhc/slhc.h"
 #ifdef UNIX
 #include "unix/asy_unix.h"

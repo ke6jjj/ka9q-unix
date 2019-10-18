@@ -12,7 +12,7 @@
 #ifndef	_KA9Q_BOOTPD_H
 #define	_KA9Q_BOOTPD_H
 
-#include "../../socket.h"
+#include "core/socket.h"
 #include "net/arp/arp.h"
 
 #define MHOSTS  12     /* max number of 'hosts' structs */

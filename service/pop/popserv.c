@@ -19,12 +19,12 @@
 #endif
 #include <ctype.h>
 #include <setjmp.h>
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../cmdparse.h"
-#include "../../socket.h"
-#include "../../proc.h"
-#include "../../files.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "lib/util/cmdparse.h"
+#include "core/socket.h"
+#include "core/proc.h"
+#include "files.h"
 
 #include "service/pop/pop.h"
 

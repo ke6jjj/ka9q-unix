@@ -5,13 +5,13 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "timer.h"
-#include "proc.h"
-#include "mbuf.h"
+#include "core/timer.h"
+#include "core/proc.h"
+#include "net/core/mbuf.h"
 #include "commands.h"
-#include "daemon.h"
+#include "core/daemon.h"
 #include "hardware.h"
-#include "socket.h"
+#include "core/socket.h"
 #include "lib/std/errno.h"
 
 /* Head of running timer chain.

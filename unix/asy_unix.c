@@ -37,16 +37,14 @@
 #include <errno.h>
 #include "lib/std/errno.h"
 #include "global.h"
-#include "mbuf.h"
-#include "proc.h"
-#include "iface.h"
-#include "asy.h"
-#include "devparam.h"
-#include "dialer.h"
-#include "asy_unix.h"
-
+#include "net/core/mbuf.h"
+#include "core/proc.h"
+#include "net/core/iface.h"
+#include "core/asy.h"
+#include "core/devparam.h"
+#include "core/dialer.h"
+#include "unix/asy_unix.h"
 #include "unix/nosunix.h"
-
 #include "unix_socket.h"
 
 struct asy Asy[ASY_MAX];

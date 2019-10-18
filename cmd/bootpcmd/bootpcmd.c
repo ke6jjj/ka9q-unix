@@ -17,10 +17,10 @@
 #include <ctype.h>
 #include <stdarg.h>
 
-#include "../../global.h"
-#include "../../config.h"
-#include "../../cmdparse.h"
-#include "../../iface.h"
+#include "global.h"
+#include "config.h"
+#include "lib/util/cmdparse.h"
+#include "net/core/iface.h"
 
 #include "net/inet/udp.h"
 #include "net/arp/arp.h"

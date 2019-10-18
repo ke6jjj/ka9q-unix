@@ -3,8 +3,8 @@
 
 /* Defines for the ax.25 mailbox facility */
 #define NUMMBX		10		/* max number of mailbox sessions */
-#include "timer.h"
-#include "sockaddr.h"
+#include "core/timer.h"
+#include "core/sockaddr.h"
 
 /* a mailbox list entry */
 struct let {

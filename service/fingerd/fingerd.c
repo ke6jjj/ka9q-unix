@@ -6,14 +6,14 @@
 #include "lib/std/stdio.h"
 #include <string.h>
 #include "global.h"
-#include "../../files.h"
-#include "../../mbuf.h"
-#include "../../socket.h"
-#include "../../session.h"
-#include "../../proc.h"
-#include "../../dirutil.h"
-#include "../../commands.h"
-#include "../../mailbox.h"
+#include "files.h"
+#include "net/core/mbuf.h"
+#include "core/socket.h"
+#include "core/session.h"
+#include "core/proc.h"
+#include "lib/std/dirutil.h"
+#include "commands.h"
+#include "mailbox.h"
 
 #include "service/ftp/ftp.h"
 

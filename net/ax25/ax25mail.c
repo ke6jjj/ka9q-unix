@@ -7,10 +7,10 @@
 #include "top.h"
 
 #include "global.h"
-#include "../../proc.h"
-#include "../../socket.h"
-#include "../../session.h"
-#include "../../mailbox.h"
+#include "core/proc.h"
+#include "core/socket.h"
+#include "core/session.h"
+#include "mailbox.h"
 
 #include "net/ax25/ax25.h"
 #include "net/ax25/ax25mail.h"

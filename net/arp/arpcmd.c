@@ -7,10 +7,10 @@
 #include "global.h"
 
 #include "lib/std/stdio.h"
-#include "../../mbuf.h"
-#include "../../timer.h"
-#include "../../cmdparse.h"
-#include "../../commands.h"
+#include "net/core/mbuf.h"
+#include "core/timer.h"
+#include "lib/util/cmdparse.h"
+#include "commands.h"
 
 #include "net/enet/enet.h"
 #include "net/arp/arp.h"

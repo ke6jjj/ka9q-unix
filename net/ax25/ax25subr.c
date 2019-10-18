@@ -9,9 +9,9 @@
 #include <ctype.h>
 
 #include "lib/std/stdio.h"
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../timer.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "core/timer.h"
 
 #include "net/ax25/ax25.h"
 #include "net/ax25/lapb.h"

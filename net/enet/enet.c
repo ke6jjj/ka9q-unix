@@ -5,8 +5,8 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
 
 #include "net/inet/ip.h"
 #include "net/arp/arp.h"

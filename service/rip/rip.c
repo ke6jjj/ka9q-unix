@@ -10,18 +10,18 @@
  *
  * Code gutted and substantially rewritten. KA9Q 9/89
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../timer.h"
-#include "../../iface.h"
-#include "../../lib/inet/netuser.h"
-#include "../../net/inet/udp.h"
-#include "../../net/inet/ip.h"
-#include "../../net/inet/internet.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "core/timer.h"
+#include "net/core/iface.h"
+#include "lib/inet/netuser.h"
+#include "net/inet/udp.h"
+#include "net/inet/ip.h"
+#include "net/inet/internet.h"
 
-#include "rip.h"
+#include "service/rip/rip.h"
 
 struct rip_stat Rip_stat;
 uint Rip_trace;

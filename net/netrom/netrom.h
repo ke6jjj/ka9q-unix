@@ -1,12 +1,12 @@
 #ifndef	_KA9Q_NETROM_H
 #define	_KA9Q_NETROM_H
 
-#include "../../mbuf.h"
-#include "../../iface.h"
-#include "../ax25/ax25.h"
-#include "../ax25/lapb.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
+#include "net/ax25/ax25.h"
+#include "net/ax25/lapb.h"
 
-#include "nr4.h"
+#include "net/netrom/nr4.h"
 
 /* net/rom support definitions
  * Copyright 1989 by Daniel M. Frank, W9NK.  Permission granted for

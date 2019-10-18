@@ -44,13 +44,13 @@
 #include <unistd.h>  /* for unlink() */
 #endif
 #include "global.h"
-#include "../../timer.h"
-#include "../../cmdparse.h"
-#include "../../commands.h"
-#include "../../socket.h"
-#include "../../usock.h"
-#include "../../proc.h"
-#include "../../files.h"
+#include "core/timer.h"
+#include "lib/util/cmdparse.h"
+#include "commands.h"
+#include "core/socket.h"
+#include "core/usock.h"
+#include "core/proc.h"
+#include "files.h"
 
 #include "lib/inet/netuser.h"
 #include "service/smtp/smtp.h"

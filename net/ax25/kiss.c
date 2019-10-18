@@ -1,18 +1,18 @@
 /* Routines for AX.25 encapsulation in KISS TNC
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
-#include "../../devparam.h"
-#include "../../asy.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
+#include "core/devparam.h"
+#include "core/asy.h"
 
-#include "../slip/slip.h"
+#include "net/slip/slip.h"
 
-#include "kiss.h"
-#include "ax25.h"
+#include "net/ax25/kiss.h"
+#include "net/ax25/ax25.h"
 
 /* Set up a SLIP link to use AX.25 */
 int

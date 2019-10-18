@@ -28,22 +28,22 @@
 #include "top.h"
 
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../proc.h"
-#include "../../iface.h"
+#include "net/core/mbuf.h"
+#include "core/proc.h"
+#include "net/core/iface.h"
 #include "net/inet/internet.h"
 #include "net/inet/ip.h"
 #include "net/slhc/slhc.h"
 #ifdef UNIX
 #include "unix/asy_unix.h"
 #else
-#include "../../msdos/n8250.h"
+#include "msdos/n8250.h"
 #endif
-#include "../../asy.h"
-#include "../../socket.h"
-#include "../../devparam.h"
+#include "core/asy.h"
+#include "core/socket.h"
+#include "core/devparam.h"
 
-#include "../../trace.h"
+#include "core/trace.h"
 
 #include "net/ppp/ppp.h"
 #include "net/ppp/pppfsm.h"

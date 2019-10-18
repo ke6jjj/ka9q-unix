@@ -2,8 +2,8 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../trace.h"
+#include "net/core/mbuf.h"
+#include "core/trace.h"
 
 #include "net/inet/internet.h"
 #include "net/inet/ip.h"

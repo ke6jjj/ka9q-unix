@@ -11,10 +11,10 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
-#include "../../asy.h"
-#include "../../trace.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
+#include "core/asy.h"
+#include "core/trace.h"
 
 #include "net/inet/ip.h"
 #include "net/slhc/slhc.h"

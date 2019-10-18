@@ -4,7 +4,7 @@
 #include <stdio.h>
 
 #include "global.h"
-#include "proc.h"
+#include "core/proc.h"
 #include "telnet.h"
 
 struct ttystate {

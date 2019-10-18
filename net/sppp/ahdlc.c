@@ -1,11 +1,11 @@
 /* Asynchronous HDLC routines */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
-#include "../../lib/util/crc.h"
-#include "../../trace.h"
+#include "global.h"
+#include "lib/util/crc.h"
+#include "core/trace.h"
 
-#include "ahdlc.h"
+#include "net/sppp/ahdlc.h"
 
 static uint8 *putbyte(uint8 *,uint8);
 

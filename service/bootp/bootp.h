@@ -14,10 +14,10 @@
 
 #ifndef BOOTREQUEST
 
-#include "../../mbuf.h"
-#include "../../socket.h"
+#include "net/core/mbuf.h"
+#include "core/socket.h"
 
-#include "../../net/inet/ip.h"
+#include "net/inet/ip.h"
 
 struct bootp {
 	uint8	op;			/* packet opcode type */

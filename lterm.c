@@ -1,16 +1,16 @@
 /* Support local term on com port */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include "global.h"
-#include "socket.h"
-#include "session.h"
+#include "core/socket.h"
+#include "core/session.h"
 #if defined(UNIX)
 #include "unix/asy_unix.h"
 #else
-#include "n8250.h"
+#include "msdos/n8250.h"
 #endif
-#include "asy.h"
+#include "core/asy.h"
 
 #include "net/inet/internet.h"
 #include "lib/inet/netuser.h"

@@ -1,8 +1,8 @@
 #ifndef	_KA9Q_KISS_H
 #define	_KA9Q_KISS_H
 
-#include "../../mbuf.h"
-#include "../../iface.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
 
 /* In kiss.c: */
 int kiss_free(struct iface *ifp);

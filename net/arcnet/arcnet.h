@@ -4,8 +4,8 @@
 #define	_KA9Q_ARCNET_H
 
 #include "global.h"
-#include "mbuf.h"
-#include "iface.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
 
 #define	AADDR_LEN	1
 /* Format of an ARCnet header */

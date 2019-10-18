@@ -1,12 +1,12 @@
 /* TCP header tracing routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
 #include "lib/std/stdio.h"
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../trace.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "core/trace.h"
 
 #include "lib/inet/netuser.h"
 #include "net/inet/internet.h"

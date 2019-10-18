@@ -8,11 +8,11 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
-#include "../../socket.h"
-#include "../../trace.h"
-#include "../../commands.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
+#include "core/socket.h"
+#include "core/trace.h"
+#include "commands.h"
 
 #include "net/arp/arp.h"
 #include "net/inet/ip.h"

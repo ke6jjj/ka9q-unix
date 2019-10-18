@@ -3,14 +3,14 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include "global.h"
-#include "mbuf.h"
-#include "iface.h"
-#include "timer.h"
-#include "arp.h"
-#include "ip.h"
-#include "arcnet.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
+#include "core/timer.h"
+#include "net/arp/arp.h"
+#include "net/inet/ip.h"
+#include "net/arcnet/arcnet.h"
 
 uint8 ARC_bdcst[] = { 0 };
 

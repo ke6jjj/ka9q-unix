@@ -1,12 +1,10 @@
 /* AX25 header conversion routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
-
-#include "../../global.h"
-#include "../../mbuf.h"
-
-#include "ax25.h"
+#include "top.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "net/ax25/ax25.h"
 
 /* Convert a host-format AX.25 header into a mbuf ready for transmission */
 void

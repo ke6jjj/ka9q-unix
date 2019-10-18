@@ -3,14 +3,14 @@
  *
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
-#include "../../timer.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
+#include "core/timer.h"
 
-#include "ax25.h"
+#include "net/ax25/ax25.h"
 
 static struct lq *al_create(struct iface *ifp,uint8 *addr);
 static struct ld *ad_lookup(struct iface *ifp,uint8 *addr,int sort);

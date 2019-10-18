@@ -5,11 +5,11 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../timer.h"
-#include "../../iface.h"
-#include "../../cmdparse.h"
-#include "../../commands.h"
+#include "net/core/mbuf.h"
+#include "core/timer.h"
+#include "net/core/iface.h"
+#include "lib/util/cmdparse.h"
+#include "commands.h"
 
 #include "lib/inet/netuser.h"
 

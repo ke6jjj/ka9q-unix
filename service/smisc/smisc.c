@@ -5,21 +5,21 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../socket.h"
-#include "../../proc.h"
+#include "net/core/mbuf.h"
+#include "core/socket.h"
+#include "core/proc.h"
 #include "net/inet/tcp.h"
-#include "../../commands.h"
-#include "../../hardware.h"
-#include "../../mailbox.h"
-#include "../../asy.h"
+#include "commands.h"
+#include "hardware.h"
+#include "mailbox.h"
+#include "core/asy.h"
 #ifdef UNIX
 #include "unix/asy_unix.h"
 #else
-#include "../../msdos/n8250.h"
+#include "msdos/n8250.h"
 #endif
-#include "../../devparam.h"
-#include "../../telnet.h"
+#include "core/devparam.h"
+#include "telnet.h"
 #include "lib/std/errno.h"
 
 static void discserv(int s,void *unused,void *p);

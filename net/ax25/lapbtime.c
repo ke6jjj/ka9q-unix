@@ -1,14 +1,14 @@
 /* LAPB (AX25) timer recovery routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../timer.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "core/timer.h"
 
-#include "ax25.h"
-#include "lapb.h"
+#include "net/ax25/ax25.h"
+#include "net/ax25/lapb.h"
 
 static void tx_enq(struct ax25_cb *axp);
 

@@ -34,9 +34,9 @@
 #include <errno.h>
 #include "lib/std/errno.h"
 #include "global.h"
-#include "mbuf.h"
-#include "proc.h"
-#include "devparam.h"
+#include "net/core/mbuf.h"
+#include "core/proc.h"
+#include "core/devparam.h"
 
 #include "unix/nosunix.h"
 

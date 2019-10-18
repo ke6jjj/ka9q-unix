@@ -12,12 +12,12 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
-#include "../../socket.h"
-#include "../../cmdparse.h"
-#include "../../devparam.h"
-#include "../../trace.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
+#include "core/socket.h"
+#include "lib/util/cmdparse.h"
+#include "core/devparam.h"
+#include "core/trace.h"
 #include "lib/std/errno.h"
 
 #include "net/ppp/ppp.h"

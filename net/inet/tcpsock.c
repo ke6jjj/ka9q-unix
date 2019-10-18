@@ -1,8 +1,8 @@
 #include "top.h"
 
 #include "global.h"
-#include "../../socket.h"
-#include "../../usock.h"
+#include "core/socket.h"
+#include "core/usock.h"
 #include "lib/std/errno.h"
 
 #include "net/inet/tcp.h"

@@ -1,14 +1,14 @@
 /* UDP header conversion routines
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
-#include "../../mbuf.h"
+#include "global.h"
+#include "net/core/mbuf.h"
 
-#include "ip.h"
-#include "internet.h"
-#include "udp.h"
+#include "net/inet/ip.h"
+#include "net/inet/internet.h"
+#include "net/inet/udp.h"
 
 /* Convert UDP header in internal format to an mbuf in external format */
 void

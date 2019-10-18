@@ -3,8 +3,6 @@
 
 #include "top.h"
 
-#include "stdio.h"
-
 /* Extended keyboard codes for function keys */
 #define	F1	59	/* Function key 1 */
 #define	F2	60

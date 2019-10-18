@@ -16,13 +16,13 @@
 #include <stdlib.h>
 
 #include "global.h"
-#include "../asy.h"
-#include "../commands.h"
-#include "../display.h"
+#include "core/asy.h"
+#include "commands.h"
+#include "core/display.h"
 #include "lib/std/errno.h"
-#include "../iface.h"
-#include "../proc.h"
-#include "../session.h"
+#include "net/core/iface.h"
+#include "core/proc.h"
+#include "core/session.h"
 #include "lib/std/stdio.h"
 
 #include "unix/display_crs.h"

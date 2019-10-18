@@ -3,19 +3,19 @@
  *
  * Copyright 1991 Phil Karn, KA9Q
  */
-#include "../../top.h"
+#include "top.h"
 
-#include "../../global.h"
-#include "../../timer.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
+#include "global.h"
+#include "core/timer.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
 
-#include "../../lib/inet/netuser.h"
+#include "lib/inet/netuser.h"
 
-#include "internet.h"
-#include "tcp.h"
-#include "icmp.h"
-#include "ip.h"
+#include "net/inet/internet.h"
+#include "net/inet/tcp.h"
+#include "net/inet/icmp.h"
+#include "net/inet/ip.h"
 
 static void update(struct tcb *tcb,struct tcp *seg,uint length);
 static void proc_syn(struct tcb *tcb,uint8 tos,struct tcp *seg);

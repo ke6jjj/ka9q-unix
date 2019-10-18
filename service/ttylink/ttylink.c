@@ -3,14 +3,14 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include "global.h"
-#include "mbuf.h"
-#include "socket.h"
+#include "net/core/mbuf.h"
+#include "core/socket.h"
 #include "telnet.h"
-#include "session.h"
-#include "proc.h"
-#include "tty.h"
+#include "core/session.h"
+#include "core/proc.h"
+#include "core/tty.h"
 #include "mailbox.h"
 #include "commands.h"
 

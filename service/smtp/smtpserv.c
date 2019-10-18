@@ -14,15 +14,15 @@
 #include <ctype.h>
 #include <setjmp.h>
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../cmdparse.h"
-#include "../../socket.h"
-#include "../../iface.h"
-#include "../../proc.h"
-#include "../../commands.h"
-#include "../../dirutil.h"
-#include "../../mailbox.h"
-#include "../../bm.h"
+#include "net/core/mbuf.h"
+#include "lib/util/cmdparse.h"
+#include "core/socket.h"
+#include "net/core/iface.h"
+#include "core/proc.h"
+#include "commands.h"
+#include "lib/std/dirutil.h"
+#include "mailbox.h"
+#include "bm.h"
 
 #include "net/dns/domain.h"
 

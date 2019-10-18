@@ -5,11 +5,11 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../socket.h"
-#include "../../proc.h"
-#include "../../session.h"
-#include "../../commands.h"
+#include "net/core/mbuf.h"
+#include "core/socket.h"
+#include "core/proc.h"
+#include "core/session.h"
+#include "commands.h"
 #include "lib/std/errno.h"
 
 #include "lib/inet/netuser.h"

@@ -11,9 +11,9 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
-#include "../../devparam.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
+#include "core/devparam.h"
 
 #include "net/arp/arp.h"
 #include "net/inet/ip.h"

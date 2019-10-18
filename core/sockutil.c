@@ -5,9 +5,9 @@
 
 #include "lib/std/errno.h"
 #include "global.h"
-#include "mbuf.h"
-#include "socket.h"
-#include "usock.h"
+#include "net/core/mbuf.h"
+#include "core/socket.h"
+#include "core/usock.h"
 
 /* Convert a socket (address + port) to an ascii string of the form
  * aaa.aaa.aaa.aaa:ppppp

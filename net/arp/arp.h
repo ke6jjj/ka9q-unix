@@ -1,10 +1,10 @@
 #ifndef	_KA9Q_NET_ARP_H
 #define	_KA9Q_NET_ARP_H
 
-#include "../../global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
-#include "../../timer.h"
+#include "global.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
+#include "core/timer.h"
 
 /* Lifetime of a valid ARP entry */
 #define	ARPLIFE		900	/* 15 minutes */

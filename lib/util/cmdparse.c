@@ -13,8 +13,8 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "proc.h"
-#include "cmdparse.h"
+#include "core/proc.h"
+#include "lib/util/cmdparse.h"
 
 struct boolcmd {
 	char *str;	/* Token */

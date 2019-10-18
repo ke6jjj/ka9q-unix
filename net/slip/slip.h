@@ -2,7 +2,7 @@
 #define	_KA9Q_NET_SLIP_H
 
 #include "global.h"
-#include "../../iface.h"
+#include "net/core/iface.h"
 #include "net/slhc/slhc.h"
 
 #define SLIP_MAX 6		/* Maximum number of slip channels */

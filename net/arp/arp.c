@@ -5,9 +5,9 @@
 #include "top.h"
 
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../timer.h"
-#include "../../iface.h"
+#include "net/core/mbuf.h"
+#include "core/timer.h"
+#include "net/core/iface.h"
 
 #include "net/inet/icmp.h"
 #include "net/inet/ip.h"

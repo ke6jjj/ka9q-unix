@@ -1,10 +1,10 @@
 #ifndef _KA9Q_NET_PPPFSM_H
 #define _KA9Q_NET_PPPFSM_H
 
-#include "../../mbuf.h"
-#include "../../proc.h"
-#include "../../iface.h"
-#include "../../timer.h"
+#include "net/core/mbuf.h"
+#include "core/proc.h"
+#include "net/core/iface.h"
+#include "core/timer.h"
 
 				/* 00: serious internal problems */
 				/* 01: interoperability problems */

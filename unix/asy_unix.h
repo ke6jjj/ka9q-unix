@@ -26,13 +26,11 @@
 
 #include "top.h"
 
-#include <pthread.h>
+#include "net/core/mbuf.h"
+#include "core/proc.h"
+#include "net/core/iface.h"
 
-#include "mbuf.h"
-#include "proc.h"
-#include "iface.h"
-
-#include "unix_socket.h"
+#include "unix/unix_socket.h"
 
 /* Asynch controller control block */
 struct asy {

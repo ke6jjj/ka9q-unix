@@ -1,8 +1,8 @@
 #ifndef	_KA9Q_TRACE_H
 #define	_KA9Q_TRACE_H
 
-#include "mbuf.h"
-#include "iface.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
 
 /* Definitions for packet dumping */
 

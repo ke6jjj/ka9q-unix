@@ -65,12 +65,10 @@
 #error "This file should only be used for UNIX/POSIX builds"
 #endif
 
-#ifndef	_STDIO_H
-#include "stdio.h"
-#endif
+#include "lib/std/stdio.h"
 
 #include <curses.h>
-#include "nosunix.h"
+#include "unix/nosunix.h"
 
 #define	MAXARGS	5
 

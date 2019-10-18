@@ -3,13 +3,13 @@
  */
 #include "top.h"
 
-#include "stdio.h"
+#include "lib/std/stdio.h"
 #include "global.h"
-#include "mbuf.h"
-#include "proc.h"
+#include "net/core/mbuf.h"
+#include "core/proc.h"
 #include "lzw.h"
-#include "usock.h"
-#include "socket.h"
+#include "core/usock.h"
+#include "core/socket.h"
 #include "commands.h"
 
 /* Socket status display command */

@@ -8,8 +8,8 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../timer.h"
+#include "net/core/mbuf.h"
+#include "core/timer.h"
 
 #include "net/netrom/netrom.h"
 #include "net/netrom/nr4.h"

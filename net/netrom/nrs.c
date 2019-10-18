@@ -9,11 +9,11 @@
 
 #include "lib/std/stdio.h"
 #include "global.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
-#include "../../asy.h"
-#include "../../trace.h"
-#include "../../commands.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
+#include "core/asy.h"
+#include "core/trace.h"
+#include "commands.h"
 
 #include "net/ax25/ax25.h"
 

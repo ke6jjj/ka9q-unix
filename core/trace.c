@@ -8,11 +8,11 @@
 #include <time.h>
 #include "global.h"
 #include <stdarg.h>
-#include "mbuf.h"
-#include "iface.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
 #include "commands.h"
-#include "trace.h"
-#include "session.h"
+#include "core/trace.h"
+#include "core/session.h"
 
 static void ascii_dump(kFILE *fp,struct mbuf **bpp);
 static void ctohex(char *buf,uint c);

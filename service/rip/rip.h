@@ -13,9 +13,9 @@
  *
  * Substantially rewritten and integrated into NOS 9/1989 by KA9Q
  */
-#include "../../mbuf.h"
-#include "../../iface.h"
-#include "../../net/inet/udp.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
+#include "net/inet/udp.h"
 
 #define	RIP_INFINITY	16
 #define	RIP_TTL		240	/* Default time-to-live for an entry */

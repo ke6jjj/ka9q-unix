@@ -5,12 +5,12 @@
 
 #include "global.h"
 #include <stdarg.h>
-#include "errno.h"
-#include "mbuf.h"
-#include "proc.h"
-#include "socket.h"
-#include "usock.h"
-#include "session.h"
+#include "lib/std/errno.h"
+#include "net/core/mbuf.h"
+#include "core/proc.h"
+#include "core/socket.h"
+#include "core/usock.h"
+#include "core/session.h"
 
 /* Higher-level receive routine, intended for connection-oriented sockets.
  * Can be used with datagram sockets, although the sender id is lost.
