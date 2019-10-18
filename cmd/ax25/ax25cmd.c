@@ -643,7 +643,7 @@ unproto_recv(struct unproto_session *us)
 	/* Process input on the connection */
 	from_len = sizeof(from_addr);
 	while ((read_len = krecvfrom(us->s, buf, 1024, 0, &from_addr, &from_len)) > 0) {
-		kprintf("received %d bytes", read_len);
+		kprintf("received %d bytes from %s\n", read_len ,psocket(&from_addr));
 		kfflush(kstdout);
 		from_len = sizeof(from_addr);
 	}
