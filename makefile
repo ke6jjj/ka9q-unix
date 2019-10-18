@@ -141,7 +141,9 @@ src.zip:
 	-pkzip -u src.zip makefile turboc.cfg dodeps.sh *.c *.h *.s
 
 clean:
+	$(RM) ka9q_net
 	$(RM) *.a
 	$(RM) *.o
+	$(RM) */*.o
 	$(RM) *.exe
 	$(RM) *.sym
