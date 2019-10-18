@@ -36,8 +36,9 @@ add_library(lib_std lib/std/stdio.c lib/std/errno.c lib/std/errlst.c)
 add_library(lib_smtp lib/smtp/rewrite.c)
 
 add_library(clients telnet.c cmd/ftpcli/ftpcli.c cmd/finger/finger.c
-  cmd/smtpcli/smtpcli.c cmd/inet/hop.c tip.c cmd/nntpcli/nntpcli.c
-  service/bootp/bootp.c cmd/popcli/popcli.c lterm.c cmd/sockcmd/sockcmd.c)
+  cmd/smtpcli/smtpcli.c cmd/inet/hop.c cmd/tip/tip.c cmd/nntpcli/nntpcli.c
+  service/bootp/bootp.c cmd/popcli/popcli.c cmd/lterm/lterm.c
+  cmd/sockcmd/sockcmd.c)
 
 add_library(servers service/ttylink/ttylink.c service/ftp/ftpserv.c
   service/smisc/smisc.c service/smtp/smtpserv.c service/fingerd/fingerd.c
@@ -88,8 +89,14 @@ add_library(netinet lib/ftp/ftpsubr.c files.c)
 add_library(lib_util lib/util/cmdparse.c lib/util/crc.c lib/util/getopt.c
   lib/util/md5c.c lib/util/misc.c lib/util/pathname.c lib/util/wildmat.c)
 
-add_library(dump net/ax25/kissdump.c net/ax25/ax25dump.c net/netrom/nrdump.c cmd/inet/ipdump.c cmd/inet/icmpdump.c cmd/inet/udpdump.c cmd/inet/tcpdump.c cmd/rip/ripdump.c)
-add_library(unix unix/ksubr_unix.c unix/timer_unix.c unix/display_crs.c unix/unix.c unix/dirutil_unix.c unix/ksubr_unix.c unix/unix_socket.c unix/asy_unix.c)
+add_library(dump net/ax25/kissdump.c net/ax25/ax25dump.c net/netrom/nrdump.c
+  cmd/inet/ipdump.c cmd/inet/icmpdump.c cmd/inet/udpdump.c cmd/inet/tcpdump.c
+  cmd/rip/ripdump.c)
+
+add_library(unix unix/ksubr_unix.c unix/timer_unix.c unix/display_crs.c
+  unix/unix.c unix/dirutil_unix.c unix/ksubr_unix.c unix/unix_socket.c
+  unix/asy_unix.c)
+
 add_library(core core/asy.c core/devparam.c core/kernel.c core/locsock.c
   core/session.c core/socket.c core/sockuser.c core/sockutil.c core/timer.c
   core/trace.c core/ttydriv.c)
@@ -104,8 +111,10 @@ if (HAVE_NET_IF_TUN_H)
 endif()
 
 add_executable(ka9q_net main.c config.c version.c)
-target_link_libraries(ka9q_net clients servers internet ax25 netrom ppp netinet dump unix)
-target_link_libraries(ka9q_net ppp sppp enet arp slip slhc lib_std lib_smtp core net_core lib_util)
+target_link_libraries(ka9q_net clients servers internet ax25 netrom ppp)
+target_link_libraries(ka9q_net netinet dump unix)
+target_link_libraries(ka9q_net ppp sppp enet arp slip slhc lib_std lib_smtp)
+target_link_libraries(ka9q_net core net_core lib_util)
 target_link_libraries(ka9q_net ${CURSES_LIBRARIES} ${CMAKE_THREAD_LIBS_INIT})
 if (HAVE_NET_IF_TAP_H)
   target_link_libraries(ka9q_net tap)
