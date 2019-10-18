@@ -55,18 +55,18 @@ add_library(internet cmd/inet/tcpcmd.c net/inet/tcpsock.c net/inet/tcpuser.c
   net/inet/sim.c)
 
 # add_library(ipsec ipsec.c esp.c deskey.c des3port.c desport.c desspa.c ah.c)
-add_library(ax25 net/ax25/ax25cmd.c net/ax25/axsock.c net/ax25/ax25user.c
+add_library(ax25 cmd/ax25/ax25cmd.c net/ax25/axsock.c net/ax25/ax25user.c
   net/ax25/ax25.c net/ax25/axheard.c net/ax25/lapbtime.c net/ax25/lapb.c
   net/ax25/kiss.c net/ax25/ax25subr.c net/ax25/ax25hdr.c net/ax25/ax25mail.c
   net/ax25/axip.c)
 
-add_library(netrom net/netrom/nrcmd.c net/netrom/nrsock.c
+add_library(netrom cmd/netrom/nrcmd.c net/netrom/nrsock.c
   net/netrom/nr4user.c net/netrom/nr4timer.c net/netrom/nr4.c
   net/netrom/nr4subr.c net/netrom/nr4hdr.c net/netrom/nr3.c
   net/netrom/nrs.c net/netrom/nrhdr.c net/netrom/nr4mail.c)
 
 # Asynchronous PPP support
-add_library(ppp net/ppp/ppp.c net/ppp/pppcmd.c net/ppp/pppfsm.c
+add_library(ppp net/ppp/ppp.c cmd/ppp/pppcmd.c net/ppp/pppfsm.c
   net/ppp/ppplcp.c net/ppp/ppppap.c net/ppp/pppipcp.c cmd/pppdump/pppdump.c)
 
 # SLHC - TCP/IP header compression (used in PPP, SPPP)
@@ -79,7 +79,7 @@ add_library(slip net/slip/slip.c)
 add_library(sppp net/sppp/sppp.c net/sppp/ahdlc.c)
 
 # ARP
-add_library(arp net/arp/arp.c net/arp/arpcmd.c net/arp/arpdump.c net/arp/arphdr.c)
+add_library(arp net/arp/arp.c cmd/arp/arpcmd.c net/arp/arpdump.c net/arp/arphdr.c)
 
 # Ethernet networking
 add_library(enet net/enet/enet.c net/enet/enetdump.c)
