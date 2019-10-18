@@ -6,7 +6,6 @@
 #error "Don't build this with HAVE_FUNOPEN. Use system formatter instead."
 #endif
 
-#include <libc/stubs.h>
 #include <sys/types.h>
 #include <stdarg.h>
 #include <ctype.h>
@@ -35,15 +34,15 @@ static char decimal = '.';
 	    flags&SHORTINT ? (short basetype)va_arg(argp, int) : \
 	    va_arg(argp, int)
 
-static int nan = 0;
+static int ka9q_nan = 0;
 
-static __inline__ int todigit(char c)
+static __inline__ int ka9q_todigit(char c)
 {
   if (c<='0') return 0;
   if (c>='9') return 9;
   return c-'0';
 }
-static __inline__ char tochar(int n)
+static __inline__ char ka9q_tochar(int n)
 {
   if (n>=9) return '9';
   if (n<=0) return '0';
@@ -60,14 +59,12 @@ static __inline__ char tochar(int n)
 #define	ZEROPAD		0x20		/* zero (as opposed to blank) pad */
 #define	HEXPREFIX	0x40		/* add 0x or 0X prefix */
 
-static cvtl(long double number, int prec, int flags, char *signp,
+static int ka9q_cvtl(long double number, int prec, int flags, char *signp,
 	    unsigned char fmtch, char *startp, char *endp);
-static char *roundl(long double fract, int *expv, char *start, char *end,
+static char *ka9q_roundl(long double fract, int *expv, char *start, char *end,
 		    char ch, char *signp);
-static char *exponentl(char *p, int expv, unsigned char fmtch);
-#ifdef __GO32__
-static int isspeciall(long double d, char *bufp);
-#endif
+static char *ka9q_exponentl(char *p, int expv, unsigned char fmtch);
+static int ka9q_isspeciall(long double d, char *bufp);
 
 static char NULL_REP[] = "(null)";
 
@@ -155,7 +152,7 @@ _format(
       {
 	n = 0;
 	while (isascii(*fmt) && isdigit(*fmt))
-	  n = 10 * n + todigit(*fmt++);
+	  n = 10 * n + ka9q_todigit(*fmt++);
 	--fmt;
       }
       prec = n < 0 ? -1 : n;
@@ -172,7 +169,7 @@ _format(
     case '5': case '6': case '7': case '8': case '9':
       n = 0;
       do {
-	n = 10 * n + todigit(*fmt);
+	n = 10 * n + ka9q_todigit(*fmt);
       } while (isascii(*++fmt) && isdigit(*fmt));
       width = n;
       --fmt;
@@ -246,12 +243,12 @@ _format(
        * buffer, i.e. ``intf("%.2f", (double)9.999);'';
        * if the first char isn't NULL, it did.
        */
-      *buf = NULL;
-      size = cvtl(_ldouble, prec, flags, &softsign, *fmt, buf,
+      buf[0] = 0;
+      size = ka9q_cvtl(_ldouble, prec, flags, &softsign, *fmt, buf,
 		  buf + sizeof(buf));
-      if (softsign && !nan)
+      if (softsign && !ka9q_nan)
 	sign = '-';
-      nan = 0;
+      ka9q_nan = 0;
       t = *buf ? buf : buf + 1;
       goto pforw;
     case 'n':
@@ -330,8 +327,7 @@ _format(
        * specified, the 0 flag will be ignored.''
        *	-- ANSI X3J11
        */
-    number:			if ((dprec = prec) >= 0)
-      flags &= ~ZEROPAD;
+    number:			if ((dprec = prec) >= 0) { flags &= ~ZEROPAD; }
 
       /*
        * ``The result of converting a zero value with an
@@ -447,7 +443,7 @@ static long double PREC = 1.0L/P;
 /* #define FAST_LDOUBLE_CONVERSION */
 
 static int
-cvtl(long double number, int prec, int flags, char *signp, unsigned char fmtch,
+ka9q_cvtl(long double number, int prec, int flags, char *signp, unsigned char fmtch,
      char *startp, char *endp)
 {
   char *p, *t;
@@ -455,7 +451,7 @@ cvtl(long double number, int prec, int flags, char *signp, unsigned char fmtch,
   int dotrim, expcnt, gformat;
   long double integer, tmp;
 
-  if ((expcnt = isspeciall(number, startp)))
+  if ((expcnt = ka9q_isspeciall(number, startp)))
     return(expcnt);
 
   dotrim = expcnt = gformat = 0;
@@ -508,7 +504,7 @@ cvtl(long double number, int prec, int flags, char *signp, unsigned char fmtch,
   for (; integer; ++expcnt)
   {
     tmp = modfl(integer * 0.1L , &integer);
-    *p-- = tochar((int)((tmp + .01L) * 10));
+    *p-- = ka9q_tochar((int)((tmp + .01L) * 10));
   }
   switch(fmtch)
   {
@@ -530,10 +526,10 @@ cvtl(long double number, int prec, int flags, char *signp, unsigned char fmtch,
       if (prec)
 	do {
 	  fract = modfl(fract * 10.0L, &tmp);
-	  *t++ = tochar((int)tmp);
+	  *t++ = ka9q_tochar((int)tmp);
 	} while (--prec && fract);
       if (fract)
-	startp = roundl(fract, (int *)NULL, startp,
+	startp = ka9q_roundl(fract, (int *)NULL, startp,
 			t - 1, (char)0, signp);
     }
     for (; prec--; *t++ = '0');
@@ -557,7 +553,7 @@ cvtl(long double number, int prec, int flags, char *signp, unsigned char fmtch,
       if (!prec && ++p < endp)
       {
 	fract = 0;
-	startp = roundl((long double)0.0L, &expcnt,
+	startp = ka9q_roundl((long double)0.0L, &expcnt,
 			startp, t - 1, *p, signp);
       }
       /* adjust expcnt for digit in front of decimal */
@@ -600,7 +596,7 @@ cvtl(long double number, int prec, int flags, char *signp, unsigned char fmtch,
 	if (tmp)
 	  break;
       }
-      *t++ = tochar((int)tmp);
+      *t++ = ka9q_tochar((int)tmp);
       if (prec || flags&ALT)
 	*t++ = decimal;
     }
@@ -616,10 +612,10 @@ cvtl(long double number, int prec, int flags, char *signp, unsigned char fmtch,
       if (prec)
 	do {
 	  fract = modfl(fract * 10.0L, &tmp);
-	  *t++ = tochar((int)tmp);
+	  *t++ = ka9q_tochar((int)tmp);
 	} while (--prec && fract);
       if (fract)
-	startp = roundl(fract, &expcnt, startp,
+	startp = ka9q_roundl(fract, &expcnt, startp,
 			t - 1, (char)0, signp);
     }
     /* if requires more precision */
@@ -633,7 +629,7 @@ cvtl(long double number, int prec, int flags, char *signp, unsigned char fmtch,
 	--t;
       ++t;
     }
-    t = exponentl(t, expcnt, fmtch);
+    t = ka9q_exponentl(t, expcnt, fmtch);
     break;
   case 'g':
   case 'G':
@@ -683,11 +679,11 @@ cvtl(long double number, int prec, int flags, char *signp, unsigned char fmtch,
     while (prec && fract)
     {
       fract = modfl(fract * 10.0L, &tmp);
-      *t++ = tochar((int)tmp);
+      *t++ = ka9q_tochar((int)tmp);
       prec--;
     }
     if (fract)
-      startp = roundl(fract, (int *)NULL, startp, t - 1,
+      startp = ka9q_roundl(fract, (int *)NULL, startp, t - 1,
 		      (char)0, signp);
     /* alternate format, adds 0's for precision, else trim 0's */
     if (flags&ALT)
@@ -703,7 +699,7 @@ cvtl(long double number, int prec, int flags, char *signp, unsigned char fmtch,
 }
 
 static char *
-roundl(long double fract, int *expv, char *start, char *end, char ch,
+ka9q_roundl(long double fract, int *expv, char *start, char *end, char ch,
        char *signp)
 {
   long double tmp;
@@ -725,7 +721,7 @@ roundl(long double fract, int *expv, char *start, char *end, char ch,
     (void)modfl(fract * 10.0L, &tmp);
   }
   else
-    tmp = todigit(ch);
+    tmp = ka9q_todigit(ch);
  start:
   if (tmp > 4)
     for (;; --end)
@@ -765,7 +761,7 @@ roundl(long double fract, int *expv, char *start, char *end, char ch,
 }
 
 static char *
-exponentl(char *p, int expv, unsigned char fmtch)
+ka9q_exponentl(char *p, int expv, unsigned char fmtch)
 {
   char *t;
   char expbuf[MAXEXPLD];
@@ -782,21 +778,21 @@ exponentl(char *p, int expv, unsigned char fmtch)
   if (expv > 9)
   {
     do {
-      *--t = tochar(expv % 10);
+      *--t = ka9q_tochar(expv % 10);
     } while ((expv /= 10) > 9);
-    *--t = tochar(expv);
+    *--t = ka9q_tochar(expv);
     for (; t < expbuf + MAXEXPLD; *p++ = *t++);
   }
   else
   {
     *p++ = '0';
-    *p++ = tochar(expv);
+    *p++ = ka9q_tochar(expv);
   }
   return p;
 }
 
 static int
-isspeciall(long double d, char *bufp)
+ka9q_isspeciall(long double d, char *bufp)
 {
   struct IEEExp {
     unsigned manl:32;
@@ -805,13 +801,13 @@ isspeciall(long double d, char *bufp)
     unsigned sign:1;
   } *ip = (struct IEEExp *)&d;
 
-  nan = 0;  /* don't assume the static is 0 (emacs) */
+  ka9q_nan = 0;  /* don't assume the static is 0 (emacs) */
   if (ip->exp != 0x7fff)
     return(0);
   if ((ip->manh & 0x7fffffff) || ip->manl)
   {
     strcpy(bufp, "NaN");
-    nan = 1;			/* kludge: we don't need the sign,  it's not nice
+    ka9q_nan = 1;		/* kludge: we don't need the sign,  it's not nice
 				   but it should work */
   }
   else

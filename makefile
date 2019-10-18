@@ -10,6 +10,7 @@ CFLAGS= -g -DHOST_BSD -Werror -Wno-int-to-void-pointer-cast -O3 -I.
 # This was enabled by default, maintain backwards compatibility for now
 CFLAGS+= -DHAVE_NET_IF_TAP_H
 CFLAGS+= -DHAVE_NET_IF_TUN_H
+CFLAGS+= -DHAVE_FUNOPEN
 LFLAGS= -lcurses
 
 # List of libraries
