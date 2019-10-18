@@ -12,7 +12,6 @@ CFLAGS+= -DHAVE_NET_IF_TAP_H
 CFLAGS+= -DHAVE_NET_IF_TUN_H
 LFLAGS= -lcurses
 
-
 # List of libraries
 
 LIBS = clients.a servers.a internet.a \
@@ -24,47 +23,52 @@ LIBS = clients.a servers.a internet.a \
 # UNIX: mbuf audit is very DOS/malloc specific NET(audit.o)
 # UNIX: alloc routines are not UNIX compatible NET(alloc.o)
 # UNIX: NET(format.o). Not for HAVE_FUNOPEN.
-CLIENTS= telnet.o cmd/ftpcli/ftpcli.o cmd/finger/finger.o cmd/smtpcli/smtpcli.o cmd/inet/hop.o tip.o \
-	cmd/nntpcli/nntpcli.o service/bootp/bootp.o cmd/popcli/popcli.o lterm.o
+CLIENTS= telnet.o cmd/ftpcli/ftpcli.o cmd/finger/finger.o cmd/smtpcli/smtpcli.o \
+	cmd/inet/hop.o cmd/tip/tip.o cmd/nntpcli/nntpcli.o \
+	service/bootp/bootp.o cmd/popcli/popcli.o cmd/lterm/lterm.o
 
-SERVERS= ttylink.o service/ftp/ftpserv.o service/smisc/smisc.o service/smtp/smtpserv.o \
-	service/fingerd/fingerd.o mailbox.o rewrite.o bmutil.o forward.o tipmail.o \
-	service/bootpd/bootpd.o service/bootpd/bootpdip.o cmd/bootpcmd/bootpcmd.o service/pop/popserv.o tnserv.o
+SERVERS= service/ttylink/ttylink.o service/ftp/ftpserv.o service/smisc/smisc.o \
+	service/smtp/smtpserv.o service/fingerd/fingerd.o mailbox.o \
+	lib/smtp/rewrite.o bmutil.o forward.o tipmail.o \
+	service/bootpd/bootpd.o service/bootpd/bootpdip.o \
+	cmd/bootpcmd/bootpcmd.o service/pop/popserv.o service/telnetd/tnserv.o
 
 INTERNET= cmd/inet/tcpcmd.o net/inet/tcpsock.o net/inet/tcpuser.o \
-	net/inet/tcptimer.o net/inet/tcpout.o net/inet/tcpin.o net/inet/tcpsubr.o net/inet/tcphdr.o \
-	cmd/inet/udpcmd.o net/inet/udpsock.o net/inet/udp.o net/inet/udphdr.o \
-	net/dns/domain.o net/dns/domhdr.o \
-	cmd/rip/ripcmd.o service/rip/rip.o \
-	cmd/inet/ipcmd.o net/inet/ipsock.o net/inet/ip.o net/inet/iproute.o net/inet/iphdr.o \
-	cmd/inet/icmpcmd.o net/inet/ping.o net/inet/icmp.o net/inet/icmpmsg.o net/inet/icmphdr.o \
-	net/arp/arpcmd.o net/arp/arp.o net/arp/arphdr.o \
-	lib/inet/netuser.o net/inet/sim.o
+	net/inet/tcptimer.o net/inet/tcpout.o net/inet/tcpin.o \
+	net/inet/tcpsubr.o net/inet/tcphdr.o cmd/inet/udpcmd.o \
+	net/inet/udpsock.o net/inet/udp.o net/inet/udphdr.o \
+	net/dns/domain.o net/dns/domhdr.o cmd/rip/ripcmd.o service/rip/rip.o \
+	cmd/inet/ipcmd.o net/inet/ipsock.o net/inet/ip.o net/inet/iproute.o \
+	net/inet/iphdr.o cmd/inet/icmpcmd.o net/inet/ping.o net/inet/icmp.o \
+	net/inet/icmpmsg.o net/inet/icmphdr.o cmd/arp/arpcmd.o net/arp/arp.o \
+	net/arp/arphdr.o lib/inet/netuser.o net/inet/sim.o
 
 IPSEC=	ipsec.o esp.o deskey.o des3port.o desport.o desspa.o ah.o
 
-AX25=	net/ax25/ax25cmd.o net/ax25/axsock.o net/ax25/ax25user.o net/ax25/ax25.o \
-	net/ax25/axheard.o net/ax25/lapbtime.o net/ax25/lapb.o \
-	net/ax25/kiss.o net/ax25/ax25subr.o net/ax25/ax25hdr.o \
-	net/ax25/ax25mail.o net/ax25/axip.o
+AX25=	cmd/ax25/ax25cmd.o net/ax25/axsock.o net/ax25/ax25user.o \
+	net/ax25/ax25.o net/ax25/axheard.o net/ax25/lapbtime.o \
+	net/ax25/lapb.o net/ax25/kiss.o net/ax25/ax25subr.o \
+	net/ax25/ax25hdr.o net/ax25/ax25mail.o net/ax25/axip.o
 
-NETROM=	net/netrom/nrcmd.o net/netrom/nrsock.o net/netrom/nr4user.o \
+NETROM=	cmd/netrom/nrcmd.o net/netrom/nrsock.o net/netrom/nr4user.o \
 	net/netrom/nr4timer.o net/netrom/nr4.o net/netrom/nr4subr.o \
 	net/netrom/nr4hdr.o net/netrom/nr3.o net/netrom/nrs.o \
 	net/netrom/nrhdr.o net/netrom/nr4mail.o
 
-PPP=	asy.o unix/asy_unix.o net/ppp/ppp.o net/ppp/pppcmd.o net/ppp/pppfsm.o \
+PPP=	core/asy.o unix/asy_unix.o net/ppp/ppp.o cmd/ppp/pppcmd.o net/ppp/pppfsm.o \
 	net/ppp/ppplcp.o net/ppp/ppppap.o net/ppp/pppipcp.o cmd/pppdump/pppdump.o \
 	net/slhc/slhc.o cmd/slhcdump/slhcdump.o net/slip/slip.o net/sppp/sppp.o
 
-NET=	lib/ftp/ftpsubr.o sockcmd.o sockuser.o locsock.o socket.o \
-	sockutil.o iface.o timer.o ttydriv.o cmdparse.o \
-	mbuf.o lib/util/misc.o lib/util/pathname.o files.o \
-	kernel.o lib/util/wildmat.o \
-	devparam.o lib/std/stdio.o net/sppp/ahdlc.o lib/util/crc.o lib/util/md5c.o lib/std/errno.o \
-	lib/std/errlst.o lib/util/getopt.o
+NET=	lib/ftp/ftpsubr.o cmd/sockcmd/sockcmd.o core/sockuser.o \
+	core/locsock.o core/socket.o core/sockutil.o net/core/iface.o \
+	core/timer.o core/ttydriv.o lib/util/cmdparse.o \
+	net/core/mbuf.o lib/util/misc.o lib/util/pathname.o files.o \
+	core/kernel.o lib/util/wildmat.o \
+	core/devparam.o lib/std/stdio.o net/sppp/ahdlc.o lib/util/crc.o \
+	lib/util/md5c.o lib/std/errno.o lib/std/errlst.o lib/util/getopt.o \
+	core/session.o
 
-DUMP= 	trace.o net/enet/enetdump.o \
+DUMP= 	core/trace.o net/enet/enetdump.o \
 	net/ax25/kissdump.o net/ax25/ax25dump.o net/arp/arpdump.o \
 	net/netrom/nrdump.o cmd/inet/ipdump.o cmd/inet/icmpdump.o cmd/inet/udpdump.o cmd/inet/tcpdump.o cmd/rip/ripdump.o
 
@@ -80,8 +84,9 @@ all:	ka9q_net
 debug:	ka9q_net
 	gdb ka9q_net
 
-ka9q_net: main.o config.o version.o session.o $(LIBS)
-	$(CC) $(LFLAGS) -o $@ main.o config.o version.o session.o $(LIBS)
+ka9q_net: main.o config.o version.o $(LIBS)
+
+	$(CC) $(LFLAGS) -o $@ main.o config.o version.o $(LIBS)
 
 mkpass.exe: mkpass.o md5c.o
 	$(CC) $(MODEL) -emkpass $**
