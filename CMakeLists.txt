@@ -6,6 +6,8 @@ project (ka9q)
 set(CMAKE_C_FLAGS "-DHOST_BSD -Wall")
 
 INCLUDE(CheckIncludeFiles)
+include(CheckFunctionExists)
+
 
 set(X_CMAKE_SYSTEM_NAME ${CMAKE_SYSTEM_NAME})
 
@@ -19,6 +21,9 @@ else()
   CHECK_INCLUDE_FILES(net/if_tap.h HAVE_NET_IF_TAP_H)
   CHECK_INCLUDE_FILES(net/if_tun.h HAVE_NET_IF_TUN_H)
 endif()
+
+CHECK_FUNCTION_EXISTS (srandomdev HAVE_SRANDOMDEV)
+CHECK_FUNCTION_EXISTS (funopen HAVE_FUNOPEN)
 
 configure_file(${CMAKE_CURRENT_LIST_DIR}/cmake_config.h.in
   ${CMAKE_CURRENT_BINARY_DIR}/cmake_config.h)
@@ -34,6 +39,9 @@ find_package(Threads REQUIRED)
 
 add_library(lib_std lib/std/stdio.c lib/std/errno.c lib/std/errlst.c)
 add_library(lib_smtp lib/smtp/rewrite.c)
+if (NOT HAVE_FUNOPEN)
+add_library(lib_std_format lib/std/format.c)
+endif()
 
 add_library(clients telnet.c cmd/ftpcli/ftpcli.c cmd/finger/finger.c
   cmd/smtpcli/smtpcli.c cmd/inet/hop.c cmd/tip/tip.c cmd/nntpcli/nntpcli.c
@@ -121,4 +129,8 @@ if (HAVE_NET_IF_TAP_H)
 endif()
 if (HAVE_NET_IF_TUN_H)
   target_link_libraries(ka9q_net tun)
+endif()
+
+if (NOT HAVE_FUNOPEN)
+  target_link_libraries(ka9q_net lib_std_format)
 endif()
