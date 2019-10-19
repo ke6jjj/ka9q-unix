@@ -633,7 +633,7 @@ unproto_output(int unused, void *tn1, void *p)
 	us = tn1;
 	sp = us->sp;
 
-        /* Send whatever's typed on the terminal */
+	/* Send whatever's typed on the terminal */
 	while ((s = kfgets(buf, 1023, kstdin)) != NULL) {
 		if (kfeof(kstdin)) {
 			kprintf("%s: Hit EOF on stdin\n", __func__);
@@ -694,28 +694,28 @@ unproto_recv(struct unproto_session *us)
 	freesession(&sp);
 }
 
-int
+static int
 unproto_connect(struct session *sp, struct ksockaddr *fsocket,int len)
 {
-        struct unproto_session us;
+	struct unproto_session us;
 
-        memset(&us,0,sizeof(us));
-        us.sp = sp;	/* Upward pointer */
-        sp->cb.p = &us;		/* Downward pointer */
+	memset(&us,0,sizeof(us));
+	us.sp = sp;	/* Upward pointer */
+	sp->cb.p = &us;		/* Downward pointer */
 
-        kprintf("Trying %s...\n",psocket(fsocket));
-        if(kconnect(sp->network_fd, fsocket, len) == -1){
-                kperror("connect failed");
-                keywait(NULL,1);
+	kprintf("Trying %s...\n",psocket(fsocket));
+	if(kconnect(sp->network_fd, fsocket, len) == -1){
+		kperror("connect failed");
+		keywait(NULL,1);
 		kclose(sp->network_fd);
 		sp->network_fd = -1;
-                freesession(&sp);
-                return 1;
-        }
-        kprintf("Connected to %s\n", psocket(fsocket));
-        sp->inproc = NULL;      /* No longer respond to ^C */   
-        unproto_recv(&us);
-        return 0;
+		freesession(&sp);
+		return 1;
+	}
+	kprintf("Connected to %s\n", psocket(fsocket));
+	sp->inproc = NULL;      /* No longer respond to ^C */   
+	unproto_recv(&us);
+	return 0;
 }
 
 
@@ -772,5 +772,6 @@ do_unproto_connect(int argc,char *argv[], void *p)
 	}
 	sp->network_fd = s;
 	kprintf("Socket creation ok! (%d)\n", s);
-	return unproto_connect(sp, (struct ksockaddr *)&fsocket, sizeof(struct ksockaddr_ax));
+	return unproto_connect(sp, (struct ksockaddr *)&fsocket,
+	    sizeof(struct ksockaddr_ax));
 }
