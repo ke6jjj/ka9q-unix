@@ -637,16 +637,19 @@ unproto_output(int unused, void *tn1, void *p)
         /* Send whatever's typed on the terminal */
 	while ((s = kfgets(buf, 1023, kstdin)) != NULL) {
 		if (kfeof(kstdin)) {
+			kprintf("%s: Hit EOF on stdin\n", __func__);
 			break;
 		}
 
-		/* XXX TODO: write in a loop until all is sent? */
-		ret = ksend(us->s, buf, strlen(buf), 0);
-		if (ret <= 0)
+		ret = ksendto(us->s, buf, strlen(buf), 0, NULL, 0);
+		if (ret < 0) {
+			kprintf("%s: ksendto fail: ret=%d\n", __func__, ret);
 			break;
+		}
 	}
 	kprintf("Done!\n");
 	/* Make sure our parent doesn't try to kill us after we exit */
+	// Signal the receiver side we're done? eg close us->s ?
 	sp->proc1 = NULL;
 }
 
@@ -701,14 +704,14 @@ unproto_connect(struct session *sp, int s, struct ksockaddr *fsocket,int len)
         sp->cb.p = &us;		/* Downward pointer */
 
         kprintf("Trying %s...\n",psocket(fsocket));
-        if(kconnect(s,fsocket,len) == -1){
+        if(kconnect(s, fsocket, len) == -1){
                 kperror("connect failed");
                 keywait(NULL,1);
                 freesession(&sp);
 		kclose(s);
                 return 1;
         }
-        kprintf("Connected\n");
+        kprintf("Connected to %s\n", psocket(fsocket));
         sp->inproc = NULL;      /* No longer respond to ^C */   
         unproto_recv(&us);
         return 0;
