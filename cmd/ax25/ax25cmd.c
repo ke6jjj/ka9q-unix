@@ -622,6 +622,34 @@ struct unproto_session {
 	int s;	/* Remote socket, for unproto datagrams */
 };
 
+void
+unproto_output(int unused, void *tn1, void *p)
+{
+	struct session *sp;
+	struct unproto_session *us;
+	char buf[1024];
+	char *s;
+	int ret;
+
+	us = tn1;
+	sp = us->sp;
+
+        /* Send whatever's typed on the terminal */
+	while ((s = kfgets(buf, 1023, kstdin)) != NULL) {
+		if (kfeof(kstdin)) {
+			break;
+		}
+
+		/* XXX TODO: write in a loop until all is sent? */
+		ret = ksend(us->s, buf, strlen(buf), 0);
+		if (ret <= 0)
+			break;
+	}
+	kprintf("Done!\n");
+	/* Make sure our parent doesn't try to kill us after we exit */
+	sp->proc1 = NULL;
+}
+
 static void
 unproto_recv(struct unproto_session *us)
 {
@@ -631,16 +659,15 @@ unproto_recv(struct unproto_session *us)
 	int from_len;
 	int read_len;
 
-        sp = us->sp;
+	sp = us->sp;
 
-#if 0
-        /* Fork off the transmit process */
-        sp->proc1 = newproc("tel_out",1024,tel_output,0,tn,NULL,0);
-#endif
+	/* Fork off the transmit process */
+	sp->proc1 = newproc("unproto_out",1024,unproto_output,0,us,NULL,0);
 
 	/* TODO: need to convert this to use krecvfrom() for the whole packet */
 
 	/* Process input on the connection */
+	kprintf("%s; started (socket %d)\n", __func__, us->s);
 	from_len = sizeof(from_addr);
 	while ((read_len = krecvfrom(us->s, buf, 1024, 0, &from_addr, &from_len)) > 0) {
 		kprintf("received %d bytes from %s\n", read_len ,psocket(&from_addr));
@@ -653,6 +680,7 @@ unproto_recv(struct unproto_session *us)
 	 * Notify the user, kill the output task and wait for a response
 	 * from the user before freeing the session.
 	 */
+	kprintf("%s: finished!\n", __func__);
 	kfmode(sp->output,STREAM_ASCII); /* Restore newline translation */
 	ksetvbuf(sp->output,NULL,_kIOLBF,kBUFSIZ);
 	/* XXX TODO: log whether it was EOF or not */
@@ -661,42 +689,6 @@ unproto_recv(struct unproto_session *us)
 	keywait(NULL,1);
 	freesession(&sp);
 }
-
-#if 0
-void
-unproto_output(unused,tn1,p)
-int unused;
-void *tn1;
-void *p;
-{
-        struct session *sp;
-        int c;
-        struct telnet *tn;
-
-        tn = (struct telnet *)tn1;
-        sp = tn->session;
-
-        /* Send whatever's typed on the terminal */
-        while((c = kgetc(sp->input)) != kEOF){
-                kputc(c,sp->network);
-                if(!tn->remote[TN_ECHO] && sp->record != NULL)
-                        kputc(c,sp->record);
-
-                /* By default, output is transparent in remote echo mode.
-                 * If eolmode is set, turn a cr into cr-null.
-                 * This can only happen when in remote echo (raw) mode, since
-                 * the tty driver normally maps \r to \n in cooked mode.
-                 */
-                if(c == '\r' && tn->eolmode)
-                        kputc('\0',sp->network);
-
-                if(tn->remote[TN_ECHO])
-                        kfflush(sp->network);
-        }
-        /* Make sure our parent doesn't try to kill us after we exit */
-        sp->proc1 = NULL;
-}
-#endif
 
 int
 unproto_connect(struct session *sp, int s, struct ksockaddr *fsocket,int len)
@@ -774,5 +766,6 @@ do_unproto_connect(int argc,char *argv[], void *p)
 		kclose(s);
 		return 1;
 	}
+	kprintf("Socket creation ok! (%d)\n", s);
 	return unproto_connect(sp, s, (struct ksockaddr *)&fsocket, sizeof(struct ksockaddr_ax));
 }
