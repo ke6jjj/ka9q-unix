@@ -619,7 +619,6 @@ int c;
 
 struct unproto_session {
 	struct session *sp;
-	int s;	/* Remote socket, for unproto datagrams */
 };
 
 void
@@ -640,8 +639,9 @@ unproto_output(int unused, void *tn1, void *p)
 			kprintf("%s: Hit EOF on stdin\n", __func__);
 			break;
 		}
+		kprintf("--> %s", buf);
 
-		ret = ksendto(us->s, buf, strlen(buf), 0, NULL, 0);
+		ret = ksendto(sp->network_fd, buf, strlen(buf), 0, NULL, 0);
 		if (ret < 0) {
 			kprintf("%s: ksendto fail: ret=%d\n", __func__, ret);
 			break;
@@ -649,7 +649,7 @@ unproto_output(int unused, void *tn1, void *p)
 	}
 	kprintf("Done!\n");
 	/* Make sure our parent doesn't try to kill us after we exit */
-	// Signal the receiver side we're done? eg close us->s ?
+	/* Signal the receiver side we're done? eg close sp->network_fd ? */
 	sp->proc1 = NULL;
 }
 
@@ -667,13 +667,13 @@ unproto_recv(struct unproto_session *us)
 	/* Fork off the transmit process */
 	sp->proc1 = newproc("unproto_out",1024,unproto_output,0,us,NULL,0);
 
-	/* TODO: need to convert this to use krecvfrom() for the whole packet */
-
 	/* Process input on the connection */
-	kprintf("%s; started (socket %d)\n", __func__, us->s);
+	kprintf("%s; started (socket %d)\n", __func__, sp->network_fd);
 	from_len = sizeof(from_addr);
-	while ((read_len = krecvfrom(us->s, buf, 1024, 0, &from_addr, &from_len)) > 0) {
-		kprintf("received %d bytes from %s\n", read_len ,psocket(&from_addr));
+	while ((read_len = krecvfrom(sp->network_fd, buf, 1023, 0,
+	    &from_addr, &from_len)) > 0) {
+		buf[read_len] = '\0';
+		kprintf("%s> %s\n", psocket(&from_addr), buf);
 		kfflush(kstdout);
 		from_len = sizeof(from_addr);
 	}
@@ -688,27 +688,28 @@ unproto_recv(struct unproto_session *us)
 	ksetvbuf(sp->output,NULL,_kIOLBF,kBUFSIZ);
 	/* XXX TODO: log whether it was EOF or not */
 	killproc(&sp->proc1);
-	kclose(us->s);
+	kclose(sp->network_fd);
+	sp->network_fd = -1;
 	keywait(NULL,1);
 	freesession(&sp);
 }
 
 int
-unproto_connect(struct session *sp, int s, struct ksockaddr *fsocket,int len)
+unproto_connect(struct session *sp, struct ksockaddr *fsocket,int len)
 {
         struct unproto_session us;
 
         memset(&us,0,sizeof(us));
         us.sp = sp;	/* Upward pointer */
-	us.s = s;
         sp->cb.p = &us;		/* Downward pointer */
 
         kprintf("Trying %s...\n",psocket(fsocket));
-        if(kconnect(s, fsocket, len) == -1){
+        if(kconnect(sp->network_fd, fsocket, len) == -1){
                 kperror("connect failed");
                 keywait(NULL,1);
+		kclose(sp->network_fd);
+		sp->network_fd = -1;
                 freesession(&sp);
-		kclose(s);
                 return 1;
         }
         kprintf("Connected to %s\n", psocket(fsocket));
@@ -769,6 +770,7 @@ do_unproto_connect(int argc,char *argv[], void *p)
 		kclose(s);
 		return 1;
 	}
+	sp->network_fd = s;
 	kprintf("Socket creation ok! (%d)\n", s);
-	return unproto_connect(sp, s, (struct ksockaddr *)&fsocket, sizeof(struct ksockaddr_ax));
+	return unproto_connect(sp, (struct ksockaddr *)&fsocket, sizeof(struct ksockaddr_ax));
 }
