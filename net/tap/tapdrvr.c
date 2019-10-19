@@ -1,7 +1,7 @@
 /* Driver for BSD user-mode "TAP" Ethernet devices.
  * Copyright 2018 Jeremy Cooper.
  */
-#include "../../top.h"
+#include "top.h"
 
 #include <sys/types.h>
 #include <sys/uio.h>
@@ -12,20 +12,20 @@
 #include <fcntl.h>
 #include <errno.h>
 
-#include "../../stdio.h"
-#include "../../global.h"
-#include "../../proc.h"
-#include "../../mbuf.h"
-#include "../../iface.h"
-#include "../../trace.h"
-#include "../../config.h"
+#include "lib/std/stdio.h"
+#include "global.h"
+#include "core/proc.h"
+#include "net/core/mbuf.h"
+#include "net/core/iface.h"
+#include "core/trace.h"
+#include "config.h"
 
-#include "../enet/enet.h"
-#include "../arp/arp.h"
-#include "../../lib/inet/netuser.h"
-#include "../../unix/nosunix.h"
+#include "net/enet/enet.h"
+#include "net/arp/arp.h"
+#include "lib/inet/netuser.h"
+#include "unix/nosunix.h"
 
-#include "tapdrvr.h"
+#include "net/tap/tapdrvr.h"
 
 /* Maximum number of fragments to tolerate in an outgoing packet */
 #define MAX_FRAGS	10
