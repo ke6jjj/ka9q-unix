@@ -107,7 +107,7 @@ add_library(unix unix/ksubr_unix.c unix/timer_unix.c unix/display_crs.c
 add_library(core core/asy.c core/devparam.c core/kernel.c core/locsock.c
   core/session.c core/socket.c core/sockuser.c core/sockutil.c core/timer.c
   core/trace.c core/ttydriv.c)
-add_library(net_core net/core/iface.c net/core/mbuf.c)
+add_library(net_core net/core/iface.c net/core/mbuf.c cmd/net/iface.c)
 
 if (HAVE_NET_IF_TAP_H)
   add_library(tap net/tap/tapdrvr.c)
