@@ -714,6 +714,7 @@ unproto_connect(struct session *sp, struct ksockaddr *fsocket,int len)
 		return 1;
 	}
 	kprintf("Connected to %s\n", psocket(fsocket));
+	CLEARSIG(kEABORT);
 	sp->inproc = NULL;      /* No longer respond to ^C */   
 	unproto_recv(&us);
 	return 0;
