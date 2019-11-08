@@ -634,8 +634,8 @@ unproto_output(int unused, void *tn1, void *p)
 	sp = us->sp;
 
 	/* Send whatever's typed on the terminal */
-	while ((s = kfgets(buf, 1023, kstdin)) != NULL) {
-		if (kfeof(kstdin)) {
+	while ((s = kfgets(buf, 1023, sp->input)) != NULL) {
+		if (kfeof(sp->input)) {
 			kprintf("%s: Hit EOF on stdin\n", __func__);
 			break;
 		}
