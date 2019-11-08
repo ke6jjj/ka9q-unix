@@ -704,6 +704,7 @@ unproto_connect(struct session *sp, struct ksockaddr *fsocket,int len)
 	sp->cb.p = &us;		/* Downward pointer */
 
 	kprintf("Trying %s...\n",psocket(fsocket));
+	sp->inproc = keychar;	/* Intercept ^C */
 	if(kconnect(sp->network_fd, fsocket, len) == -1){
 		kperror("connect failed");
 		keywait(NULL,1);
@@ -764,8 +765,18 @@ do_unproto_connect(int argc,char *argv[], void *p)
 	setcall(fsocket.ax25_addr,argv[2]);
 	strncpy(fsocket.iface,argv[1],ILEN);
 	sp->network = NULL;
+
+	/*
+	 * Register the kEABORT signal handler; this will longjmp()
+	 * back to this routine if kEABORT is called.
+	 *
+	 * Note: calling socket reset() is actually calling kEABORT;
+	 * which is why this particular signal is being raised.
+	 */
 	if(SETSIG(kEABORT)){
 		keywait(NULL,1);
+		kclose(sp->network_fd);
+		sp->network_fd = -1;
 		freesession(&sp);
 		kclose(s);
 		return 1;
