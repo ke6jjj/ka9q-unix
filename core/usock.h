@@ -8,6 +8,8 @@
 #include "net/inet/ip.h"
 #include "net/inet/tcp.h"
 #include "net/inet/udp.h"
+#include "net/ax25/lapb.h"
+#include "net/ax25/axui.h"
 
 struct loc {
 	struct usock *peer;
@@ -55,6 +57,7 @@ union cb {
 	struct raw_nr *rnr;
 	struct nr4cb *nr4;
 	struct loc *local;
+	struct ax25ui_cb *ax25ui;
 	void *p;
 };
 

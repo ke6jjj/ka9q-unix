@@ -8,6 +8,7 @@
 
 #include "net/ax25/lapb.h"
 #include "net/ax25/ax25.h"
+#include "net/ax25/axui.h"
 
 char Ax25_eol[] = "\r";
 
@@ -44,6 +45,32 @@ struct mbuf **bpp
 		enqueue(&Bcq,&hdr);
 	}
 }
+
+static int
+so_ax25ui_create(struct usock *up)
+{
+	if (up->cb.ax25ui != NULL) {
+		kprintf("%s: called on a socket with state\n", __func__);
+		return -1;
+	}
+	up->cb.ax25ui = calloc(1, sizeof(struct ax25ui_cb));
+	if (up->cb.ax25ui == NULL) {
+		kprintf("%s: failed to allocate memory for socket\n", __func__);
+		return -1;
+	}
+	return 0;
+}
+
+static int
+so_ax25ui_delete(struct usock *up)
+{
+	if (up->cb.ax25ui != NULL) {
+		free(up->cb.ax25ui);
+		up->cb.ax25ui = NULL;
+	}
+	return 0;
+}
+
 int
 so_ax_sock(
 struct usock *up,
@@ -65,6 +92,9 @@ struct usock *up
 ){
 	if(Axui_sock != -1){
 		kerrno = kEADDRINUSE;
+		return -1;
+	}
+	if (so_ax25ui_create(up) != 0) {
 		return -1;
 	}
 	Axui_sock = up->index;
@@ -351,6 +381,7 @@ int
 so_axui_close(
 struct usock *up
 ){
+	so_ax25ui_delete(up);
 	Axui_sock = -1;
 	free_q(&Bcq);
 	ksignal(&Bcq,0);	/* Unblock any reads */
