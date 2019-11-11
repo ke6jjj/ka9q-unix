@@ -160,7 +160,6 @@ char *argv[];
 void *p;
 {
 	struct session *sp;
-	int ret;
 
 	sp = (struct session *)p;
 	if(argc > 1)
@@ -172,19 +171,9 @@ void *p;
 	}
 
 	if (sp->network_fd != -1) {
-		ret = kshutdown(sp->network_fd, 1);
-		if (ret != 0) {
-			kprintf("%s: failed kshutdown; err=%s\n",
-			    __func__,
-			    ksys_errlist[kerrno]);
-		}
+		kshutdown(sp->network_fd, 1);
 	}
-	ret = kshutdown(kfileno(sp->network),1);
-	if (ret != 0) {
-		kprintf("%s: failed kshutdown; err=%s\n",
-		    __func__,
-		    ksys_errlist[kerrno]);
-	}
+	kshutdown(kfileno(sp->network),1);
 
 	return 0;
 }
