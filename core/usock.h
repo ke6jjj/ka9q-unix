@@ -46,6 +46,7 @@ struct socklink {
 	char *eol;
 };
 extern struct socklink Socklink[];
+
 union cb {
 	struct tcb *tcb;
 	struct ax25_cb *ax25;
@@ -56,6 +57,7 @@ union cb {
 	struct loc *local;
 	void *p;
 };
+
 /* User sockets */
 struct usock {
 	unsigned index;
@@ -94,6 +96,18 @@ extern unsigned Nsock;
 struct usock *itop(int s);
 void st_garbage(int red);
 int so_ip_autobind(struct usock *up);
+
+/*
+ * Return 1 if the socket is connected, 0 otherwise.
+ */
+static inline int
+so_is_connected(struct usock *up)
+{
+  if (up->cb.p == NULL) {
+    return 0;
+  }
+  return 1;
+}
 
 /* In axsocket.c: */
 int so_ax_sock(struct usock *up,int protocol);
