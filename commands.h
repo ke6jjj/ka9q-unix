@@ -22,6 +22,7 @@ int doax25(int argc,char *argv[],void *p);
 int doaxheard(int argc,char *argv[],void *p);
 int doaxdest(int argc,char *argv[],void *p);
 int doconnect(int argc,char *argv[],void *p);
+int do_unproto_connect(int argc,char *argv[],void *p);
 
 /* In bootp.c */
 int dobootp(int argc,char *argv[],void *p);

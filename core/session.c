@@ -100,6 +100,12 @@ void *p;
 			k = kgetpeername(s,&fsocket,&i);
 			t += socklen(s,1);
 			cp = sockstate(s);
+		} else if (sp->network_fd != -1) {
+			s = sp->network_fd;
+			i = SOCKSIZE;
+			k = kgetpeername(sp->network_fd, &fsocket, &i);
+			t += socklen(sp->network_fd, 1);
+			cp = sockstate(sp->network_fd);
 		} else {
 			k = s = -1;
 			t = 0;
@@ -163,7 +169,12 @@ void *p;
 		kprintf(Badsess);
 		return -1;
 	}
+
+	if (sp->network_fd != -1) {
+		kshutdown(sp->network_fd, 1);
+	}
 	kshutdown(kfileno(sp->network),1);
+
 	return 0;
 }
 int
@@ -184,6 +195,9 @@ void *p;
 	}
 	/* Unwedge anyone waiting for a domain resolution, etc */
 	alert(sp->proc,kEABORT);
+	if (sp->network_fd != -1) {
+		kshutdown(sp->network_fd, 2);
+	}
 	kshutdown(kfileno(sp->network),2);
 	if(sp->type == FTP)
 		kshutdown(kfileno(sp->cb.ftp->data),2);
@@ -204,6 +218,9 @@ void *p;
 	if(sp == NULL){
 		kprintf(Badsess);
 		return -1;
+	}
+	if (sp->network_fd != -1) {
+		sockkick(sp->network_fd);
 	}
 	sockkick(kfileno(sp->network));
 	if(sp->type == FTP)
@@ -239,6 +256,7 @@ int makecur;
 	sp = Sessions[i] = (struct session *)calloc(1,sizeof(struct session));
 	sp->index = i;
 	sp->type = type;
+	sp->network_fd = -1;
 	if(name != NULL)
 		sp->name = strdup(name);
 	sp->proc = Curproc;
@@ -285,6 +303,10 @@ struct session **spp;
 	free(sp->ttystate.line);
 	if(sp->network != NULL)
 		kfclose(sp->network);
+	if(sp->network_fd != -1) {
+		kclose(sp->network_fd);
+		sp->network_fd = -1;
+	}
 
 	if(sp->record != NULL)
 		kfclose(sp->record);

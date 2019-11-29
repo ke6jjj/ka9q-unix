@@ -57,7 +57,7 @@ int s;		/* Socket index */
 		kerrno = kEBADF;
 		return NULL;
 	}
-	if(up->cb.p == NULL){
+	if(! so_is_connected(up)) {
 		kerrno = kENOTCONN;
 		return NULL;
 	}

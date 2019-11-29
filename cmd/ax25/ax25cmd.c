@@ -613,3 +613,177 @@ int c;
 	return 0;
 }
 
+/*
+ * Unproto connection support routines
+ */
+
+struct unproto_session {
+	struct session *sp;
+};
+
+void
+unproto_output(int unused, void *tn1, void *p)
+{
+	struct session *sp;
+	struct unproto_session *us;
+	char buf[1024];
+	char *s;
+	int ret;
+
+	us = tn1;
+	sp = us->sp;
+
+	/* Send whatever's typed on the terminal */
+	while ((s = kfgets(buf, 1023, sp->input)) != NULL) {
+		if (kfeof(sp->input)) {
+			kprintf("%s: Hit EOF on stdin\n", __func__);
+			break;
+		}
+		kprintf("--> %s", buf);
+
+		ret = ksendto(sp->network_fd, buf, strlen(buf), 0, NULL, 0);
+		if (ret < 0) {
+			kprintf("%s: ksendto fail: ret=%d\n", __func__, ret);
+			break;
+		}
+	}
+	kprintf("Done!\n");
+	/* Make sure our parent doesn't try to kill us after we exit */
+	/* Signal the receiver side we're done? eg close sp->network_fd ? */
+	sp->proc1 = NULL;
+}
+
+static void
+unproto_recv(struct unproto_session *us)
+{
+	struct session *sp;
+	char buf[1024];
+	struct ksockaddr from_addr;
+	int from_len;
+	int read_len;
+
+	sp = us->sp;
+
+	/* Fork off the transmit process */
+	sp->proc1 = newproc("unproto_out",1024,unproto_output,0,us,NULL,0);
+
+	/* Process input on the connection */
+	kprintf("%s; started (socket %d)\n", __func__, sp->network_fd);
+	from_len = sizeof(from_addr);
+	while ((read_len = krecvfrom(sp->network_fd, buf, 1023, 0,
+	    &from_addr, &from_len)) > 0) {
+		buf[read_len] = '\0';
+		kprintf("%s> %s\n", psocket(&from_addr), buf);
+		kfflush(kstdout);
+		from_len = sizeof(from_addr);
+	}
+
+	/*
+	 * A close was received from the remote host.
+	 * Notify the user, kill the output task and wait for a response
+	 * from the user before freeing the session.
+	 */
+	kprintf("%s: finished!\n", __func__);
+	kfmode(sp->output,STREAM_ASCII); /* Restore newline translation */
+	ksetvbuf(sp->output,NULL,_kIOLBF,kBUFSIZ);
+	/* XXX TODO: log whether it was EOF or not */
+	killproc(&sp->proc1);
+	kclose(sp->network_fd);
+	sp->network_fd = -1;
+	keywait(NULL,1);
+	freesession(&sp);
+}
+
+static int
+unproto_connect(struct session *sp, struct ksockaddr *fsocket,int len)
+{
+	struct unproto_session us;
+
+	memset(&us,0,sizeof(us));
+	us.sp = sp;	/* Upward pointer */
+	sp->cb.p = &us;		/* Downward pointer */
+
+	kprintf("Trying %s...\n",psocket(fsocket));
+	sp->inproc = keychar;	/* Intercept ^C */
+	if(kconnect(sp->network_fd, fsocket, len) == -1){
+		kperror("connect failed");
+		keywait(NULL,1);
+		kclose(sp->network_fd);
+		sp->network_fd = -1;
+		freesession(&sp);
+		return 1;
+	}
+	kprintf("Connected to %s\n", psocket(fsocket));
+	CLEARSIG(kEABORT);
+	sp->inproc = NULL;      /* No longer respond to ^C */   
+	unproto_recv(&us);
+	return 0;
+}
+
+
+/* Initiate unproto AX.25 session to the given digipeater path/call */
+int
+do_unproto_connect(int argc,char *argv[], void *p)
+{
+	struct ksockaddr_ax fsocket;
+	struct session *sp;
+	int ndigis,i,s;
+	uint8 digis[MAXDIGIS][AXALEN];
+	uint8 target[AXALEN];
+
+	/* If digipeaters are given, put them in the routing table */
+	if(argc > 3){
+		setcall(target,argv[2]);
+		ndigis = argc - 3;
+		if(ndigis > MAXDIGIS){
+			kprintf("Too many digipeaters\n");
+			return 1;
+		}
+		for(i=0;i<ndigis;i++){
+			if(setcall(digis[i],argv[i+3]) == -1){
+				kprintf("Bad digipeater %s\n",argv[i+3]);
+				return 1;
+			}
+		}
+		if(ax_add(target,kAX_LOCAL,digis,ndigis) == NULL){
+			kprintf("Route add failed\n");
+			return 1;
+		}
+	}
+	/* Allocate a session descriptor */
+	if((sp = newsession(Cmdline,AX25TNC,1)) == NULL){
+		kprintf("Too many sessions\n");
+		return 1;
+	}
+	sp->inproc = keychar;	/* Intercept ^C */
+	if((s = ksocket(kAF_AX25,kSOCK_DGRAM,0)) == -1){
+		kprintf("Can't create socket\n");
+		freesession(&sp);
+		keywait(NULL,1);
+		return 1;
+	}
+	fsocket.sax_family = kAF_AX25;
+	setcall(fsocket.ax25_addr,argv[2]);
+	strncpy(fsocket.iface,argv[1],ILEN);
+	sp->network = NULL;
+
+	/*
+	 * Register the kEABORT signal handler; this will longjmp()
+	 * back to this routine if kEABORT is called.
+	 *
+	 * Note: calling socket reset() is actually calling kEABORT;
+	 * which is why this particular signal is being raised.
+	 */
+	if(SETSIG(kEABORT)){
+		keywait(NULL,1);
+		kclose(sp->network_fd);
+		sp->network_fd = -1;
+		freesession(&sp);
+		kclose(s);
+		return 1;
+	}
+	sp->network_fd = s;
+	kprintf("Socket creation ok! (%d)\n", s);
+	return unproto_connect(sp, (struct ksockaddr *)&fsocket,
+	    sizeof(struct ksockaddr_ax));
+}

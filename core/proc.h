@@ -93,6 +93,7 @@ extern struct ksig Ksig;
  */
 #define	SETSIG(val)	(Curproc->flags.sset=1,\
 	Curproc->signo = (val),setjmp(Curproc->sig))
+#define	CLEARSIG(val)	(Curproc->flags.sset=0)
 
 /* In  kernel.c: */
 void alert(struct proc *pp,int val);

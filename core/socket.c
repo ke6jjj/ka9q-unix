@@ -223,7 +223,7 @@ int backlog	/* 0 for a single connection, !=0 for multiple connections */
 		kerrno = kEBADF;
 		return -1;
 	}
-	if(up->cb.p != NULL){
+	if(so_is_connected(up)) {
 		kerrno = kEISCONN;
 		return -1;
 	}
@@ -287,7 +287,7 @@ int *peernamelen	/* Length of peer name */
 		kerrno = kEBADF;
 		return -1;
 	}
-	if(up->cb.p == NULL){
+	if(! so_is_connected(up)) {
 		kerrno = kEOPNOTSUPP;
 		return -1;
 	}
@@ -298,7 +298,7 @@ int *peernamelen	/* Length of peer name */
 		return -1;
 	}
 	/* Wait for the state-change upcall routine to signal us */
-	while(up->cb.p != NULL && up->rdysock == -1){
+	while(so_is_connected(up) && up->rdysock == -1){
 		if(up->noblock){
 			kerrno = kEWOULDBLOCK;
 			return -1;
@@ -306,7 +306,7 @@ int *peernamelen	/* Length of peer name */
 			return -1;
 		}
 	}
-	if(up->cb.p == NULL){
+	if(! so_is_connected(up)) {
 		/* Blown away */
 		kerrno = kEBADF;
 		return -1;
@@ -461,7 +461,7 @@ int rtx		/* 0 = receive queue, 1 = transmit queue */
 		kerrno = kEBADF;
 		return -1;
 	}
-	if(up->cb.p == NULL){
+	if(! so_is_connected(up)) {
 		kerrno = kENOTCONN;
 		return -1;
 	}
@@ -536,11 +536,13 @@ int how		/* (see above) */
 		kerrno = kEBADF;
 		return -1;
 	}
-	if(up->cb.p == NULL){
+
+	if(! so_is_connected(up)) {
 		kerrno = kENOTCONN;
 		return -1;
 	}
 	sp = up->sp;
+
 	/* Just close the socket if special shutdown routine not present */
 	if(sp->shut == NULL){
 		close_s(s);

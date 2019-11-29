@@ -57,8 +57,9 @@ void *p;
 	}
 	sp = up->sp;
 	kprintf("%s %p\n",Socktypes[up->type],up->cb.p);
-	if(up->cb.p == NULL)
+	if(! so_is_connected(up)) {
 		return 0;
+	}
 	if(sp->status != NULL)
 		(*sp->status)(up);
 	return 0;	
