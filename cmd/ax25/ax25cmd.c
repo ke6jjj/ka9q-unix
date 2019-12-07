@@ -492,7 +492,10 @@ void *p;
 
 	/* If digipeaters are given, put them in the routing table */
 	if(argc > 3){
-		setcall(target,argv[2]);
+		if (setcall(target,argv[2]) == -1) {
+			kprintf("Bad callsign %s\n", argv[2]);
+			return 1;
+		}
 		ndigis = argc - 3;
 		if(ndigis > MAXDIGIS){
 			kprintf("Too many digipeaters\n");
@@ -509,6 +512,13 @@ void *p;
 			return 1;
 		}
 	}
+
+	/* Validate target */
+	if (setcall(target,argv[2]) == -1) {
+		kprintf("Bad callsign %s\n", argv[2]);
+		return 1;
+	}
+
 	/* Allocate a session descriptor */
 	if((sp = newsession(Cmdline,AX25TNC,1)) == NULL){
 		kprintf("Too many sessions\n");
@@ -733,7 +743,10 @@ do_unproto_connect(int argc,char *argv[], void *p)
 
 	/* If digipeaters are given, put them in the routing table */
 	if(argc > 3){
-		setcall(target,argv[2]);
+		if (setcall(target,argv[2]) == -1) {
+			kprintf("Bad callsign %s\n", argv[2]);
+			return 1;
+		}
 		ndigis = argc - 3;
 		if(ndigis > MAXDIGIS){
 			kprintf("Too many digipeaters\n");
@@ -750,6 +763,13 @@ do_unproto_connect(int argc,char *argv[], void *p)
 			return 1;
 		}
 	}
+
+	/* Validate target */
+	if (setcall(target,argv[2]) == -1) {
+		kprintf("Bad callsign %s\n", argv[2]);
+		return 1;
+	}
+
 	/* Allocate a session descriptor */
 	if((sp = newsession(Cmdline,AX25TNC,1)) == NULL){
 		kprintf("Too many sessions\n");

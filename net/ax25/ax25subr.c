@@ -251,4 +251,3 @@ lapb_garbage(int red)
 		mbuf_crunch(&axp->rxasm);
 	}
 }
-
