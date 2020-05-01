@@ -11,15 +11,18 @@ This has been built and tested on:
 
 ## Building
 
+```
 $ mkdir build
 $ cd build
 $ cmake ..
 $ make
+```
 
 ## Building with debug symbols
 
+```
 $ mkdir build
 $ cd build
 $ cmake -DCMAKE_BUILD_TYPE=Debug ..
 $ make
-
+```
