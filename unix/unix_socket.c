@@ -167,7 +167,7 @@ static void *
 unix_socket_io_write_proc(void *param)
 {
 	struct unix_socket_entry *us = param;
-	int leave;
+	int leave, error;
 	uint8 *data;
 	size_t sz;
 	ssize_t cnt;
@@ -175,7 +175,7 @@ unix_socket_io_write_proc(void *param)
 	pthread_mutex_lock(&us->write_lock);
 	pthread_mutex_unlock(&us->write_lock);
 
-	for (;;) {
+	for (error = 0;;) {
 		pthread_mutex_lock(&us->write_lock);
 		while (!us->write_exit && !us->dma.busy)
 			pthread_cond_wait(&us->write_ready, &us->write_lock);
@@ -188,14 +188,22 @@ unix_socket_io_write_proc(void *param)
 			break;
 
 		cnt = write(us->ttyfd, data, sz);
-		if (cnt <= 0)
+		if (cnt <= 0) {
+			error = 1;
 			break;
+		}
 
 		interrupt_enter();
 		us->txchar += cnt;
 		us->dma.busy = 0;
 		ksignal(&us->dma, 1);
 		interrupt_leave();
+	}
+
+	if (error) {
+		fprintf(stderr, "error during host socket write: %s\n",
+			strerror(errno));
+		exit(1);
 	}
 
 	return NULL;
@@ -259,6 +267,13 @@ unix_socket_io_read_proc(void *param)
 
 		interrupt_leave();
 	}
+
+	/*
+	 * Normally, this thread will be cancelled on clean shutdown. This
+	 * point can only be reached by an error condition.
+	 */
+	fprintf(stderr, "error during host socket read: %s\n", strerror(errno));
+	exit(1);
 
 	return NULL;
 }

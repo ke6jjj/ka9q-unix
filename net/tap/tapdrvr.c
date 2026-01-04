@@ -261,6 +261,10 @@ tap_io_read_proc(void *tapp)
 		ksignal(&tap->read_buf, 1);
 	}
 
+	/* Normal shutdown will not reach this point */
+	fprintf(stderr, "error during host tap read: %s\n", strerror(errno));
+	exit(1);
+
 	return NULL;
 }
 

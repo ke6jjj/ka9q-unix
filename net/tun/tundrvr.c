@@ -239,6 +239,10 @@ tun_io_read_proc(void *tunp)
 		ksignal(&tun->read_buf, 1);
 	}
 
+	/* Normal shutdown will not reach this point. */
+	fprintf(stderr, "error during host tun read: %s\n", strerror(errno));
+	exit(1);
+
 	return NULL;
 }
 

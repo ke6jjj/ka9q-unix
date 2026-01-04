@@ -72,10 +72,11 @@ main(int argc,char *argv[])
 	int c;
 	char cmdbuf[256];
 	long hinit = 102400;
+	int exit_on_error = 0;
 
 	StartTime = time(&StartTime);
 
-	while((c = kgetopt(argc,argv,"f:s:d:bvh:")) != kEOF){
+	while((c = kgetopt(argc,argv,"f:s:d:bvh:e")) != kEOF){
 		switch(c){
 		case 'h':	/* Heap initialization */
 			hinit = atol(koptarg);
@@ -96,6 +97,9 @@ main(int argc,char *argv[])
 #endif
 		case 'v':
 			Verbose = 1;
+			break;
+		case 'e':
+			exit_on_error = 1;
 			break;
 		}
 	}
@@ -132,6 +136,8 @@ main(int argc,char *argv[])
 		if((fp = kfopen(argv[koptind],READ_TEXT)) == NULL){
 			kprintf("Can't read config file %s",argv[koptind]);
 			kperror("");
+			if (exit_on_error)
+				return 1;
 		}
 	} else {
 		fp = kfopen(Startup,READ_TEXT);
@@ -144,6 +150,8 @@ main(int argc,char *argv[])
 				kprintf("%s\n",Cmdline);
 			if(cmdparse(Cmds,cmdbuf,NULL) != 0){
 				kprintf("input line: %s\n",Cmdline);
+				if (exit_on_error)
+					return 1;
 			}
 			FREE(Cmdline);
 		}
@@ -157,7 +165,11 @@ main(int argc,char *argv[])
 			rip(cmdbuf);
 			FREE(Cmdline);
 			Cmdline = strdup(cmdbuf);
-			(void)cmdparse(Cmds,cmdbuf,Lastcurr);
+			if (cmdparse(Cmds,cmdbuf,Lastcurr) != 0) {
+				if (exit_on_error) {
+					return 1;
+				}
+			}
 		}
 	}
 }
