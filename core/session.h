@@ -76,6 +76,7 @@ void freesession(struct session **spp);
 int keywait(char *prompt,int flush);
 struct session *sessptr(char *cp);
 struct session *newsession(char *name,int type,int makecur);
+struct session *nullsession();
 void sesflush(void);
 void upload(int unused,void *sp1,void *p);
 

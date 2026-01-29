@@ -74,6 +74,9 @@
 #include "unix/display_crs.h"
 #include "unix/nosunix.h"	/* For keyboard character definitions */
 
+#define	COLS	80
+#define	ROWS	25
+
 #define	DCOL	67
 #define	DSIZ	(81-DCOL)
 #define KEYFIFO_SIZE	64
@@ -89,8 +92,6 @@ static void cursor_set(struct display *dp, int row, int col);
 static short pc2ncurses(int color);
 static void *kbread_proc(void *dummy);
 static void kb_add(int c);
-
-extern struct proc *Display;
 
 /* Current terminal supports (or doesn't) colors */
 static int crs_has_colors;
@@ -299,12 +300,14 @@ curses_keyboard_stop()
  * with each new line. This can be handy for packet trace screens.
  */
 struct display *
-newdisplay(
+newdisplay_curses(
 int rows,
 int cols,	/* Size of new screen. 0,0 defaults to whole screen */
 int noscrol,	/* (Not supported) 1: old IBM-style wrapping instead of */
             	/* scrolling */
-int size	/* Size of virtual screen, lines */
+int size,	/* Size of virtual screen, lines */
+int *do_buffered,
+const char **desired_eol
 ){
 	struct display *dp;
 	int i;
@@ -358,78 +361,25 @@ int size	/* Size of virtual screen, lines */
 
 	pthread_mutex_unlock(&g_curses_mutex);
 
+	*do_buffered = 1;
+	*desired_eol = "\r\n";
+
 	return dp;
 }
 
-/* Close a display - simply get rid of the memory */
 void
-closedisplay(struct display *dp)
+closedisplay_curses(struct display *dp)
 {
-	if(dp == NULL || dp->cookie != D_COOKIE)
-		return;
 	DELWIN(dp->window);
+	free(dp->tabstops);
 	free(dp);
 }
 
-#if 0 /* PORT ME */
-/* Write buffer to status line. Works independently of the ANSI
- * machinery so as to not upset a possible escape sequence in
- * progress. Maximum of one line allowed, no control sequences
- */
 void
-statwrite(
-int col,		/* Starting column of write */
-void *buf,		/* Data to be written */
-int cnt,		/* Count */
-int attrib		/* Screen attribute to be used */
-){
-	uint8 *buf1 = buf;
-	uint8 *sp = Statbuf;
-
-	/* Clip debug area if activated */
-	if(Kdebug && cnt > DCOL - col - 1)
-		cnt = DCOL - col - 1;
-	else if(cnt > COLS-col)
-		cnt = COLS - col;	/* Limit write to line length */
-
-	while(cnt-- != 0){
-		if(sp[0] != *buf1 || sp[1] != attrib){
-			if(col < Stdirt.lcol)
-				Stdirt.lcol = col; 
-			if(col > Stdirt.rcol)
-				Stdirt.rcol = col;
-			sp[0] = *buf1;
-			sp[1] = attrib;
-		}
-		buf1++;
-		sp += 2;
-		col++;
-	}
-	/* Display unscrolled status region */
-	if(Stdirt.lcol <= Stdirt.rcol){
-		puttext(Stdirt.lcol+1,ROWS,Stdirt.rcol+1,ROWS,
-		 Statbuf + 2*Stdirt.lcol);
-		Stdirt.lcol = COLS-1;
-		Stdirt.rcol = 0;
-	}
-}
-#endif
-
-/* Write data to the virtual display. Does NOT affect the real screen -
- * dupdate(dp) must be called to copy the virtual screen to the real
- * screen.
- */
-void
-displaywrite(
-struct display *dp,	/* Virtual screen pointer */
-const void *buf,	/* Data to be written */
-int cnt			/* Count */
-){
+displaywrite_curses(struct display *dp, const void *buf, int cnt)
+{
 	uint8 c;
 	const char *bufp = buf;
-
-	if(dp == NULL || dp->cookie != D_COOKIE)
-		return;
 
 	while(cnt-- != 0){
 		c = *bufp++;
@@ -451,7 +401,7 @@ int cnt			/* Count */
 /* Make the real screen look like the virtual one. Quite simple in CURSES.
  */
 void
-dupdate(struct display *dp)
+dupdate_curses(struct display *dp)
 {
 	/* This curses call draws a portion of the full virtual screen
 	 * onto the real screen. The portion selected is based on the
@@ -475,7 +425,7 @@ dupdate(struct display *dp)
  * cursor should be displayed.
  */
 void
-dscrollmode(
+dscrollmode_curses(
 struct display *dp,
 int flag
 ){
@@ -489,58 +439,40 @@ int flag
 
 /* Position scroll viewport at top of buffer? */
 void
-dhome(struct display *dp)
+dhome_curses(struct display *dp)
 {
-	if(dp == NULL || dp->cookie != D_COOKIE)
-		return;
-
 	scroll_set(dp, 0);
 	ksignal(dp, 1);
 }
 
 /* Position scroll viewport at bottom of buffer? */
 void
-dend(struct display *dp)
+dend_curses(struct display *dp)
 {
-	if(dp == NULL || dp->cookie != D_COOKIE)
-		return;
-
 	scroll_set(dp, dp->padtop);
 	ksignal(dp, 1);
 }
 void
-dpgup(struct display *dp)
+dpgup_curses(struct display *dp)
 {
-	if(dp == NULL || dp->cookie != D_COOKIE)
-		return;
-
 	scroll_adjust(dp, -dp->viewrows);
 	ksignal(dp, 1);
 }
 void
-dpgdown(struct display *dp)
+dpgdown_curses(struct display *dp)
 {
-	if(dp == NULL || dp->cookie != D_COOKIE)
-		return;
-
 	scroll_adjust(dp, dp->rows);
 	ksignal(dp, 1);
 }
 void
-dcursup(struct display *dp)
+dcursup_curses(struct display *dp)
 {
-	if(dp == NULL || dp->cookie != D_COOKIE)
-		return;
-
 	scroll_adjust(dp, 1);
 	ksignal(dp, 1);
 }
 void
-dcursdown(struct display *dp)
+dcursdown_curses(struct display *dp)
 {
-	if(dp == NULL || dp->cookie != D_COOKIE)
-		return;
-
 	scroll_adjust(dp, -1);
 	ksignal(dp, 1);
 }
@@ -789,14 +721,6 @@ uint8 c
 	}
 }
 
-/* Immediately display short debug string on lower right corner of display */
-void
-debug(char *s)
-{
-	/* Implement me */
-	return;
-}
-
 static void
 scroll_adjust(struct display *dp, int lines)
 {
@@ -966,7 +890,7 @@ kb_add(int c)
  * available.
  */
 int
-kbread(void)
+kbread_curses(void)
 {
 	int state, c;
 

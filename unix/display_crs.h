@@ -61,55 +61,29 @@
 
 #include "../top.h"
 
+#include "unix/display.h"
+
 #ifndef UNIX
 #error "This file should only be used for UNIX/POSIX builds"
 #endif
-
-#include "lib/std/stdio.h"
-
-#include <curses.h>
-#include "unix/nosunix.h"
-
-#define	MAXARGS	5
-
-struct display {
-	uint32 cookie;	/* Magic cookie to detect bogus pointers */
-#define	D_COOKIE	0xdeadbeef
-	int cols;	/* Screen width (both virtual and real) */
-	int savcol;	/* Saved cursor column */
-
-	int rows;	/* Virtual screen height (with scrollback buffer) */
-	int viewrows;	/* Viewport screen height */
-	int savrow;	/* Saved cursor row */
-
-	int viewtop;	/* Offset to start of virtual screen in buffer */
-	int padtop;	/* Offset to start of real screen in buffer */
-
-	int argi;	/* index to current entry in arg[] */
-	int arg[MAXARGS];	/* numerical args to ANSI sequence */
-
-	uint8 fcolor;	/* Current foreground color for added text */
-	uint8 bcolor;	/* Current background color for added text */
-	enum {
-		DISP_NORMAL,	/* No ANSI sequence in progress */
-		DISP_ESCAPE,	/* ESC char seen */
-		DISP_ARG	/* ESC[ seen */
-	} state;	/* State of ANSI escape sequence FSM */
-	struct {
-		unsigned int scrollbk:1;	/* Scrollback is active */ 
-	} flags;        /* Status flags */
-
-	uint8 *tabstops;	/* Tab stops */
-
-	WINDOW *window;	/* CURSES window hosting this display */
-};
-
-#define	COLS	80
-#define	ROWS	25
 
 int curses_display_start();
 int curses_display_stop();
 int curses_keyboard_start();
 int curses_keyboard_stop();
+
+struct display * newdisplay_curses(int rows, int cols, int noscrol, int size,
+	int *do_buffered, const char **desired_eol);
+void closedisplay_curses(struct display *dp);
+void displaywrite_curses(struct display *dp, const void *buf, int cnt);
+void dupdate_curses(struct display *dp);
+void dscrollmode_curses(struct display *dp, int flag);
+void dhome_curses(struct display *dp);
+void dend_curses(struct display *dp);
+void dpgup_curses(struct display *dp);
+void dpgdown_curses(struct display *dp);
+void dcursup_curses(struct display *dp);
+void dcursdown_curses(struct display *dp);
+int kbread_curses(void);
 
 #endif /*_DISPLAY_CRS_H */

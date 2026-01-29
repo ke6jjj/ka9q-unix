@@ -19,6 +19,7 @@
 
 #include "cmd/ftpcli/ftpcli.h"
 
+int headless = 0;;
 struct session **Sessions;
 struct session *Command;
 struct session *Current;
@@ -238,6 +239,38 @@ void *p;
 }
 
 struct session *
+nullsession(void)
+{
+	register struct session *sp;
+
+	if (headless)
+		/* Already initialized! */
+		return NULL;
+
+	headless = 1;
+
+	sp = Sessions[0] = (struct session *)calloc(1,sizeof(struct session));
+	sp->index = 0;
+	sp->type = COMMAND;
+	sp->network_fd = -1;
+	sp->name = strdup("headless");
+	sp->proc = Curproc;
+	/* Create standard input and output sockets. Output is
+	 * in text mode by default
+	 */
+	kfclose(kstdin);
+	kstdin =  sp->input = NULL;
+	kfclose(kstdout);
+	kstdout = sp->output = displayopen("wt",0,Sfsize);
+
+	/* on by default */
+	sp->ttystate.crnl = sp->ttystate.edit = sp->ttystate.echo = 1;
+	sp->parent = Current;
+	Current = sp;
+	return sp;
+}
+
+struct session *
 newsession(name,type,makecur)
 char *name;
 int type;
@@ -245,6 +278,11 @@ int makecur;
 {
 	register struct session *sp;
 	int i;
+
+	if (headless) {
+		/* Sesions not supported; this is a headless console */
+		return NULL;
+	}
 
 	/* Search for a free slot in the session table */
 	for(i=0;i < Nsessions;i++)

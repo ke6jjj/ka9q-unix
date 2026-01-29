@@ -3,6 +3,7 @@
  *  keyboard processing
  *  generic user commands
  *
+ * Copyright 2026 Jeremy Cooper, KE6JJJ
  * Copyright 1986-1996 Phil Karn, KA9Q
  */
 #include "top.h"
@@ -58,11 +59,14 @@ static char Prompt[] = "net> ";
 static kFILE *Logfp;
 static time_t StartTime;		/* time that NOS was started */
 static int Verbose;
+static int DoConsole;
 
 static int keychar(int c);
 static void pass(char *,int len);
 static void passchar(int c);
 static void helpsub(struct cmds *cmds);
+static int console_session(char *buf, size_t bufsz, int exit_on_error,
+	int do_cons);
 
 int
 main(int argc,char *argv[])
@@ -72,11 +76,13 @@ main(int argc,char *argv[])
 	int c;
 	char cmdbuf[256];
 	long hinit = 102400;
-	int exit_on_error = 0;
+	int exit_on_error = FALSE;
+	struct session *main_session;
 
 	StartTime = time(&StartTime);
+	DoConsole = TRUE;
 
-	while((c = kgetopt(argc,argv,"f:s:d:bvh:e")) != kEOF){
+	while((c = kgetopt(argc,argv,"f:s:d:bvh:eH")) != kEOF){
 		switch(c){
 		case 'h':	/* Heap initialization */
 			hinit = atol(koptarg);
@@ -101,16 +107,24 @@ main(int argc,char *argv[])
 		case 'e':
 			exit_on_error = 1;
 			break;
+		case 'H':
+			DoConsole = FALSE;
+			break;
 		}
 	}
 
 	kinit();
-	ioinit(hinit);
+	ioinit(hinit, DoConsole);
 	sockinit();
 	Cmdpp = mainproc("cmdintrp");
 
 	Sessions = (struct session **)callocw(Nsessions,sizeof(struct session *));
-	Command = Lastcurr = newsession("command interpreter",COMMAND,1);
+	if (DoConsole)
+		main_session = newsession("command interpreter",COMMAND,1);
+	else
+		main_session = nullsession();
+
+	Command = Lastcurr = main_session;
 	Display = newproc("display",350,display,0,NULL,NULL,0);
 	kprintf("KA9Q NOS version %s (%s)\n",Version, KA9Q_VERSION_STRING);
 #ifdef	CPU386
@@ -158,10 +172,20 @@ main(int argc,char *argv[])
 		kfclose(fp);
 	}
 	/* Now loop forever, processing commands */
+	return console_session(cmdbuf, sizeof(cmdbuf), exit_on_error,
+		DoConsole);
+}
+
+static int
+console_session(char *cmdbuf, size_t bufsz, int exit_on_error, int do_console)
+{
+	if (!do_console)
+		return kwait(cmdbuf);
+
 	for(;;){
 		kprintf(Prompt);
 		kfflush(kstdout);
-		if(kfgets(cmdbuf,sizeof(cmdbuf),kstdin) != NULL){
+		if(kfgets(cmdbuf,bufsz,kstdin) != NULL){
 			rip(cmdbuf);
 			FREE(Cmdline);
 			Cmdline = strdup(cmdbuf);
@@ -173,6 +197,7 @@ main(int argc,char *argv[])
 		}
 	}
 }
+
 /* Keyboard input process */
 void
 keyboard(
@@ -182,6 +207,9 @@ void *v2
 ){
 	int c;
 	int j;
+
+	if (!DoConsole)
+		return;
 
 	/* Keyboard process loop */
 loop:

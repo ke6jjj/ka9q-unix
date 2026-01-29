@@ -18,16 +18,14 @@
 #include "global.h"
 #include "core/asy.h"
 #include "commands.h"
-#include "core/display.h"
 #include "lib/std/errno.h"
 #include "net/core/iface.h"
-#include "core/proc.h"
-#include "core/session.h"
 #include "lib/std/stdio.h"
 
-#include "unix/display_crs.h"
+#include "unix/display.h"
 #include "unix/timer_unix.h"
 #include "unix/asy_unix.h"
+#include "unix/nosunix.h"
 
 /* Initialize the machine-dependent I/O (misnomer)
  *
@@ -37,10 +35,10 @@
  * set up the control-C handler and chain important interrupt handlers.
  *
  * We will use this opportunity to start several imporant threads which
- * will function as the "keyboard" and timer interrupts.
+ * will function as the "keyboard" and timer interrupts, if asked to do so.
  */
 void
-ioinit(int hinit)
+ioinit(int hinit, int do_console)
 {
 
 	/* Initialize random number generator */
@@ -56,11 +54,7 @@ ioinit(int hinit)
 		exit(1);
 	}
 
-	/* Start up CURSES */
-	curses_display_start();
-
-	/* start keyboard proc */
-	curses_keyboard_start();
+	unix_display_init(do_console);
 }
 
 /* De-install NOS and prepare to return control back to the host
@@ -87,89 +81,12 @@ iostop(void)
 	for (i = 0; i < ASY_MAX; i++)
 		asy_shutdown(i);
 
-	curses_keyboard_stop();
+	unix_display_keyboard_stop();
 
 	kfcloseall();
 
-	/* curses deinit */
-	curses_display_stop();
+	unix_display_stop();
 }
-
-/* Display-tending process */
-void
-display(int i,void *v1,void *v2)
-{
-	struct session *sp;
-	struct display *dp;
-	static struct display *lastdp;
-	static long lastkdebug;
-
-	for(;;){
-		sp = Current;
-		if(sp == NULL || sp->output == NULL
-		 || (dp = (struct display *)sp->output->ptr) == NULL){
-			/* Something weird happened */
-			ppause(500L);
-			continue;
-		}
-#if 0
-		statline(dp,sp);
-#endif
-		dupdate(dp);
-		lastdp = dp;
-		lastkdebug = Kdebug;
-#if 0
-		kalarm(100L);	/* Poll status every 100 ms */
-#endif
-		kwait(dp);
-#if 0
-		kalarm(0L);
-#endif
-	}
-}
-
-#if 0
-/* Compose status line for bottom of screen */
-static void
-statline(struct display *dp,struct session *sp)
-{
-	int attr;
-	char buf[81];
-	struct text_info text_info;
-	int unack;
-	int s1;
-	int s = -1;
-
-	/* Determine attribute to use */
-	gettextinfo(&text_info);
-	if(text_info.currmode == MONO)
-		attr = 0x07;	/* Regular white on black */
-	else
-		attr = 0x02;	/* Green on black */
-
-	if(sp->network != NULL && (s = kfileno(sp->network)) != -1){
-		unack = socklen(s,1);
-		if(sp->type == FTP && (s1 = kfileno(sp->cb.ftp->data)) != -1)
-			unack += socklen(s1,1);
-	}
-	memset(buf,' ',80);
-	buf[80] = '\0';
-	sprintf(&buf[0],"%2d: %s",sp->index,sp->name);
-
-	if(dp->flags.scrollbk){
-		int off;
-		off = dp->virttop - dp->realtop;
-		if(off < 0)
-			off += dp->size;
-		sprintf(&buf[54],"Scroll:%-5u",off);
-	} else if(s != -1 && unack != 0){
-		sprintf(&buf[54],"Unack: %-5u",unack);
-	} else
-		sprintf(&buf[54],"            ");
-	sprintf(&buf[66],"F8:nxt F10:cmd");
-	statwrite(0,buf,sizeof(buf)-1,attr);
-}
-#endif
 
 void
 sysreset(void)

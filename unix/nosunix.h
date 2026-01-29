@@ -7,7 +7,7 @@
 extern void (*Shutdown[])();	/* List of functions to call at shutdown */
 
 /* In unix.c: */
-void ioinit(int);
+void ioinit(int, int);
 void iostop(void);
 void sysreset(void);
 

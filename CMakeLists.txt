@@ -100,9 +100,9 @@ add_library(dump net/ax25/kissdump.c net/ax25/ax25dump.c net/netrom/nrdump.c
   cmd/inet/ipdump.c cmd/inet/icmpdump.c cmd/inet/udpdump.c cmd/inet/tcpdump.c
   cmd/rip/ripdump.c)
 
-add_library(unix unix/ksubr_unix.c unix/timer_unix.c unix/display_crs.c
-  unix/unix.c unix/dirutil_unix.c unix/ksubr_unix.c unix/unix_socket.c
-  unix/asy_unix.c)
+add_library(unix unix/ksubr_unix.c unix/timer_unix.c unix/display.c
+  unix/display_crs.c unix/display_hdl.c unix/unix.c unix/dirutil_unix.c
+  unix/ksubr_unix.c unix/unix_socket.c unix/asy_unix.c)
 
 add_library(core core/asy.c core/devparam.c core/kernel.c core/locsock.c
   core/session.c core/socket.c core/sockuser.c core/sockutil.c core/timer.c

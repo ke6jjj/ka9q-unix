@@ -62,7 +62,9 @@ newdisplay(
 int rows,
 int cols,	/* Size of new screen. 0,0 defaults to whole screen */
 int noscrol,	/* 1: old IBM-style wrapping instead of scrolling */
-int size	/* Size of virtual screen, lines */
+int size,	/* Size of virtual screen, lines */
+int *do_buffered, /* Ret: Caller can buffer output before sending */
+const char **desired_eol /* Ret: Pointer to desired end-of-line sequence */
 ){
 	struct display *dp;
 	struct text_info text_info;
@@ -93,6 +95,9 @@ int size	/* Size of virtual screen, lines */
 	dclrscr(dp);		/* Start with a clean slate */
 	dp->flags.dirty_cursor = 1;
 	dp->flags.no_scroll = noscrol;
+
+	*do_buffered = TRUE;
+	*desired_eol = "\r\n";
 
 	return dp;
 }

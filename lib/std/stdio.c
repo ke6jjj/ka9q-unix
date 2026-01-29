@@ -224,6 +224,8 @@ int sfsize
 ){
 	kFILE *fp;
 	int textmode = 0;
+	int do_buffered;
+	const char *eol;
 
 	if(strchr(mode,'t') != NULL)
 		textmode = 1;
@@ -233,12 +235,15 @@ int sfsize
 
 	fp->fd = -1;
 	fp->type = _FL_DISPLAY;
-	fp->bufmode = _kIOFBF;
 	fp->flags.ascii = textmode;
 
-	fp->ptr = newdisplay(0,0,noscrol,sfsize);
+	fp->ptr = newdisplay(0,0,noscrol,sfsize, &do_buffered, &eol);
+	if (do_buffered)
+		fp->bufmode = _kIOFBF;
+	else
+		fp->bufmode = _kIONBF;
 	fp->bufsize = kBUFSIZ;
-	strcpy(fp->eol,"\r\n");
+	strcpy(fp->eol,eol);
 	return fp;
 }
 

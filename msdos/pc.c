@@ -54,10 +54,13 @@ struct int_tab {
 
 /* Called at startup time to set up misc I/O related functions */
 void
-ioinit(int hinit)
+ioinit(int hinit, int console)
 {
 	union REGS inregs;
 	extern int _fmode;
+
+	/* MS-DOS version of NOS currently must run in foreground */
+	assert(console);
 
 	_fmode = O_BINARY;
 	/* Get some memory on the heap so interrupt calls to malloc

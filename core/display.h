@@ -42,7 +42,8 @@
 /* Display is opaque for most users of this code */
 struct display;
 
-struct display *newdisplay(int rows,int cols,int noscrol,int sfsize);
+struct display *newdisplay(int rows,int cols,int noscrol,int sfsize,
+	int *do_buffered, const char **eol);
 void displaywrite(struct display *dp,const void *buf,int cnt);
 void dupdate(struct display *dp);
 void closedisplay(struct display *dp);

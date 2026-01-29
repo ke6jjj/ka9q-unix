@@ -38,7 +38,7 @@ void ctick(int);
 int freevect(uint irq);
 int getmask(unsigned irq);
 int intcontext(void);
-void ioinit(int);
+void ioinit(int, int);
 void iostop(void);
 void kbint(int);
 void kbsave(int c);
