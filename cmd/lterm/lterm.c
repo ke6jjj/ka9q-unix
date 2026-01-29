@@ -105,6 +105,7 @@ void *p;
 cleanup:
 	killproc(&sp->proc1);
 	ifp->raw = rawsave;
+	asy_set_trigchar(ifp->dev, otrigchar);
 	resume(ifp->rxproc);
 	keywait(NULL,1);
 	freesession(&sp);
