@@ -62,7 +62,7 @@ int n;
    while ( (count<n) && (*str!='\0') ) { /* Process alnum or non alnum seq */
       while ( (*str!='\0') && (!isalnum(*str)) ) /* Get rid of ';:.@%"# etc */
          str++;
-      if ( (str!='\0') && isalnum(*str) ) { /* this is an alnum seq */
+      if ( (*str!='\0') && isalnum(*str) ) { /* this is an alnum seq */
          count++;
          while ( (*str!='\0') && (isalnum(*str) || (*str=='_')) )
             if (count==n)
