@@ -284,10 +284,9 @@ pasy(struct asy *asyp)
 	kprintf(" %lu bps\n",unix_socket_get_speed(asyp->socket_entry));
 
 	if (unix_socket_is_real_tty(asyp->socket_entry)) {
-		if (unix_socket_modem_bits(asyp->socket_entry, 0, 0, &mcr) != 0)
+		if (unix_socket_modem_bits(asyp->socket_entry, 0, 0, &mcr) != 0) {
 			kprintf("modem bits error: %s\n", strerror(errno));
-			return;
-
+		} else {
 		kprintf(" MC: DTR %s  RTS %s  CTS %s  DSR %s  RI %s  CD %s\n",
 	 	(mcr & TIOCM_DTR) ? "On" : "Off",
 	 	(mcr & TIOCM_RTS) ? "On" : "Off",
@@ -295,6 +294,7 @@ pasy(struct asy *asyp)
 	 	(mcr & TIOCM_DSR) ? "On" : "Off",
 	 	(mcr & TIOCM_RI) ? "On" : "Off",
 	 	(mcr & TIOCM_CD) ? "On" : "Off");
+		}
 	} else {
 		kprintf(" TCP socket, no control bits.\n");
 	}
