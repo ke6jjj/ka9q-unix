@@ -563,6 +563,9 @@ int escape;
 			if(c != IAC && (c = kfgetc(network)) == kEOF)
 				break;
 		}
+		if (c == '\0')
+			/* Some clients send nul bytes after \r. Skip nuls */
+			continue;
 		/* ordinary character */
 		if(c == '\r' || c == '\n')
 			break;
